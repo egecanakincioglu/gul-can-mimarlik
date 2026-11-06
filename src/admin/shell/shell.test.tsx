@@ -4,7 +4,7 @@ import { getContent } from '@/content';
 import type { SiteContent } from '@/content/types';
 import { STORAGE_NAME, createAdminStore } from '../store/admin-store';
 import type { StorageLike } from '../store/admin-store';
-import { AdminStoreProvider } from '../store/AdminStoreProvider';
+import { AdminStoreProvider, useAdminStore } from '../store/AdminStoreProvider';
 import AdminShell from './AdminShell';
 import LoginForm from './LoginForm';
 import { navGroups } from './nav';
@@ -90,6 +90,36 @@ describe('AdminShell', () => {
     expect(view.getAttribute('target')).toBe('_blank');
     expect(screen.getByRole('button', { name: 'Çıkış' })).toBeTruthy();
     expect(screen.getByRole('link', { name: /Gelen kutusu/ }).textContent).toContain('2');
+  });
+
+  it('updates the unread count when a message changes status', async () => {
+    const Toggle = () => {
+      const { messages, setMessageStatus } = useAdminStore();
+      const fresh = messages.find((m) => m.status === 'new');
+      return (
+        <>
+          <button onClick={() => fresh && setMessageStatus(fresh.id, 'read')}>Okundu</button>
+          <button onClick={() => fresh && setMessageStatus(fresh.id, 'archived')}>Arşivle</button>
+          <button onClick={() => setMessageStatus('sample-3', 'new')}>Okunmadı</button>
+        </>
+      );
+    };
+    render(
+      <AdminStoreProvider storage={storageWith()}>
+        <AdminShell pathname="/yonetim">
+          <Toggle />
+        </AdminShell>
+      </AdminStoreProvider>,
+    );
+    await screen.findByRole('main');
+    const count = () => screen.getByRole('link', { name: /Gelen kutusu/ }).textContent;
+    expect(count()).toContain('2');
+    fireEvent.click(screen.getByRole('button', { name: 'Okundu' }));
+    expect(count()).toContain('1');
+    fireEvent.click(screen.getByRole('button', { name: 'Arşivle' }));
+    expect(count()).not.toMatch(/\d/);
+    fireEvent.click(screen.getByRole('button', { name: 'Okunmadı' }));
+    expect(count()).toContain('1');
   });
 
   it('shows the breadcrumb for the current route', async () => {

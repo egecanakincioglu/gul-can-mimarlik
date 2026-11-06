@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import type { FormEvent } from 'react';
+import { addDemoMessage } from '@/admin/store/demo-inbox';
 
 type Errors = Partial<Record<'name' | 'phone' | 'email' | 'message' | 'type', string>>;
 
@@ -33,7 +34,19 @@ export default function ContactForm({ texts }: { texts: ContactFormTexts }) {
     if (!type) err.type = texts.errors.type;
     if (v('message').length < 10) err.message = texts.errors.message;
     setErrors(err);
-    setDone(Object.keys(err).length === 0);
+    const valid = Object.keys(err).length === 0;
+    setDone(valid);
+    if (valid) {
+      const location = v('location');
+      addDemoMessage({
+        name: v('name'),
+        phone: v('phone'),
+        email: v('email'),
+        projectType: type,
+        ...(location ? { location } : {}),
+        message: v('message'),
+      });
+    }
     const first = (['name', 'phone', 'email', 'type', 'message'] as const).find((k) => err[k]);
     if (first === 'type') e.currentTarget.querySelector<HTMLElement>('fieldset button')?.focus();
     else if (first) e.currentTarget.querySelector<HTMLElement>(`#${first}`)?.focus();
