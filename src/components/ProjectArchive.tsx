@@ -4,19 +4,20 @@ import Link from 'next/link';
 import { useSyncExternalStore } from 'react';
 import InView from './InView';
 import Photo from './Photo';
-import { filters, matchesFilter, projects } from '@/content/projects';
-import type { Filter } from '@/content/projects';
+import { fill } from '@/lib/text';
+import type { Img } from '@/content/types';
 
-const slug = (f: Filter) =>
-  f
-    .toLocaleLowerCase('tr')
-    .replace(/ı/g, 'i')
-    .replace(/ü/g, 'u')
-    .replace(/ö/g, 'o')
-    .replace(/ş/g, 's')
-    .replace(/ç/g, 'c')
-    .replace(/ğ/g, 'g')
-    .replace(/\s+/g, '-');
+export type ArchiveChip = { id: string; slug: string; label: string; count: number | null };
+export type ArchiveProject = {
+  slug: string;
+  title: string;
+  cover: Img;
+  meta: string;
+  badge: string | null;
+  caption: string | null;
+  filterIds: string[];
+};
+export type ArchiveTexts = { filterAria: string; shown: string; viewProject: string };
 
 /* Repeating asymmetric pattern. Works for 4 projects and for 20+. */
 const PATTERN = [
@@ -68,33 +69,35 @@ const subscribe = (notify: () => void) => {
   };
 };
 
-export default function ProjectArchive() {
+type Props = { chips: ArchiveChip[]; projects: ArchiveProject[]; texts: ArchiveTexts };
+
+export default function ProjectArchive({ chips, projects, texts }: Props) {
   const search = useSyncExternalStore(
     subscribe,
     () => window.location.search,
     () => '',
   );
   const k = new URLSearchParams(search).get('kategori');
-  const f = filters.find((x) => slug(x) === k) ?? 'Tümü';
+  const f = chips.find((x) => x.slug === k) ?? chips[0];
 
-  const choose = (x: Filter) => {
+  const choose = (x: ArchiveChip) => {
     const url = new URL(window.location.href);
-    if (x === 'Tümü') url.searchParams.delete('kategori');
-    else url.searchParams.set('kategori', slug(x));
+    if (x === chips[0]) url.searchParams.delete('kategori');
+    else url.searchParams.set('kategori', x.slug);
     window.history.replaceState(null, '', url);
     listeners.forEach((notify) => notify());
   };
 
-  const list = projects.filter((p) => matchesFilter(p, f));
+  const list = projects.filter((p) => p.filterIds.includes(f.id));
 
   return (
     <>
       <div className="sticky top-[var(--hdr)] z-30 border-b border-golge bg-kirec">
         <div className="wrap flex items-center gap-4 py-2">
-          <div className="chips md:flex-wrap" role="group" aria-label="Kategori filtresi">
-            {filters.map((x) => (
-              <button key={x} type="button" className="chip" aria-pressed={f === x} onClick={() => choose(x)}>
-                {x === 'Tümü' ? `Tümü (${projects.length})` : x}
+          <div className="chips md:flex-wrap" role="group" aria-label={texts.filterAria}>
+            {chips.map((x) => (
+              <button key={x.id} type="button" className="chip" aria-pressed={f === x} onClick={() => choose(x)}>
+                {x.count === null ? x.label : `${x.label} (${x.count})`}
               </button>
             ))}
           </div>
@@ -103,10 +106,10 @@ export default function ProjectArchive() {
 
       <div className="wrap sec-b !pt-[clamp(56px,7vw,112px)]">
         <p className="sr-only" aria-live="polite">
-          {list.length} proje gösteriliyor
+          {fill(texts.shown, { n: String(list.length) })}
         </p>
         <div
-          key={f}
+          key={f.id}
           className="fade-swap grid grid-cols-1 gap-x-4 gap-y-[clamp(56px,8vw,128px)] md:grid-cols-8 md:gap-x-5 xl:grid-cols-12 xl:gap-x-6"
         >
           {list.map((p, i) => {
@@ -122,18 +125,16 @@ export default function ProjectArchive() {
                   <div className="mt-5 flex items-start justify-between gap-4 xl:px-0">
                     <div>
                       <h2 className="d-m">{p.title}</h2>
-                      <p className="label muted mt-3">
-                        {p.category} · {p.scope[0]}
-                      </p>
+                      <p className="label muted mt-3">{p.meta}</p>
                     </div>
                     <span className="card-arr d-m" aria-hidden>
                       →
                     </span>
                   </div>
                   <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-                    <span className="badge">Konsept Çalışma</span>
-                    <span className="caption">İllüstratif görsel</span>
-                    <span className="card-more label ml-auto hidden md:inline">Projeyi incele</span>
+                    {p.badge && <span className="badge">{p.badge}</span>}
+                    {p.caption && <span className="caption">{p.caption}</span>}
+                    <span className="card-more label ml-auto hidden md:inline">{texts.viewProject}</span>
                   </div>
                 </Link>
               </article>
