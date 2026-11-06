@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Funnel_Display, Funnel_Sans } from 'next/font/google';
+import Script from 'next/script';
 import Header from '@/components/Header';
 import './globals.css';
 
@@ -28,7 +29,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="tr" className={`${display.variable} ${sans.variable}`} suppressHydrationWarning>
       <head>
-        <script dangerouslySetInnerHTML={{ __html: boot }} />
+        <Script id="boot" strategy="beforeInteractive">
+          {boot}
+        </Script>
       </head>
       <body>
         <a href="#icerik" className="skip">
