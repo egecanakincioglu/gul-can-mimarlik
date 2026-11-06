@@ -65,7 +65,11 @@ The admin panel is built on mock data ([ADR 0009](adr/0009-admin-panel-and-conte
 - Publishing runs the content validation. It is blocked while issues exist.
 - In the mock phase, edits stay in the browser and do not reach the public site.
 - The store writes to local storage 300 ms after the last change, and at once on page hide, publish, discard and reset.
-- Below 1024 pixels, the sidebar opens from a `Menü` button as a modal menu. The sidebar footer (view site, log out) stays visible. Screens that need width show a notice below 768 pixels.
+- Below 1024 pixels, the sidebar opens from a `Menü` button as a modal menu. The sidebar footer (view site, log out) stays visible.
+- Every screen works at every width. No screen is limited to wide windows.
+- Components read store slices through `useAdminSelector` and actions through `useAdminActions`. Reading actions does not subscribe a component to store changes.
+- The store keeps the last publish time with the published copy. The overview shows it and names each content issue with a link to the screen.
+- Text fields that contain placeholders such as `{year}` list the allowed placeholders, taken from the default text, and reject unknown ones.
 
 The screens live in `src/admin/screens` and each has its own route. The groups are:
 
@@ -75,6 +79,14 @@ The screens live in `src/admin/screens` and each has its own route. The groups a
 - Page editors for the home page (with four fixed project slots), services, process steps, studio, the contact page and the projects page.
 
 Projects are managed at `/yonetim/projeler` (list), `/yonetim/projeler/yeni` (new project) and `/yonetim/projeler/<slug>` (editor with details, concept, gallery, before/after and SEO tabs); categories and archive filters at `/yonetim/kategoriler`. Changing the address of a published project adds a redirect.
+
+- The project list has a publish switch and a status badge per project.
+- The editor keeps edits locally until `Kaydet`. Leaving with unsaved edits asks for confirmation.
+- `Kaydet` is never disabled. It lists the errors with links and shows error counts on the tabs.
+- A `Yayın için eksikler` list shows what blocks publishing.
+- The save bar stays at the bottom of the screen.
+- The address of a new project follows its title until the address is edited.
+- Removing a paragraph, note, material, gallery row or video can be undone once.
 
 The live preview is at `/yonetim/onizleme/...`. It renders the public page from the draft that the panel posts to it (same origin only). It has no admin chrome and also shows unpublished projects. The editor and the preview sit side by side from 1280 pixels wide, and a toggle switches between them below that width.
 
