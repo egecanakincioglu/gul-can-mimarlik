@@ -48,7 +48,7 @@ export default function StudyoPage() {
                   focalX: 50,
                   focalY: 55,
                 }}
-                sizes="(min-width:1280px) 30vw, 50vw"
+                sizes="(min-width:1280px) 30vw, (min-width:768px) 50vw, 100vw"
               />
             </div>
             <p className="caption mt-3">İllüstratif görsel — stüdyonun gerçek ofisi değildir.</p>

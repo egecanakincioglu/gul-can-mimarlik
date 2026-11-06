@@ -65,7 +65,7 @@ export default function HizmetlerPage() {
               >
                 <InView className="wipe" from={flip ? 'right' : 'left'}>
                   <div className="relative aspect-[4/5] overflow-hidden bg-beton">
-                    <Photo img={c.image} sizes="(min-width:1280px) 30vw, 60vw" />
+                    <Photo img={c.image} sizes="(min-width:1280px) 30vw, (min-width:768px) 60vw, 100vw" />
                   </div>
                 </InView>
                 <p className="caption mt-3">İllüstratif görsel · Konsept Çalışma</p>
