@@ -64,7 +64,7 @@ The screens live in `src/admin/screens` and each has its own route. The groups a
 - The inbox and the redirects.
 - Page editors for the home page (with four fixed project slots), services, process steps, studio, the contact page and the projects page.
 
-Heading fields use a small emphasis syntax: `*word*` is bold (weight 800) and `_word_` is light (weight 300). Screens that need width show a notice below 768 pixels.
+Heading fields use a small emphasis syntax: `*word*` is bold (weight 800) and `_word_` is light (weight 300).
 
 ## Contact form
 
