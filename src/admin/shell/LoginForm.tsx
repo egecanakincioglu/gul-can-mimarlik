@@ -15,13 +15,14 @@ export default function LoginForm({ onLogin }: { onLogin: (email: string) => voi
   };
 
   return (
-    <div className="adm-login-wrap">
+    <main className="adm-login-wrap">
       <form onSubmit={submit} noValidate className="adm-login" aria-labelledby="adm-login-title">
         <h1 id="adm-login-title" className="adm-title">
           Yönetim paneli
         </h1>
-        <Field label="E-posta" type="email" name="email" autoComplete="email" value={email} onChange={setEmail} />
+        <Field boxed label="E-posta" type="email" name="email" autoComplete="email" value={email} onChange={setEmail} />
         <Field
+          boxed
           label="Parola"
           type="password"
           name="password"
@@ -34,6 +35,6 @@ export default function LoginForm({ onLogin }: { onLogin: (email: string) => voi
         </Button>
         <p className="caption">Demo oturumu</p>
       </form>
-    </div>
+    </main>
   );
 }

@@ -15,14 +15,17 @@ const SHORTCUTS = [
 ];
 
 const MAX_LISTED = 8;
+const MAX_UNREAD = 3;
 
 export default function Overview() {
-  const { draft, messages, issues, reset } = useAdminStore();
+  const { draft, messages, issues, dirty, reset } = useAdminStore();
   const [confirmReset, setConfirmReset] = useState(false);
 
-  const unread = messages.filter((m) => m.status === 'new').length;
+  const unreadMessages = messages
+    .filter((m) => m.status === 'new')
+    .sort((a, b) => b.receivedAt.localeCompare(a.receivedAt));
+  const unread = unreadMessages.length;
   const published = draft.projects.filter((p) => p.published).length;
-  const withoutSeo = draft.projects.filter((p) => !p.seo).length;
 
   const counters = [
     { label: 'Projeler', value: draft.projects.length, note: `${published} yayında` },
@@ -34,6 +37,16 @@ export default function Overview() {
     <div className="adm-overview">
       <h1 className="adm-title">Genel bakış</h1>
 
+      <section className="adm-site-status" aria-labelledby="adm-site-status">
+        <h2 id="adm-site-status" className="label">
+          Site durumu
+        </h2>
+        <p>{dirty ? 'Yayınlanmamış değişiklikler var' : 'Yayında, değişiklik yok'}</p>
+        <a href="/" target="_blank" rel="noopener noreferrer" className="tlink">
+          Siteyi görüntüle <span className="caption">(yeni sekme)</span>
+        </a>
+      </section>
+
       <ul className="adm-counters" aria-label="Özet">
         {counters.map((c) => (
           <li key={c.label} className="adm-counter">
@@ -43,6 +56,24 @@ export default function Overview() {
           </li>
         ))}
       </ul>
+
+      {unread > 0 && (
+        <section aria-labelledby="adm-unread">
+          <h2 id="adm-unread" className="label">
+            Okunmamış mesajlar
+          </h2>
+          <ul className="adm-shortcuts">
+            {unreadMessages.slice(0, MAX_UNREAD).map((m) => (
+              <li key={m.id}>
+                <Link href={`/yonetim/gelen-kutusu/${m.id}`} className="tlink">
+                  {m.name}
+                </Link>{' '}
+                <span className="caption">{new Date(m.receivedAt).toLocaleDateString('tr-TR')}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       <section aria-labelledby="adm-shortcuts">
         <h2 id="adm-shortcuts" className="label">
@@ -63,7 +94,7 @@ export default function Overview() {
         <h2 id="adm-missing" className="label">
           Eksik olanlar
         </h2>
-        {issues.length === 0 && withoutSeo === 0 ? (
+        {issues.length === 0 ? (
           <p>Eksik yok.</p>
         ) : (
           <ul className="adm-missing">
@@ -79,13 +110,6 @@ export default function Overview() {
               );
             })}
             {issues.length > MAX_LISTED && <li>ve {issues.length - MAX_LISTED} tane daha</li>}
-            {withoutSeo > 0 && (
-              <li>
-                <Link href="/yonetim/projeler" className="tlink">
-                  {withoutSeo} projede SEO başlığı yok
-                </Link>
-              </li>
-            )}
           </ul>
         )}
       </section>
@@ -97,14 +121,13 @@ export default function Overview() {
         <p className="caption">
           Düzenlemeler bu tarayıcıda tutulur. Sıfırlamak taslağı ve yayını örnek içeriğe döndürür.
         </p>
-        <Button variant="destructive" onClick={() => setConfirmReset(true)}>
-          Demo verisini sıfırla
-        </Button>
+        <Button onClick={() => setConfirmReset(true)}>Demo verisini sıfırla</Button>
       </section>
 
       <Dialog open={confirmReset} onClose={() => setConfirmReset(false)} title="Demo verisi sıfırlansın mı?">
         <p>Taslak, yayın ve örnek mesajlar ilk haline döner.</p>
         <div className="adm-dialog-actions">
+          <Button onClick={() => setConfirmReset(false)}>Vazgeç</Button>
           <Button
             variant="destructive"
             onClick={() => {
@@ -114,7 +137,6 @@ export default function Overview() {
           >
             Sıfırla
           </Button>
-          <Button onClick={() => setConfirmReset(false)}>Vazgeç</Button>
         </div>
       </Dialog>
     </div>

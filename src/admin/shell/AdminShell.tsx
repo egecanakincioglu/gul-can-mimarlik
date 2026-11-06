@@ -6,7 +6,7 @@ import type { ReactNode } from 'react';
 import { useAdminStore } from '../store/AdminStoreProvider';
 import PublishPanel from '../preview/PublishPanel';
 import SaveStatus from '../ui/SaveStatus';
-import { INBOX_HREF, crumbsFor, currentState, navGroups } from './nav';
+import { INBOX_HREF, crumbsFor, currentState, labelFor, navGroups } from './nav';
 
 export default function AdminShell({
   pathname,
@@ -17,13 +17,15 @@ export default function AdminShell({
   onLogout?: () => void;
   children: ReactNode;
 }) {
-  const { messages, dirty, saveState } = useAdminStore();
+  const { messages, dirty, saveState, draft } = useAdminStore();
   // The menu is open for the route it was opened on, so navigating closes it.
   const [openFor, setOpenFor] = useState<string | null>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
   const sidebar = useRef<HTMLDivElement>(null);
   const menuOpen = openFor === pathname;
   const wasOpen = useRef(false);
+  const main = useRef<HTMLElement>(null);
+  const lastPath = useRef(pathname);
 
   useEffect(() => {
     if (menuOpen) {
@@ -57,7 +59,36 @@ export default function AdminShell({
   }, [menuOpen]);
 
   const unread = messages.filter((m) => m.status === 'new').length;
-  const crumbs = crumbsFor(pathname);
+  const crumbs = crumbsFor(
+    pathname,
+    (slug) => draft.projects.find((p) => p.slug === slug)?.title,
+    (id) => messages.find((m) => m.id === id)?.name,
+  );
+  const last = crumbs.at(-1)?.label;
+  const screenLabel = (crumbs.length > 1 ? last : (labelFor(pathname) ?? last)) ?? null;
+  const title = screenLabel ? `${screenLabel} | Yönetim` : 'Yönetim';
+
+  // The framework may write its own title after hydration, so the screen title is re-applied when it changes.
+  useEffect(() => {
+    const apply = () => {
+      if (document.title !== title) document.title = title;
+    };
+    apply();
+    const observer = new MutationObserver(apply);
+    observer.observe(document.head, { childList: true, subtree: true, characterData: true });
+    return () => observer.disconnect();
+  }, [title]);
+
+  // Client navigation moves focus to the screen heading; the first load keeps the browser default.
+  useEffect(() => {
+    if (lastPath.current === pathname) return;
+    lastPath.current = pathname;
+    const heading = main.current?.querySelector<HTMLElement>('h1');
+    if (heading) {
+      heading.tabIndex = -1;
+      heading.focus();
+    } else main.current?.focus();
+  }, [pathname]);
 
   return (
     <div className="adm">
@@ -69,15 +100,18 @@ export default function AdminShell({
         <button type="button" className="adm-scrim" aria-label="Menüyü kapat" onClick={() => setOpenFor(null)} />
       )}
 
-      <div ref={sidebar} id="adm-sidebar" className="adm-side on-dark" data-open={menuOpen}>
+      <div
+        ref={sidebar}
+        id="adm-sidebar"
+        className="adm-side on-dark"
+        data-open={menuOpen}
+        role={menuOpen ? 'dialog' : undefined}
+        aria-modal={menuOpen ? true : undefined}
+        aria-label={menuOpen ? 'Menü' : undefined}
+      >
         <div className="adm-side-head">
           <p className="adm-brand">Gül CAN Mimarlık</p>
-          <button
-            type="button"
-            className="adm-side-close label"
-            data-collapsed-only="true"
-            onClick={() => setOpenFor(null)}
-          >
+          <button type="button" className="adm-side-close label" onClick={() => setOpenFor(null)}>
             Kapat
           </button>
         </div>
@@ -111,7 +145,7 @@ export default function AdminShell({
         </nav>
         <div className="adm-side-foot">
           <a href="/" target="_blank" rel="noopener noreferrer">
-            Siteyi görüntüle
+            Siteyi görüntüle <span className="caption">(yeni sekme)</span>
           </a>
           <button type="button" onClick={onLogout}>
             Çıkış
@@ -119,15 +153,14 @@ export default function AdminShell({
         </div>
       </div>
 
-      <div className="adm-col">
+      <div className="adm-col" inert={menuOpen}>
+        <p className="adm-banner">Demo: düzenlemeler bu tarayıcıda tutulur, canlı siteye gitmez.</p>
         <header className="adm-top">
-          <p className="adm-banner">Demo: düzenlemeler bu tarayıcıda tutulur, canlı siteye gitmez.</p>
           <div className="adm-bar">
             <button
               ref={menuButton}
               type="button"
-              className="adm-btn adm-btn-secondary adm-menu-btn"
-              data-collapsed-only="true"
+              className="adm-btn adm-menu-btn"
               aria-expanded={menuOpen}
               aria-controls="adm-sidebar"
               onClick={() => setOpenFor(pathname)}
@@ -136,10 +169,12 @@ export default function AdminShell({
             </button>
             <nav aria-label="Konum" className="adm-crumbs">
               <ol>
-                <li>Yönetim</li>
+                <li>
+                  <Link href="/yonetim">Yönetim</Link>
+                </li>
                 {crumbs.map((c, i) => (
-                  <li key={c} aria-current={i === crumbs.length - 1 ? 'page' : undefined}>
-                    {c}
+                  <li key={c.label} aria-current={i === crumbs.length - 1 ? 'page' : undefined}>
+                    {c.href ? <Link href={c.href}>{c.label}</Link> : c.label}
                   </li>
                 ))}
               </ol>
@@ -148,7 +183,7 @@ export default function AdminShell({
             <PublishPanel />
           </div>
         </header>
-        <main id="icerik" className="adm-content" tabIndex={-1}>
+        <main ref={main} id="icerik" className="adm-content" tabIndex={-1}>
           {children}
         </main>
       </div>

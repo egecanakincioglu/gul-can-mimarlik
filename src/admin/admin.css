@@ -23,7 +23,7 @@
   width: 264px;
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden;
   background: var(--color-pose);
   color: var(--color-kirec);
 }
@@ -43,17 +43,21 @@
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 18px;
-  padding: 20px 24px 12px;
+  padding: 16px 24px 4px;
 }
+/* The nav is the scroll area; the foot links stay pinned below it. */
 .adm-nav {
   flex: 1;
-  padding-bottom: 16px;
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-bottom: 8px;
 }
 .adm-group {
-  padding-top: 16px;
+  padding-top: 8px;
 }
 .adm-group .label {
-  padding: 0 24px 8px;
+  padding: 0 24px 2px;
 }
 .adm-nav ul {
   list-style: none;
@@ -75,10 +79,17 @@
   text-align: left;
   color: var(--color-kirec);
 }
-.adm-nav a:hover,
-.adm-side-foot a:hover,
-.adm-side-foot button:hover {
-  background: var(--color-beton);
+/* Rings sit inside the row: the scroll area would clip an outer ring. */
+.adm-nav a:focus-visible,
+.adm-side-foot :focus-visible {
+  outline-offset: -3px;
+}
+@media (hover: hover) {
+  .adm-nav a:hover,
+  .adm-side-foot a:hover,
+  .adm-side-foot button:hover {
+    background: var(--color-beton);
+  }
 }
 .adm-nav a[aria-current] {
   border-left-color: var(--color-kirec);
@@ -95,16 +106,29 @@
   text-align: center;
 }
 .adm-side-foot {
+  flex: none;
   border-top: 1px solid var(--color-golge);
-  padding: 8px 0;
+  padding: 4px 0;
 }
 
+/* Height of the sticky top bar (64px bar + 1px border); 0 where the bar scrolls away. */
+:root:has(.adm) {
+  --adm-top: 0px;
+  scroll-padding-top: var(--adm-top);
+}
 .adm-top {
-  position: sticky;
-  top: 0;
-  z-index: 30;
   background: var(--color-kirec);
   border-bottom: 1px solid var(--color-golge);
+}
+@media (min-width: 768px) and (min-height: 501px) {
+  :root:has(.adm) {
+    --adm-top: 65px;
+  }
+  .adm-top {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
 }
 .adm-banner {
   padding: 6px 24px;
@@ -141,17 +165,18 @@
 .adm-crumbs li[aria-current] {
   font-weight: 600;
 }
+.adm-crumbs a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
 .adm-save-status {
   font-size: 14px;
+  line-height: 1.4;
   color: var(--color-golge);
 }
 .adm-bar .btn {
   min-height: 48px;
   padding: 0 20px;
-}
-.adm-bar .btn:disabled {
-  background: var(--color-siva);
-  color: var(--color-pose);
 }
 .adm-btn.adm-menu-btn,
 .adm-side-close {
@@ -249,14 +274,30 @@
   color: var(--color-pose);
   border: 1px solid var(--color-pose);
 }
-.adm-btn:hover:not(:disabled) {
-  background: var(--color-pose);
-  color: var(--color-kirec);
+@media (hover: hover) {
+  .adm-btn:hover:not(:disabled) {
+    background: var(--color-pose);
+    color: var(--color-kirec);
+  }
 }
 .adm-btn:disabled,
 .btn:disabled {
   cursor: not-allowed;
   opacity: 0.6;
+}
+/* A disabled primary button keeps its resting look: no wipe, no colour change. */
+.adm .btn:disabled,
+.adm .btn:disabled:hover,
+.adm .btn:disabled:focus-visible {
+  background: var(--color-siva);
+  color: var(--color-pose);
+}
+.adm .btn:disabled::before {
+  display: none;
+}
+.adm .btn:disabled:hover .arr,
+.adm .btn:disabled:focus-visible .arr {
+  transform: none;
 }
 .adm-btn-destructive {
   border-left-width: 3px;
@@ -276,6 +317,38 @@
   display: block;
   margin-bottom: 8px;
 }
+/* Field labels read as sentence case; the uppercase micro style is for group headings only. */
+.adm .label,
+.adm-login .label {
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+}
+.adm .adm-group .label,
+.adm h2.label,
+.adm h3.label {
+  font-size: 12.5px;
+  line-height: 1.2;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.adm textarea {
+  resize: vertical;
+}
+.adm .err {
+  padding-left: 8px;
+  border-left: 3px solid var(--color-pose);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--color-pose);
+}
+.field .err:empty {
+  margin-top: 0;
+  padding: 0;
+  border: 0;
+}
 .adm-field-note {
   margin-top: 6px;
 }
@@ -284,20 +357,24 @@
   font-size: 16px;
 }
 .adm-boxed input,
-.adm-boxed textarea {
+.adm-boxed textarea,
+.adm-boxed select {
+  width: 100%;
   min-height: 44px;
   padding: 10px 12px;
   background: var(--color-kagit);
   border: 1px solid var(--color-golge);
 }
 .adm-boxed input:focus,
-.adm-boxed textarea:focus {
+.adm-boxed textarea:focus,
+.adm-boxed select:focus {
   outline: 2px solid var(--color-pose);
   outline-offset: 3px;
   border: 1px solid var(--color-golge);
   padding: 10px 12px;
 }
-.adm-boxed [aria-invalid='true'] {
+.adm-boxed [aria-invalid='true'],
+.adm-boxed [aria-invalid='true']:focus {
   border: 3px solid var(--color-pose);
   padding: 8px 10px;
 }
@@ -368,8 +445,18 @@
   font-weight: 500;
   border-bottom: 3px solid transparent;
 }
+@media (hover: hover) {
+  .adm-tab:hover {
+    border-bottom-color: var(--color-golge);
+  }
+}
 .adm-tab[aria-selected='true'] {
   border-bottom-color: var(--color-pose);
+}
+.adm-tab-err {
+  padding-left: 6px;
+  border-left: 3px solid var(--color-pose);
+  font-size: 13px;
 }
 
 /* ---------- Dialog ---------- */
@@ -476,17 +563,13 @@
   .adm-table td::before {
     content: attr(data-label);
     display: block;
-    font-size: 12px;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    font-size: 14px;
+    font-weight: 500;
     color: var(--color-golge);
   }
 }
 
 /* ---------- States ---------- */
-.adm-save-status:empty {
-  display: none;
-}
 .adm-empty {
   display: grid;
   justify-items: start;
@@ -502,7 +585,64 @@
   gap: 12px;
 }
 
+.adm-notice {
+  border: 1px solid var(--color-golge);
+  border-left: 3px solid var(--color-pose);
+  padding: 12px 16px;
+  font-size: 14px;
+}
+.adm-notice-error {
+  border-color: var(--color-pose);
+}
+.adm-notice-info {
+  border-left-color: var(--color-golge);
+}
+
+/* ---------- Section ---------- */
+.adm-section {
+  border-top: 1px solid var(--color-golge);
+}
+.adm-section > summary {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 8px 0;
+  cursor: pointer;
+}
+.adm-section-title {
+  display: inline;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 18px;
+  overflow-wrap: anywhere;
+}
+.adm-section-note {
+  margin-bottom: 12px;
+}
+.adm-section-body {
+  padding-bottom: 24px;
+}
+.adm-select select {
+  display: block;
+  font: inherit;
+  font-size: 16px;
+  border-radius: 0;
+}
+
 /* ---------- Overview ---------- */
+.adm-site-status {
+  display: grid;
+  justify-items: start;
+  gap: 8px;
+  padding: 16px 20px;
+  margin-bottom: 24px;
+  background: var(--color-kagit);
+  border: 1px solid var(--color-siva);
+  border-left: 3px solid var(--color-pose);
+}
+.adm-overview .adm-site-status {
+  margin-top: 0;
+}
 .adm-overview section {
   margin-top: 40px;
 }

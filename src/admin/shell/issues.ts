@@ -44,6 +44,7 @@ const TEXT = new Map<string, string>([
   ['redirect-shadows-project', 'Yönlendirme yayındaki bir projeyi gölgeliyor'],
   ['redirect-dangling', 'Yönlendirme hedefi yayında değil'],
   ['redirect-chain', 'Yönlendirme zincirleniyor'],
+  ['file-lost', 'Dosya tarayıcı yenilenince kayboldu, yeniden yükleyin.'],
 ]);
 
 /** Turkish message and the panel screen that fixes the issue. */
