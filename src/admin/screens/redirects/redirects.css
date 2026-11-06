@@ -6,3 +6,23 @@
   flex-wrap: wrap;
   gap: 12px;
 }
+.adm-redirects code,
+.adm-redirects .tlink {
+  overflow-wrap: anywhere;
+}
+.adm-redirects-hint {
+  margin-top: 8px;
+}
+.adm-redirects-errors {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+.adm-redirects-errors .tlink {
+  background: none;
+  border: 0;
+  padding: 0;
+  font: inherit;
+  text-align: left;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+}
