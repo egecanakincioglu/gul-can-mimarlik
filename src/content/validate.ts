@@ -1,6 +1,6 @@
 import { tokensIn } from '@/lib/text';
 import { ASPECT, ASPECT_TOLERANCE, fitsAspect } from './aspects';
-import { EXTRA_TOKENS, imageRefs, tokens } from './select';
+import { EXTRA_TOKENS, PUBLIC_PATHS, imageRefs, tokens } from './select';
 import type { SiteContent } from './types';
 
 export type Issue = { path: string; code: string };
@@ -56,11 +56,14 @@ export const validate = (c: SiteContent): Issue[] => {
   const serviceIds = new Set(c.serviceCategories.flatMap((cat) => cat.services.map((s) => s.id)));
 
   c.media.forEach((m, i) => {
-    if (!m.alt.trim()) add(`media[${i}].alt`, 'empty-alt');
+    if (m.decorative) {
+      if (m.alt !== '') add(`media[${i}].alt`, 'decorative-with-alt');
+    } else if (!m.alt.trim()) add(`media[${i}].alt`, 'empty-alt');
   });
+  const decorativeIds = new Set(c.media.filter((m) => m.decorative).map((m) => m.id));
   for (const { path, ref } of imageRefs(c)) {
     if (!mediaIds.has(ref.media)) add(path, 'missing-media');
-    if (ref.alt !== undefined && !ref.alt.trim()) add(`${path}.alt`, 'empty-alt');
+    if (ref.alt !== undefined && !ref.alt.trim() && !decorativeIds.has(ref.media)) add(`${path}.alt`, 'empty-alt');
   }
 
   c.projects.forEach((p, i) => {
@@ -106,6 +109,7 @@ export const validate = (c: SiteContent): Issue[] => {
   }
 
   const livePaths = new Set(c.projects.filter((p) => p.published).map((p) => `/projeler/${p.slug}`));
+  const targets = new Set<string>([...PUBLIC_PATHS, ...livePaths]);
   const froms = new Set<string>();
   c.redirects.forEach((r, i) => {
     const at = `redirects[${i}]`;
@@ -113,7 +117,8 @@ export const validate = (c: SiteContent): Issue[] => {
     froms.add(r.from);
     if (r.from === r.to) add(at, 'redirect-self');
     if (livePaths.has(r.from)) add(`${at}.from`, 'redirect-shadows-project');
-    if (!livePaths.has(r.to)) add(`${at}.to`, 'redirect-dangling');
+    if ((PUBLIC_PATHS as readonly string[]).includes(r.from)) add(`${at}.from`, 'redirect-shadows-page');
+    if (!targets.has(r.to)) add(`${at}.to`, 'redirect-dangling');
   });
   c.redirects.forEach((r, i) => {
     if (r.from !== r.to && c.redirects.some((o) => o.from === r.to)) add(`redirects[${i}].to`, 'redirect-chain');

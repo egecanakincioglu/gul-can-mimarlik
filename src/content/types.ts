@@ -20,6 +20,9 @@ export type MediaItem = {
   alt: string;
   focal: Focal;
   illustrative: IllustrativeKind | null;
+  /** Purely decorative picture: alt must stay empty. */
+  decorative?: boolean;
+  bytes?: number;
 };
 export type ImageRef = { media: MediaId; alt?: string; focal?: Focal };
 
