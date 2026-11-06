@@ -96,7 +96,7 @@ export const projects: Project[] = [
     summary: 'Eski bir apartman salonu, aynı geometriyle yeniden kuruldu: yüzeyler sadeleşti, ışık kaldı.',
     narrative: [
       'Pencere, kiriş ve kolon yerinde kalıyor. Değişen yalnızca yüzeyler ve mobilya: sıva, mikro beton, meşe ve keten.',
-      'Önce / sonra karşılaştırması konsept amaçlı üretilmiş görsellerle hazırlanmıştır.',
+      'Önce / sonra karşılaştırması konsept amaçlı illüstratif görsellerle hazırlanmıştır.',
     ],
     materials: ['Kireç sıva', 'Mikro beton', 'Meşe', 'Keten'],
     notes: [

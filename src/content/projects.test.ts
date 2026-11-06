@@ -46,3 +46,13 @@ describe('category filters', () => {
     for (const f of filters) expect(projects.some((p) => matchesFilter(p, f))).toBe(true);
   });
 });
+
+describe('before/after note', () => {
+  it('calls the comparison illustrative', () => {
+    const withComparison = projects.filter((p) => p.beforeAfter);
+    expect(withComparison.length).toBeGreaterThan(0);
+    for (const p of withComparison) {
+      expect(p.narrative.join(' ').toLowerCase()).toContain('illüstratif');
+    }
+  });
+});
