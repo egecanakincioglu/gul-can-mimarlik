@@ -9,6 +9,7 @@ import {
   demoText,
   emailHref,
   filterCount,
+  PUBLIC_PATHS,
   filterProjects,
   getProjectById,
   getProjectBySlug,
@@ -83,6 +84,17 @@ describe('images', () => {
       focalX: 1,
       focalY: 2,
     });
+  });
+
+  it('returns an empty alt for decorative media, even with an override', () => {
+    c.media.find((m) => m.id === 'p1-cover')!.decorative = true;
+    c.media.find((m) => m.id === 'p1-cover')!.alt = '';
+    expect(resolveImage(c, { media: 'p1-cover' }).alt).toBe('');
+    expect(resolveImage(c, { media: 'p1-cover', alt: 'X' }).alt).toBe('');
+  });
+
+  it('lists the static public paths', () => {
+    expect(PUBLIC_PATHS).toEqual(['/', '/hizmetler', '/projeler', '/studyo', '/iletisim']);
   });
 
   it('throws for an unknown media id', () => {

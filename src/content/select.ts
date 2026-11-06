@@ -31,6 +31,9 @@ export const nextProject = (c: SiteContent, id: ProjectId): Project | undefined 
   return i < 0 ? undefined : list[(i + 1) % list.length];
 };
 
+/** Static public routes; redirect targets and the admin share this list. */
+export const PUBLIC_PATHS = ['/', '/hizmetler', '/projeler', '/studyo', '/iletisim'] as const;
+
 const mediaOf = (c: SiteContent, id: string): MediaItem => {
   const m = c.media.find((x) => x.id === id);
   if (!m) throw new Error(`Unknown media: ${id}`);
@@ -40,7 +43,7 @@ const mediaOf = (c: SiteContent, id: string): MediaItem => {
 export const resolveImage = (c: SiteContent, ref: ImageRef): Img => {
   const m = mediaOf(c, ref.media);
   const focal = ref.focal ?? m.focal;
-  return { src: m.file, alt: ref.alt ?? m.alt, focalX: focal.x, focalY: focal.y };
+  return { src: m.file, alt: m.decorative ? '' : (ref.alt ?? m.alt), focalX: focal.x, focalY: focal.y };
 };
 
 /** Label of the kind of picture, or null for a real photograph. */

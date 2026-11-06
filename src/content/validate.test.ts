@@ -106,12 +106,47 @@ describe('validate', () => {
     expect(validate(c)).toContainEqual({ path: 'projects[0].gallery[0]', code: 'aspect-mismatch' });
   });
 
+  describe('decorative media', () => {
+    it('accepts a decorative item with empty alt and an empty reference alt', () => {
+      c.media[0].decorative = true;
+      c.media[0].alt = '';
+      c.projects[0].cover = { media: c.media[0].id, alt: '' };
+      expect(codes()).not.toContain('empty-alt');
+      expect(codes()).not.toContain('decorative-with-alt');
+    });
+
+    it('reports a decorative item that has alt text', () => {
+      c.media[0].decorative = true;
+      expect(validate(c)).toContainEqual({ path: 'media[0].alt', code: 'decorative-with-alt' });
+    });
+
+    it('reports a non-decorative item with empty alt', () => {
+      c.media[0].alt = '';
+      expect(validate(c)).toContainEqual({ path: 'media[0].alt', code: 'empty-alt' });
+    });
+  });
+
   describe('redirects', () => {
     const live = '/projeler/yamac-evi';
 
     it('accepts a redirect to a live project', () => {
       c.redirects = [{ id: 'r', from: '/projeler/eski', to: live }];
       expect(validate(c)).toEqual([]);
+    });
+
+    it('accepts a redirect to a static public path', () => {
+      c.redirects = [{ id: 'r', from: '/eski', to: '/hizmetler' }];
+      expect(validate(c)).toEqual([]);
+    });
+
+    it('reports a redirect to an unknown path', () => {
+      c.redirects = [{ id: 'r', from: '/eski', to: '/yok' }];
+      expect(validate(c)).toContainEqual({ path: 'redirects[0].to', code: 'redirect-dangling' });
+    });
+
+    it('reports a redirect from a static public page', () => {
+      c.redirects = [{ id: 'r', from: '/hizmetler', to: '/studyo' }];
+      expect(validate(c)).toContainEqual({ path: 'redirects[0].from', code: 'redirect-shadows-page' });
     });
 
     it('reports a duplicate from', () => {
