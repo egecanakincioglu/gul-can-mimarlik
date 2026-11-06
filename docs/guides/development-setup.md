@@ -18,7 +18,7 @@ Once per clone, to run the site.
 3. Install the dependencies from the lock file: `pnpm install --frozen-lockfile`.
 4. Start the site with `pnpm dev` and open http://localhost:3000.
 
-The site needs no database today. One optional environment variable exists. `ADMIN_ENABLED` defaults to `false` (see `.env.example`), and `/yonetim` answers 404 in that case. To open the admin panel locally, set `ADMIN_ENABLED=true` in `.env.local` and restart `pnpm dev`. The panel works on mock data.
+The site needs no database today. One optional environment variable exists. `ADMIN_ENABLED` defaults to `false` (see `.env.example`), and `/yonetim` answers 404 in that case. To open the admin panel locally, set `ADMIN_ENABLED=true` in `.env.local` and restart `pnpm dev`. The panel works on mock data. With the variable set, `/yonetim` opens the panel, and `/yonetim/giris` accepts any input in the demo. The `Demo verisini sıfırla` button on the overview resets the stored data.
 
 Only if you plan to commit:
 

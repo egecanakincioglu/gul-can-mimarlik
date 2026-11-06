@@ -73,7 +73,7 @@ Branch protection on `main` requires a pull request and these 9 checks:
 
 The checks are strict, commits must be signed, force pushes and branch deletion are off, and administrators are included. A newer push to a pull request cancels the older CI run of that pull request.
 
-The phone number in `src/content/site.ts` and `src/content/seed/site.ts` is published with the owner's permission. It is exempt from the phone number rule of the secret scan.
+The office phone number is published with the owner's permission. It is exempt from the phone number rule of the secret scan in every file, for example rendered markup in test snapshots; any other number is still reported.
 
 ## Infrastructure failures
 

@@ -1,3 +1,5 @@
+import Overview from '@/admin/shell/Overview';
+
 export default function YonetimPage() {
-  return <h1>Yönetim</h1>;
+  return <Overview />;
 }
