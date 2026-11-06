@@ -46,21 +46,21 @@ describe('InboxScreen', () => {
 describe('MessageScreen', () => {
   it('toggles read and unread', async () => {
     await show(<MessageScreen id="sample-1" />);
-    expect(screen.getByText('Okunmadı')).toBeTruthy();
+    expect(await screen.findByText('Okunmadı')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Okundu olarak işaretle' }));
-    expect(screen.getByText('Okundu')).toBeTruthy();
+    expect(await screen.findByText('Okundu')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Okunmadı olarak işaretle' }));
-    expect(screen.getByText('Okunmadı')).toBeTruthy();
+    expect(await screen.findByText('Okunmadı')).toBeTruthy();
   });
 
   it('archives and restores, and offers no delete', async () => {
     await show(<MessageScreen id="sample-2" />);
     expect(screen.queryByRole('button', { name: /sil/i })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Arşivle' }));
-    expect(screen.getByText('Arşivde')).toBeTruthy();
+    expect(await screen.findByText('Arşivde')).toBeTruthy();
     expect(screen.queryByRole('button', { name: /işaretle/ })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Gelen kutusuna taşı' }));
-    expect(screen.getByText('Okundu')).toBeTruthy();
+    expect(await screen.findByText('Okundu')).toBeTruthy();
   });
 
   it('archived messages appear under the archive filter', async () => {
