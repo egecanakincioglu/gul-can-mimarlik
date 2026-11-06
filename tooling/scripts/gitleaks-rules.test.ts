@@ -136,4 +136,55 @@ describe('.gitleaks.toml custom rules', { skip }, () => {
       rmSync(dir, { recursive: true, force: true });
     }
   });
+
+  test('allows the published office number in any file but still flags other numbers', () => {
+    const dir = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'gitleaks-published-')));
+    try {
+      const repo = path.join(dir, 'repo');
+      const out = path.join(dir, 'out');
+      mkdirSync(repo);
+      mkdirSync(out);
+      copyFileSync(path.join(root, '.gitleaks.toml'), path.join(repo, '.gitleaks.toml'));
+      writeFileSync(path.join(repo, 'published.txt'), 'a 0542 593 31 75 b\nc +905425933175 d\n'); // gitleaks:allow
+      writeFileSync(path.join(repo, 'other.txt'), 'a 0542 593 31 75 b\nc 0532 123 45 67 d\n'); // gitleaks:allow
+      const git = (...args: string[]) => spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
+      git('init', '-q', '-b', 'main');
+      git('add', '-A');
+      git('-c', 'user.name=t', '-c', 'user.email=t@t', '-c', 'commit.gpgsign=false', 'commit', '-q', '-m', 'seed');
+      const r = spawnSync(
+        'docker',
+        [
+          'run',
+          '--rm',
+          '-v',
+          `${repo}:/repo:ro`,
+          '-v',
+          `${out}:/out`,
+          image,
+          'git',
+          '/repo',
+          '--config',
+          '/repo/.gitleaks.toml',
+          '--report-format',
+          'json',
+          '--report-path',
+          '/out/r.json',
+          '--exit-code',
+          '0',
+          '--no-banner',
+        ],
+        { encoding: 'utf8', env: { ...process.env, MSYS_NO_PATHCONV: '1' } },
+      );
+      assert.equal(r.status, 0, r.stderr);
+      const found = JSON.parse(readFileSync(path.join(out, 'r.json'), 'utf8')).filter(
+        (f: Finding & { StartLine: number }) => f.RuleID === 'tr-phone-number',
+      );
+      assert.deepEqual(
+        found.map((f: Finding & { StartLine: number }) => `${f.File}:${f.StartLine}`),
+        ['other.txt:2'],
+      );
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
 });

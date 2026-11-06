@@ -29,3 +29,7 @@ paths = ['''^src/content/(site|seed/site)\.ts$''']
 # A test in this commit compared against the published number; later commits derive it from the seed.
 [[rules.allowlists]]
 commits = ["eed53d4c28337894b1e8d8887e18bb3f0c3e9b00"]
+# The office number is published on the site with the owner's permission, so it may appear in any file (for example
+# rendered markup in test snapshots). Matched against the secret, which for this rule is the whole match.
+[[rules.allowlists]]
+regexes = ['''^(?:\+?90|0)[\s-]?\(?542\)?[\s-]?593[\s-]?31[\s-]?75$''']
