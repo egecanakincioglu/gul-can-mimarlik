@@ -9,9 +9,10 @@ test('the audit list holds absolute addresses without duplicates', () => {
 });
 
 test('every project of the content has its page in the audit list', () => {
-  const source = readFileSync(new URL('../../src/content/projects.ts', import.meta.url), 'utf8');
-  const slugs = [...source.matchAll(/^\s{4}slug: '([^']+)'/gm)].map((m) => m[1]!);
-  assert.ok(slugs.length > 0);
+  const source = readFileSync(new URL('../../src/content/seed/projects.ts', import.meta.url), 'utf8');
+  const projectsPart = source.slice(source.indexOf('export const projects'));
+  const slugs = [...projectsPart.matchAll(/^\s{4}slug: '([^']+)'/gm)].map((m) => m[1]!);
+  assert.ok(slugs.length >= 4);
   assert.deepEqual(
     PAGES.filter((p) => p.startsWith('/projeler/')),
     slugs.map((s) => `/projeler/${s}`),

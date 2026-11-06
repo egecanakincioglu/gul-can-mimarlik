@@ -21,7 +21,7 @@ The site is the public face of an office. It must be fast, accessible and correc
 
 Rules:
 
-1. **Status codes:** every page in `tooling/site-audit/pages.ts` answers 200, and an unknown path answers 404. The audit loads every page without the browser cache.
+1. **Status codes:** every page in `tooling/site-audit/pages.ts` answers 200, and an unknown path answers 404. The audit loads every page without the browser cache. A test checks that every project in the content seed (`src/content/seed/projects.ts`) has its page in that list.
 2. **Responsive:** no horizontal overflow at the audited device sizes (320 to 2560 pixels wide, including phone landscape).
 3. **Accessibility:** no axe violations; text has enough contrast.
 4. **Images:** an image that is much larger than its display size fails the audit, and so does one that is too small. A source that is as wide as its original file passes.

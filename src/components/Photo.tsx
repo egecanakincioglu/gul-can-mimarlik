@@ -1,5 +1,5 @@
 import Image from 'next/image';
-import type { Img } from '@/content/site';
+import type { Img } from '@/content/types';
 
 type Props = {
   img: Img;

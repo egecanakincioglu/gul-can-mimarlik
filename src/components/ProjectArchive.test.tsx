@@ -1,10 +1,10 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { matchesFilter, projects } from '@/content/projects';
 import ProjectArchive from './ProjectArchive';
 import { archiveProps } from './archive-props';
 import { getContent } from '@/content';
+import { filterProjects } from '@/content/select';
 import type { SiteContent } from '@/content/types';
 
 let seed: SiteContent;
@@ -30,14 +30,14 @@ const chip = (name: string) => screen.getByRole('button', { name });
 describe('ProjectArchive', () => {
   it('lists every project first and counts them on the "Tümü" chip', () => {
     render(archive());
-    expect(shown()).toEqual(projects.map((p) => p.title));
-    expect(chip(`Tümü (${projects.length})`).getAttribute('aria-pressed')).toBe('true');
+    expect(shown()).toEqual(seed.projects.map((p) => p.title));
+    expect(chip(`Tümü (${seed.projects.length})`).getAttribute('aria-pressed')).toBe('true');
   });
 
   it('filters by category, announces the count and writes the choice to the address', () => {
     render(archive());
     fireEvent.click(chip('İç Mimarlık'));
-    const expected = projects.filter((p) => matchesFilter(p, 'İç Mimarlık'));
+    const expected = filterProjects(seed, 'ic-mimarlik');
     expect(shown()).toEqual(expected.map((p) => p.title));
     expect(screen.getByText(`${expected.length} proje gösteriliyor`)).toBeTruthy();
     expect(chip('İç Mimarlık').getAttribute('aria-pressed')).toBe('true');
@@ -47,15 +47,15 @@ describe('ProjectArchive', () => {
   it('"Tümü" restores the full list and removes the query parameter', () => {
     render(archive());
     fireEvent.click(chip('Mimari'));
-    fireEvent.click(chip(`Tümü (${projects.length})`));
-    expect(shown()).toHaveLength(projects.length);
+    fireEvent.click(chip(`Tümü (${seed.projects.length})`));
+    expect(shown()).toHaveLength(seed.projects.length);
     expect(window.location.search).toBe('');
   });
 
   it('applies the filter named in the address on load', async () => {
     window.history.replaceState(null, '', '/projeler?kategori=gorsellestirme');
     render(archive());
-    const expected = projects.filter((p) => matchesFilter(p, 'Görselleştirme'));
+    const expected = filterProjects(seed, 'gorsellestirme');
     expect(await screen.findByRole('button', { name: 'Görselleştirme' })).toBeTruthy();
     expect(chip('Görselleştirme').getAttribute('aria-pressed')).toBe('true');
     expect(shown()).toEqual(expected.map((p) => p.title));
@@ -64,7 +64,7 @@ describe('ProjectArchive', () => {
   it('ignores an unknown filter in the address', () => {
     window.history.replaceState(null, '', '/projeler?kategori=yok');
     render(archive());
-    expect(shown()).toHaveLength(projects.length);
+    expect(shown()).toHaveLength(seed.projects.length);
   });
 });
 
