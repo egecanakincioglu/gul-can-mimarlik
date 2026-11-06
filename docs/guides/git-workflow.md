@@ -40,7 +40,7 @@ Filter the project list by project type.
 
 - A pull request that touches the user interface is checked in a browser at 390 (phone), 768 (tablet portrait), 1024 (tablet landscape) and 1440 (desktop) pixels wide. Changes to the fixed header, the menu or dialogs are also checked at 844x390 (phone landscape).
 - The "Visual check" section of the pull request template is filled in.
-- Overflow, accessibility, image sizes and console errors are checked by `pnpm site-audit --leg pages`, run locally ([ADR 0006](../adr/0006-quality-targets-and-thresholds.md)).
+- Status codes, overflow, accessibility, image sizes and console errors are checked by `pnpm site-audit --leg pages`, run locally ([ADR 0006](../adr/0006-quality-targets-and-thresholds.md)).
 
 ## Documentation
 
@@ -58,7 +58,7 @@ Filter the project list by project type.
 
 ## CI checks
 
-Every pull request to `main` runs these checks:
+Branch protection on `main` requires a pull request and these 9 checks:
 
 | Check | What it verifies |
 |---|---|
@@ -70,8 +70,6 @@ Every pull request to `main` runs these checks:
 | `zizmor` | Security audit of the workflow files |
 | `test` | Vitest tests with the coverage gate |
 | `build` | `pnpm build` |
-
-The `build` job skips itself while the site is not in the repository.
 
 The checks are strict, commits must be signed, force pushes and branch deletion are off, and administrators are included. A newer push to a pull request cancels the older CI run of that pull request.
 

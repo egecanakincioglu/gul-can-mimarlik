@@ -1,6 +1,6 @@
 # Architecture
 
-This document describes how the application is built. The site code in `src/` and `public/` arrives in the next changes; until then this document describes the planned structure. Items marked "planned" are planned beyond the first site. The reasons for each choice are in the [decision records](adr/README.md).
+This document describes how the application is built. Items marked "planned" do not exist yet. The reasons for each choice are in the [decision records](adr/README.md).
 
 ## Overview
 

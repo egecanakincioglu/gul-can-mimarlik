@@ -1,34 +1,31 @@
 # Gül CAN
 
-The website of Gül CAN, an architecture and interior design office. The site is in Turkish only.
+The website of Gül CAN, an architecture and interior design office. It presents the services, selected projects, the studio and the contact details. The site is in Turkish only.
 
 ## Status
 
-The repository is being set up. Tooling, documentation and the site follow in the next changes.
+The site is built and runs. The project pages show concept work with illustrative images, and the site labels them as such. The contact form checks the input but sends nothing. A backend is planned. See the [roadmap](docs/roadmap.md).
 
-## Run it
+## Pages
 
-Requirements: Git, Node 24 and pnpm. Corepack provides pnpm.
+| Route | Page |
+|---|---|
+| `/` | Home |
+| `/hizmetler` | Services |
+| `/projeler` | Project list |
+| `/projeler/<slug>` | Project detail: `avlulu-konut`, `daire-yenileme`, `yamac-evi`, `kose-kafe` |
+| `/studyo` | Studio |
+| `/iletisim` | Contact |
 
-```bash
-git clone https://github.com/egecanakincioglu/gul-can-mimarlik.git
-cd gul-can-mimarlik
-corepack enable
-corepack pnpm install --frozen-lockfile
-```
+Unknown paths show a 404 page.
 
-There is no site to open yet. No environment variables and no database are needed today. These scripts exist:
+## Run it locally
 
-| Script                       | Purpose                                     |
-| ---------------------------- | ------------------------------------------- |
-| `corepack pnpm lint`         | Run ESLint                                  |
-| `corepack pnpm typecheck`    | Type check the project                      |
-| `corepack pnpm test`         | Run the tests with the coverage gate        |
-| `corepack pnpm format`       | Format the files with Prettier              |
-| `corepack pnpm format:check` | Check the formatting without changing files |
-| `corepack pnpm knip`         | Find unused files, exports and dependencies |
+1. Install Node 24 (see `.node-version`) and enable Corepack: `corepack enable`.
+2. Install the dependencies: `pnpm install --frozen-lockfile`.
+3. Start the development server: `pnpm dev`. Open http://localhost:3000.
 
-More detail is in the [development setup guide](docs/guides/development-setup.md).
+The site needs no environment variables and no database. The [development setup guide](docs/guides/development-setup.md) has the details, the daily commands and troubleshooting.
 
 ## Contributing
 
@@ -40,4 +37,4 @@ The [docs folder](docs/README.md) holds the architecture, the roadmap, the decis
 
 ## License
 
-The source code is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). The name, logo, contact details, texts and images are not covered; see [NOTICE.md](NOTICE.md).
+The source code is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). The office name, logo, texts, contact details and images are not covered; see [NOTICE.md](NOTICE.md).
