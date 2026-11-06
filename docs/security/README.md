@@ -14,4 +14,4 @@ CI runs Semgrep (project rules and registry rule sets), zizmor on the workflow f
 
 ## Review
 
-A security review is planned before 1.0. Its findings will be added to this folder.
+A security review is planned before 1.0 ([roadmap](../roadmap.md)). Its findings will be added to this folder.
