@@ -19,9 +19,13 @@ import {
   consoleProblems,
   hasHorizontalOverflow,
   imageProblem,
+  isOpenModal,
+  originalImagePath,
+  readPngWidth,
   summarizeAxe,
   type ConsoleEntry,
   type ImageFacts,
+  type ModalFacts,
 } from './checks.ts';
 import { findChrome } from './chrome.ts';
 import { DEVICES, SWEEP_HEIGHT, isScreenshotDevice, sweepWidths, type Device } from './devices.ts';
@@ -111,6 +115,13 @@ async function overflowSweep(page: Page, url: string): Promise<void> {
   }
 }
 
+function originalWidthOf(src: string): number | undefined {
+  const rel = originalImagePath(src);
+  const file = rel && path.join(process.cwd(), 'public', rel);
+  if (!file || !existsSync(file)) return undefined;
+  return readPngWidth(readFileSync(file)) ?? undefined;
+}
+
 async function auditView(page: Page, url: string, d: Device, axeSource: string): Promise<void> {
   const where = `${url} @${d.width}x${d.height}`;
   const entries: ConsoleEntry[] = [];
@@ -119,6 +130,8 @@ async function auditView(page: Page, url: string, d: Device, axeSource: string):
   page.on('console', onConsole);
   page.on('pageerror', onPageError);
 
+  // Without the cache every navigation is a full 200 and the transfer sizes do not depend on earlier views.
+  await page.setCacheEnabled(false);
   await setViewport(page, d);
   const response = await page.goto(url, { waitUntil: 'networkidle0' });
   if (response && response.status() !== 200) fail(`status ${where}`, `status ${response.status()}, expected 200`);
@@ -132,12 +145,15 @@ async function auditView(page: Page, url: string, d: Device, axeSource: string):
   });
   for (const v of violations) fail(`csp ${where}`, v);
 
-  const modals = await page.evaluate(
-    () =>
-      [...document.querySelectorAll('dialog[open], [aria-modal="true"]')].filter(
-        (el) => el.matches('dialog[open]') || el.getClientRects().length > 0,
-      ).length,
+  const modalFacts: ModalFacts[] = await page.evaluate(() =>
+    [...document.querySelectorAll('dialog[open], [aria-modal="true"]')].map((el) => ({
+      isOpenDialog: el.matches('dialog[open]'),
+      ariaHidden: el.getAttribute('aria-hidden'),
+      visibility: getComputedStyle(el).visibility,
+      rectCount: el.getClientRects().length,
+    })),
   );
+  const modals = modalFacts.filter(isOpenModal).length;
   if (modals > 0) fail(`modal ${where}`, `${modals} modal(s) open on load`);
 
   const images: ImageFacts[] = await page.evaluate(
@@ -167,7 +183,7 @@ async function auditView(page: Page, url: string, d: Device, axeSource: string):
     d.dpr,
   );
   for (const img of images) {
-    const problem = imageProblem(img);
+    const problem = imageProblem({ ...img, originalWidth: originalWidthOf(img.src) });
     if (problem) fail(`image ${where}`, problem);
   }
 

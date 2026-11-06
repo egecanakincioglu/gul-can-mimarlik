@@ -1,7 +1,17 @@
+import { readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { findChrome } from './chrome.ts';
-import { consoleProblems, hasHorizontalOverflow, imageProblem, summarizeAxe, type ImageFacts } from './checks.ts';
+import {
+  consoleProblems,
+  hasHorizontalOverflow,
+  imageProblem,
+  isOpenModal,
+  originalImagePath,
+  readPngWidth,
+  summarizeAxe,
+  type ImageFacts,
+} from './checks.ts';
 import { DEVICES, isScreenshotDevice, sweepWidths } from './devices.ts';
 
 test('device set has the 10 viewports', () => {
@@ -139,4 +149,39 @@ test('chrome path: CHROME_PATH wins, then known locations per platform', () => {
     findChrome({}, 'win32', () => false),
     null,
   );
+});
+
+test('imageProblem caps the needed width at the original file width', () => {
+  const small = img({ naturalWidth: 800, displayWidth: 1000, dpr: 2, viewportWidth: 1440 });
+  assert.match(imageProblem(small) ?? '', /below the 2000px needed/);
+  assert.equal(imageProblem({ ...small, originalWidth: 800 }), null);
+  assert.match(imageProblem({ ...small, originalWidth: 900 }) ?? '', /below the 900px needed/);
+});
+
+test('originalImagePath resolves local image URLs', () => {
+  assert.equal(
+    originalImagePath('http://localhost:3000/_next/image?url=%2Fimages%2Fp1-cover.png&w=1920&q=75'),
+    'images/p1-cover.png',
+  );
+  assert.equal(originalImagePath('http://localhost:3000/images/p1-cover.png'), 'images/p1-cover.png');
+  assert.equal(originalImagePath('http://localhost:3000/_next/image?url=https%3A%2F%2Fx.test%2Fa.png&w=64'), null);
+  assert.equal(originalImagePath('http://localhost:3000/_next/image?url=%2F..%2Fsecret.png'), null);
+  assert.equal(originalImagePath('data:image/png;base64,AAAA'), null);
+});
+
+test('readPngWidth reads the IHDR width of a real file and ignores other data', () => {
+  const file = readFileSync(new URL('../../public/images/p1-cover.png', import.meta.url));
+  const width = readPngWidth(file);
+  assert.ok(width && width > 0 && width < 20000);
+  assert.equal(readPngWidth(new Uint8Array(40)), null);
+  assert.equal(readPngWidth(new Uint8Array(4)), null);
+});
+
+test('isOpenModal ignores a hidden aria-modal element and counts a visible one', () => {
+  const hidden = { isOpenDialog: false, ariaHidden: 'true', visibility: 'hidden', rectCount: 1 };
+  assert.equal(isOpenModal(hidden), false);
+  assert.equal(isOpenModal({ ...hidden, ariaHidden: null, visibility: 'visible' }), true);
+  assert.equal(isOpenModal({ ...hidden, ariaHidden: null, visibility: 'hidden' }), false);
+  assert.equal(isOpenModal({ ...hidden, ariaHidden: null, visibility: 'visible', rectCount: 0 }), false);
+  assert.equal(isOpenModal({ ...hidden, isOpenDialog: true }), true);
 });
