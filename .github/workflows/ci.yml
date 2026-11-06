@@ -21,8 +21,7 @@ env:
 
 jobs:
   # All merge-rule checks in one job. Every step runs even when an earlier one failed, so a single run reports
-  # every violation. Dependabot commits can not follow our branch/message conventions, so those steps are
-  # skipped for it; the rest runs for everyone.
+  # every violation.
   policy:
     name: policy
     runs-on: ubuntu-latest
@@ -36,12 +35,12 @@ jobs:
         with:
           node-version-file: .node-version
       - name: Branch name
-        if: ${{ !cancelled() && github.event.pull_request.user.login != 'dependabot[bot]' }}
+        if: ${{ !cancelled() }}
         run: tooling/scripts/check-branch-name.sh "$HEAD_REF"
         env:
           HEAD_REF: ${{ github.head_ref }}
       - name: Validate every commit message in the pull request
-        if: ${{ !cancelled() && github.event.pull_request.user.login != 'dependabot[bot]' }}
+        if: ${{ !cancelled() }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -56,8 +55,7 @@ jobs:
             fi
           done
           exit $status
-      # A stolen device or token can not forge the owner's commits. Runs for everyone, including Dependabot
-      # (GitHub signs those commits itself).
+      # A stolen device or token can not forge the owner's commits.
       - name: Every commit in the pull request is verified by GitHub
         if: ${{ !cancelled() }}
         env:
@@ -67,19 +65,19 @@ jobs:
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: node tooling/scripts/check-signed-commits.ts
       - name: Source changes come with tests
-        if: ${{ !cancelled() && github.event.pull_request.user.login != 'dependabot[bot]' }}
+        if: ${{ !cancelled() }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: node tooling/scripts/check-untested-code.ts --base "$BASE_SHA" --head "$HEAD_SHA"
       - name: Coverage thresholds only go up
-        if: ${{ !cancelled() && github.event.pull_request.user.login != 'dependabot[bot]' }}
+        if: ${{ !cancelled() }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: node tooling/scripts/check-coverage-thresholds.ts --base "$BASE_SHA" --head "$HEAD_SHA"
       - name: Site audit thresholds only tighten
-        if: ${{ !cancelled() && github.event.pull_request.user.login != 'dependabot[bot]' }}
+        if: ${{ !cancelled() }}
         env:
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
@@ -164,7 +162,7 @@ jobs:
         run: |
           docker run --rm -v "$PWD:/src" -w /src "$SEMGREP_IMAGE" semgrep scan --config p/typescript --config p/react --config p/nodejs --config p/owasp-top-ten --config p/security-audit --exclude tooling/semgrep --exclude src/generated --error --metrics=off
 
-  # Audits the workflow files and the Dependabot config for security problems. Medium severity and above fail.
+  # Audits the workflow files for security problems. Medium severity and above fail.
   # The online audits (impostor commits, known vulnerable actions) call the GitHub API with the job's read-only token.
   zizmor:
     name: zizmor
