@@ -196,7 +196,7 @@ describe('Table, EmptyState, ErrorBlock, Skeleton', () => {
         caption="Projeler"
         rows={[{ id: 'a', title: 'Avlulu konut' }]}
         getKey={(r) => r.id}
-        columns={[{ key: 'title', header: 'Başlık', render: (r) => r.title }]}
+        columns={[{ id: 'title', header: 'Başlık', render: (r) => r.title }]}
       />,
     );
     expect(screen.getByRole('table', { name: 'Projeler' })).toBeTruthy();

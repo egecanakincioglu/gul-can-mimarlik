@@ -1,0 +1,17 @@
+.adm-emphasis-tools {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.adm-emphasis-tools .adm-field-label {
+  margin: 0;
+}
+.adm-emphasis-tools button[aria-pressed='true'] {
+  border: 2px solid var(--color-pose);
+  font-weight: 800;
+}
+.adm-emphasis-preview {
+  font-family: var(--font-display);
+  font-size: 24px;
+}

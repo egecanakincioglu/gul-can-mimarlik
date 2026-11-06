@@ -1,0 +1,114 @@
+/* Site-settings screens. Panel tokens only; radius 0, no shadows. */
+
+.adm-site {
+  max-width: 760px;
+}
+.adm-site-intro {
+  margin-top: 8px;
+  max-width: 60ch;
+}
+.adm-site-section {
+  margin-top: 48px;
+}
+.adm-site-section > h2 {
+  margin-bottom: 16px;
+}
+.adm-site-warn {
+  margin-top: 8px;
+  padding-left: 12px;
+  border-left: 3px solid var(--color-golge);
+}
+.adm-site-note {
+  margin-top: 8px;
+}
+.adm-site select {
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 16px;
+  background: var(--color-kagit);
+  border: 1px solid var(--color-golge);
+  border-radius: 0;
+  color: var(--color-pose);
+}
+.adm-site-row {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+}
+@media (min-width: 768px) {
+  .adm-site-row {
+    grid-template-columns: minmax(0, 2fr) minmax(0, 3fr) auto;
+    align-items: start;
+  }
+}
+.adm-site-row .adm-field + .adm-field {
+  margin-top: 0;
+}
+.adm-site-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+}
+.adm-site-lines {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.adm-site-lines > li {
+  display: flex;
+  gap: 8px;
+  align-items: end;
+}
+.adm-site-lines > li + li {
+  margin-top: 16px;
+}
+.adm-site-lines .adm-field {
+  flex: 1;
+}
+.adm-site-plain {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.adm-site-plain li + li {
+  margin-top: 8px;
+}
+.adm-site-preview {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--color-kagit);
+  border: 1px solid var(--color-golge);
+}
+.adm-site-preview-title {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 600;
+}
+.adm-site-impact {
+  white-space: nowrap;
+}
+.adm-site-cell input {
+  width: 100%;
+  min-height: 44px;
+  padding: 10px 12px;
+  font-size: 16px;
+  background: var(--color-kagit);
+  border: 1px solid var(--color-golge);
+  border-radius: 0;
+  color: var(--color-pose);
+}
+.adm-site-cell input[aria-invalid='true'] {
+  border: 3px solid var(--color-pose);
+  padding: 8px 10px;
+}
+
+/* Narrow rows: the item takes its own line, the move buttons wrap below it. */
+@media (max-width: 520px) {
+  .adm-sortable-row {
+    flex-wrap: wrap;
+  }
+  .adm-sortable-main {
+    flex: 1 1 100%;
+  }
+}
