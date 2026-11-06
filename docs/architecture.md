@@ -45,6 +45,18 @@ All editable content is becoming one typed object in `src/content`: types, seed 
 
 The project pages show concept work with illustrative images. The site labels this on the page. The images are in `public/images/`.
 
+## Admin panel
+
+The admin panel is built on mock data ([ADR 0009](adr/0009-admin-panel-and-content-model.md)). Its code is in `src/admin`: `store` (editing state), `ui` (shared components) and `shell` (layout and navigation).
+
+- `/yonetim` and its sub-routes render inside a shell. The shell has a sidebar with grouped links, and a top bar with a breadcrumb, the save status, and the publish and discard buttons.
+- `/yonetim/giris` is the login screen. It has no shell. It is a demo until authentication exists.
+- Screens that are not built yet show a placeholder page.
+- The mock store keeps a draft and a published copy of the content in the browser's local storage under a versioned name (`gcm-admin:v1`). When storage is unavailable, it falls back to the seed content and shows a save error.
+- Publishing runs the content validation. It is blocked while issues exist.
+- In the mock phase, edits stay in the browser and do not reach the public site.
+- Below 1024 pixels, the sidebar opens from a `Menü` button. Screens that need width show a notice below 768 pixels.
+
 ## Contact form
 
 The contact form validates its input in the browser and sends nothing. A backend that receives the message is planned.
