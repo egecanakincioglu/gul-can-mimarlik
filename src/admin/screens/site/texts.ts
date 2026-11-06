@@ -1,5 +1,7 @@
 import { imageRefs, publishedProjects } from '@/content/select';
+import { labels as defaultLabels, ui as defaultUi } from '@/content/seed/strings';
 import type { SiteContent, UiStrings } from '@/content/types';
+import { allowedTokens } from '../shared/tokens.ts';
 
 export type TextGroup = 'Genel' | 'Erişilebilirlik' | 'Proje' | 'Önce/Sonra' | 'Footer' | 'Etiketler';
 export const GROUPS: TextGroup[] = ['Genel', 'Erişilebilirlik', 'Proje', 'Önce/Sonra', 'Footer', 'Etiketler'];
@@ -56,6 +58,8 @@ export type TextRow = {
   set: (c: SiteContent, value: string) => SiteContent;
   /** Number of places on the public site that show this text. */
   impact: number;
+  /** Tokens such as `services` that the default text contains; no others are allowed. */
+  tokens: string[];
 };
 
 const scopeImpact = (c: SiteContent, scope: Scope): number => {
@@ -88,6 +92,7 @@ export const textRows = (c: SiteContent): TextRow[] => {
     value: c.ui[key],
     set: (s, value) => ({ ...s, ui: { ...s.ui, [key]: value } }),
     impact: scopeImpact(c, UI_META[key].scope),
+    tokens: allowedTokens(defaultUi[key]),
   }));
 
   const mediaKind = new Map(c.media.map((m) => [m.id, m.illustrative]));
@@ -100,6 +105,7 @@ export const textRows = (c: SiteContent): TextRow[] => {
       value: c.labels.illustrative[kind],
       set: (s, value) => ({ ...s, labels: { ...s.labels, illustrative: { ...s.labels.illustrative, [kind]: value } } }),
       impact: refs.filter((r) => mediaKind.get(r.ref.media) === kind).length,
+      tokens: allowedTokens(defaultLabels.illustrative[kind]),
     });
   });
   rows.push({
@@ -109,6 +115,7 @@ export const textRows = (c: SiteContent): TextRow[] => {
     value: c.labels.video,
     set: (s, value) => ({ ...s, labels: { ...s.labels, video: value } }),
     impact: c.projects.filter((p) => p.video).length,
+    tokens: allowedTokens(defaultLabels.video),
   });
   return rows;
 };

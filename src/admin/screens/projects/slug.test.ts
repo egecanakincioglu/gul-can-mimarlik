@@ -64,7 +64,7 @@ describe('publishGaps', () => {
     expect(publishGaps(seed, { ...base, title: ' ' })).toContain('başlık');
     expect(publishGaps(seed, { ...base, concept: false })).toContain('konum ve yıl');
     const media = seed.media.map((m) => (m.id === base.cover?.media ? { ...m, alt: '' } : m));
-    expect(publishGaps({ ...seed, media }, base).join()).toContain('alt metni (kapak');
+    expect(publishGaps({ ...seed, media }, base).join()).toContain('görsel açıklaması (kapak');
   });
 });
 

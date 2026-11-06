@@ -51,6 +51,8 @@ const mount = async (ui: ReactNode, draft?: SiteContent) => {
     </AdminStoreProvider>,
   );
   await screen.findByRole('heading', { level: 1 });
+  // The store loads outside act; flush pending effects before the test reads or clicks.
+  await act(async () => {});
 };
 
 const change = (label: string, value: string) =>
@@ -68,27 +70,27 @@ describe('new project', () => {
   it('starts empty, with no sample text and no rows', async () => {
     await mount(<ProjectEditScreen isNew />);
     expect(field('Başlık').value).toBe('');
-    expect(field('Adres (slug)').value).toBe('');
+    expect(field('Sayfa adresi (URL)').value).toBe('');
     expect(field('Özet').value).toBe('');
     expect(screen.queryByLabelText('Paragraf 1')).toBeNull();
     expect(screen.getByRole('switch', { name: 'Yayında' }).getAttribute('aria-checked')).toBe('false');
-    expect((screen.getByRole('button', { name: 'Projeyi oluştur' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: 'Projeyi oluştur' }) as HTMLButtonElement).disabled).toBe(false);
   });
 
   it('generates the address from the title with Turkish letters transliterated', async () => {
     await mount(<ProjectEditScreen isNew />);
     await change('Başlık', 'Çamlık Köşkü');
     await click(screen.getByRole('button', { name: 'Başlıktan üret' }));
-    expect(field('Adres (slug)').value).toBe('camlik-kosku');
+    expect(field('Sayfa adresi (URL)').value).toBe('camlik-kosku');
   });
 
   it('shows slug errors for reserved and taken addresses', async () => {
     await mount(<ProjectEditScreen isNew />);
-    await change('Adres (slug)', 'yeni');
+    await change('Sayfa adresi (URL)', 'yeni');
     expect(screen.getByText(/ayrılmış bir adres/)).toBeTruthy();
-    await change('Adres (slug)', 'avlulu-konut');
+    await change('Sayfa adresi (URL)', 'avlulu-konut');
     expect(screen.getByText('Bu adres başka bir projede var.')).toBeTruthy();
-    await change('Adres (slug)', 'iyi-adres');
+    await change('Sayfa adresi (URL)', 'iyi-adres');
     expect(screen.queryByText(/ayrılmış|başka bir projede/)).toBeNull();
   });
 
@@ -137,7 +139,7 @@ describe('existing project', () => {
   it('reorders gallery rows from the keyboard', async () => {
     await mount(<ProjectEditScreen slug="avlulu-konut" />);
     await tab('Galeri');
-    const rows = document.querySelectorAll('.adm-sortable-row');
+    const rows = document.querySelectorAll('.pj-item');
     expect(rows.length).toBeGreaterThan(1);
     await act(async () => {
       fireEvent.keyDown(rows[0], { key: 'ArrowDown', altKey: true });
@@ -154,8 +156,9 @@ describe('existing project', () => {
     await tab('Önce/Sonra');
     await click(screen.getByRole('button', { name: /^Önce görseli/ }));
     await click(screen.getByRole('button', { name: 'Görseli kaldır' }));
-    expect(screen.getByRole('alert').textContent).toContain('birlikte');
-    expect((screen.getByRole('button', { name: 'Kaydet' }) as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.getAllByText(/birlikte seçilmeli/).length).toBeGreaterThan(1);
+    await click(screen.getByRole('button', { name: 'Kaydet' }));
+    expect(screen.getByRole('alert').textContent).toContain('Önce/Sonra: Önce ve sonra görselleri');
 
     await click(screen.getByRole('button', { name: /^Sonra görseli/ }));
     await click(screen.getByRole('button', { name: 'Görseli kaldır' }));
@@ -177,10 +180,10 @@ describe('existing project', () => {
 
   it('asks before changing the address of a published project and adds a redirect', async () => {
     await mount(<ProjectEditScreen slug="daire-yenileme" />);
-    await change('Adres (slug)', 'daire-donusumu');
+    await change('Sayfa adresi (URL)', 'daire-donusumu');
     await click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(current.projects[1].slug).toBe('daire-yenileme');
-    const dialog = screen.getByRole('dialog', { hidden: true });
+    const dialog = document.querySelector('dialog[open]') as HTMLElement;
     expect(within(dialog).getByText(/otomatik olarak yeni adrese/)).toBeTruthy();
     await click(within(dialog).getByRole('button', { name: 'Adresi değiştir', hidden: true }));
     expect(current.projects[1].slug).toBe('daire-donusumu');
@@ -195,7 +198,7 @@ describe('existing project', () => {
       projects: seed.projects.map((p) => (p.id === 'kose-kafe' ? { ...p, published: false } : p)),
     };
     await mount(<ProjectEditScreen slug="kose-kafe" />, draft);
-    await change('Adres (slug)', 'kose-kahve');
+    await change('Sayfa adresi (URL)', 'kose-kahve');
     await click(screen.getByRole('button', { name: 'Kaydet' }));
     expect(current.projects.find((p) => p.id === 'kose-kafe')?.slug).toBe('kose-kahve');
     expect(current.redirects).toHaveLength(seed.redirects.length);
@@ -223,7 +226,8 @@ describe('ProjectsListScreen', () => {
   it('lists projects with status and a link to create one', async () => {
     await mount(<ProjectsListScreen />);
     expect(titles()).toEqual(seed.projects.map((p) => p.title));
-    expect(screen.getAllByText('Yayında').length).toBe(seed.projects.length);
+    expect(document.querySelectorAll('.badge').length).toBe(seed.projects.length);
+    expect(screen.getAllByRole('switch').length).toBe(seed.projects.length);
     expect(screen.getByRole('link', { name: 'Yeni proje' }).getAttribute('href')).toBe('/yonetim/projeler/yeni');
   });
 
@@ -257,9 +261,9 @@ describe('CategoriesScreen', () => {
     await mount(<CategoriesScreen />);
     await click(screen.getByRole('button', { name: 'Kategori ekle' }));
     expect(current.projectCategories).toHaveLength(seed.projectCategories.length + 1);
-    await change('Kategori adı: kategori-1', 'Deneme');
+    await change(`${seed.projectCategories.length + 1}. kategori adı`, 'Deneme');
     await click(screen.getByRole('button', { name: 'Kategoriyi sil: Deneme' }));
-    const dialog = screen.getByRole('dialog', { hidden: true });
+    const dialog = document.querySelector('dialog[open]') as HTMLElement;
     await click(within(dialog).getByRole('button', { name: 'Sil', hidden: true }));
     expect(current.projectCategories).toHaveLength(seed.projectCategories.length);
   });
@@ -275,7 +279,7 @@ describe('CategoriesScreen', () => {
 
   it('flags a filter address that is not valid', async () => {
     await mount(<CategoriesScreen />);
-    await change('Filtre adresi: mimari', 'Büyük Harf');
+    await change('2. filtre sayfa adresi (URL)', 'Büyük Harf');
     expect(screen.getByText('Yalnız küçük harf, rakam ve tire kullanın.')).toBeTruthy();
   });
 

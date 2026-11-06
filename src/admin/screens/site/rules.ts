@@ -1,7 +1,3 @@
-import { tokensIn } from '@/lib/text';
-import { EXTRA_TOKENS, tokens } from '@/content/select';
-import type { SiteContent } from '@/content/types';
-
 const REQUIRED = 'Bu alan boş bırakılamaz.';
 
 export const requiredText = (value: string, max?: number): string | undefined => {
@@ -35,14 +31,6 @@ export const rangeWarning = (value: string, min: number, max: number): string | 
   if (value.length > max)
     return `${min}-${max} karakter önerilir; şu an ${value.length}. Arama sonuçlarında kesilebilir.`;
   return undefined;
-};
-
-const knownTokens = (c: SiteContent) => new Set([...Object.keys(tokens(c, new Date(0))), ...EXTRA_TOKENS]);
-
-export const tokenError = (c: SiteContent, value: string): string | undefined => {
-  const known = knownTokens(c);
-  const bad = tokensIn(value).find((t) => !known.has(t));
-  return bad ? `Bilinmeyen yer tutucu: {${bad}}` : undefined;
 };
 
 export const PAGE_NAMES = {

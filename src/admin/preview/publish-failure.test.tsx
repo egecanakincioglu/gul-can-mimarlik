@@ -8,15 +8,15 @@ let seed: SiteContent;
 const publish = vi.fn(async () => ({ ok: false as const, issues: [] }));
 
 vi.mock('../store/AdminStoreProvider', () => ({
-  useAdminStore: () => ({
-    draft: { ...seed, site: { ...seed.site, name: 'Yeni ad' } },
-    published: seed,
-    issues: [],
-    dirty: true,
-    saveState: { kind: 'idle' },
-    publish,
-    discardDraft: () => {},
-  }),
+  useAdminActions: () => ({ publish, discardDraft: () => {} }),
+  useAdminSelector: <T,>(select: (s: unknown) => T): T =>
+    select({
+      draft: { ...seed, site: { ...seed.site, name: 'Yeni ad' } },
+      published: seed,
+      issues: [],
+      dirty: true,
+      lastPublishedAt: null,
+    }),
 }));
 
 beforeAll(async () => {

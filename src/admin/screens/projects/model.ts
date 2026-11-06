@@ -164,9 +164,6 @@ export const fieldErrors = (c: SiteContent, w: Working): FieldErrors => {
   return errors;
 };
 
-export const hasErrors = (e: FieldErrors) =>
-  Boolean(e.title || e.slug || e.year || e.pair || e.video || Object.keys(e.gallery).length);
-
 const missingAlt = (c: SiteContent, ref: ImageRef): boolean => {
   const m = c.media.find((x) => x.id === ref.media);
   if (!m) return true;
@@ -191,7 +188,7 @@ export const publishGaps = (c: SiteContent, w: Working): string[] => {
     ['video kapağı', w.video?.poster ?? null],
   ];
   const noAlt = refs.filter(([, ref]) => ref && missingAlt(c, ref)).map(([label]) => label);
-  if (noAlt.length) gaps.push(`alt metni (${noAlt.join(', ')})`);
+  if (noAlt.length) gaps.push(`görsel açıklaması (${noAlt.join(', ')})`);
   return gaps;
 };
 

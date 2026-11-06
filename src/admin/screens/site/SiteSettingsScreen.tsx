@@ -7,7 +7,8 @@ import Field from '../../ui/Field';
 import Toggle from '../../ui/Toggle';
 import ImagePicker from '../media/ImagePicker';
 import { RATIOS } from '../media/ratios';
-import { ScreenFrame, Section, SelectField } from './Frame';
+import SelectField from '../../ui/SelectField';
+import { ScreenFrame, Section } from './Frame';
 import { requiredText } from './rules';
 
 const MONTHS = [
@@ -99,7 +100,7 @@ export default function SiteSettingsScreen() {
           value={seo.ogImage ?? null}
           onChange={setOg}
         />
-        <p className="caption adm-site-note">Bağlantı paylaşıldığında gösterilir.</p>
+        <p className="caption adm-site-note">Bağlantı paylaşıldığında görünen görsel.</p>
       </Section>
 
       <Section title="Demo modu">

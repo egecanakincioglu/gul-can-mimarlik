@@ -10,7 +10,7 @@ export default function ProjectsPageScreen() {
   return (
     <Screen title="Projeler sayfası" preview="/yonetim/onizleme/projeler">
       <TextField label="Başlık" value={page.title} onChange={(title) => set({ title })} />
-      <LongField label="Giriş cümlesi" value={page.lead} max={220} rows={3} onChange={(lead) => set({ lead })} />
+      <LongField label="Kısa tanıtım cümlesi" value={page.lead} max={220} rows={3} onChange={(lead) => set({ lead })} />
     </Screen>
   );
 }

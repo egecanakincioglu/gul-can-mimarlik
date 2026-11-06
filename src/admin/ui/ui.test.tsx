@@ -326,6 +326,26 @@ describe('SelectField', () => {
   });
 });
 
+describe('SelectField placeholder', () => {
+  it('renders a disabled empty option that cannot be chosen', () => {
+    render(
+      <SelectField
+        label="Proje"
+        value=""
+        placeholder="Proje seçin"
+        options={[{ value: 'a', label: 'Birinci' }]}
+        onChange={() => {}}
+      />,
+    );
+    const select = screen.getByLabelText('Proje') as HTMLSelectElement;
+    const first = select.options[0];
+    expect(first.textContent).toBe('Proje seçin');
+    expect(first.disabled).toBe(true);
+    expect(first.value).toBe('');
+    expect(select.value).toBe('');
+  });
+});
+
 describe('EmptyState extras', () => {
   it('shows a description and a link action', () => {
     render(

@@ -54,6 +54,8 @@ describe('emphasis markers', () => {
   });
 });
 
+const previewOf = () => screen.getByText('Önizleme:').parentElement?.querySelector('p') as HTMLElement;
+
 describe('EmphasisField', () => {
   const Harness = ({ initial, plain, max }: { initial: Rich; plain?: 300; max?: number }) => {
     const [value, setValue] = useState<Rich>(initial);
@@ -74,7 +76,7 @@ describe('EmphasisField', () => {
   it('shows the marks and the weighted preview', () => {
     render(<Harness initial={[{ text: 'Bir ' }, { text: 'iki', weight: 800 }, { text: ' üç', weight: 300 }]} />);
     expect(input().value).toBe('Bir *iki*_ üç_');
-    const preview = screen.getByLabelText('Başlık önizlemesi');
+    const preview = previewOf();
     expect(preview.querySelector('.w8')?.textContent).toBe('iki');
     expect(preview.querySelector('.w3')?.textContent).toBe(' üç');
   });
@@ -88,25 +90,25 @@ describe('EmphasisField', () => {
   it('treats unmarked text as light when plain is 300', () => {
     render(<Harness initial={[{ text: 'Işığa', weight: 300 }]} plain={300} />);
     expect(input().value).toBe('Işığa');
-    expect(screen.getByLabelText('Başlık önizlemesi').querySelector('.w3')?.textContent).toBe('Işığa');
+    expect(previewOf().querySelector('.w3')?.textContent).toBe('Işığa');
   });
 
   it('wraps the selection with the toolbar button and reports it as pressed', () => {
     render(<Harness initial={[{ text: 'Bir iki' }]} />);
-    const button = screen.getByRole('button', { name: 'Vurgu' });
+    const button = screen.getByRole('button', { name: 'Vurgu: Başlık' });
     expect(button.getAttribute('aria-pressed')).toBe('false');
     select(4, 7);
     fireEvent.click(button);
     expect(input().value).toBe('Bir *iki*');
     expect(out()).toEqual([{ text: 'Bir ' }, { text: 'iki', weight: 800 }]);
     select(6, 6);
-    expect(screen.getByRole('button', { name: 'Vurgu' }).getAttribute('aria-pressed')).toBe('true');
+    expect(screen.getByRole('button', { name: 'Vurgu: Başlık' }).getAttribute('aria-pressed')).toBe('true');
   });
 
   it('removes the marks when pressed inside a marked span', () => {
     render(<Harness initial={[{ text: 'Bir ' }, { text: 'iki', weight: 800 }]} />);
     select(6, 6);
-    fireEvent.click(screen.getByRole('button', { name: 'Vurgu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Vurgu: Başlık' }));
     expect(input().value).toBe('Bir iki');
     expect(out()).toEqual([{ text: 'Bir iki' }]);
   });
@@ -114,14 +116,14 @@ describe('EmphasisField', () => {
   it('strips marks from a selection that already contains one', () => {
     render(<Harness initial={[{ text: 'Bir ' }, { text: 'iki', weight: 800 }]} />);
     select(0, 9);
-    fireEvent.click(screen.getByRole('button', { name: 'Vurgu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Vurgu: Başlık' }));
     expect(input().value).toBe('Bir iki');
   });
 
   it('inserts an empty pair at a collapsed caret', () => {
     render(<Harness initial={[{ text: 'Bir' }]} />);
     select(3, 3);
-    fireEvent.click(screen.getByRole('button', { name: 'Vurgu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Vurgu: Başlık' }));
     expect(input().value).toBe('Bir**');
     expect(out()).toEqual([{ text: 'Bir' }]);
   });
@@ -155,10 +157,32 @@ describe('EmphasisField preview', () => {
         onChange={() => {}}
       />,
     );
-    const preview = screen.getByLabelText('Başlık önizlemesi');
+    const preview = previewOf();
     expect(preview.style.fontWeight).toBe('600');
     expect(screen.getByText('yapıya.').className).toBe('w3');
     expect(screen.getByText(/Fikirden/).className).toBe('');
-    expect(screen.getByText(/işaretsiz metin başlığın kendi kalınlığındadır/)).toBeTruthy();
+    expect(
+      screen.getByText(
+        "Kalın yazmak için sözcüğü seçip Vurgu'ya basın veya *sözcük* yazın. İnce yazmak için _sözcük_ yazın.",
+      ),
+    ).toBeTruthy();
+  });
+
+  it('labels the preview with a visible caption instead of an aria-label', () => {
+    render(<EmphasisField label="Başlık" baseWeight={300} value={[{ text: 'Bir' }]} onChange={() => {}} />);
+    const preview = screen.getByText('Önizleme:').parentElement?.querySelector('p');
+    expect(preview?.textContent).toBe('Bir');
+    expect(preview?.hasAttribute('aria-label')).toBe(false);
+  });
+
+  it('names each Vurgu button after its field', () => {
+    render(
+      <>
+        <EmphasisField label="Başlık" baseWeight={300} value={[{ text: 'a' }]} onChange={() => {}} />
+        <EmphasisField label="Cümle" baseWeight={300} value={[{ text: 'b' }]} onChange={() => {}} />
+      </>,
+    );
+    expect(screen.getByRole('button', { name: 'Vurgu: Başlık' })).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'Vurgu: Cümle' })).toBeTruthy();
   });
 });

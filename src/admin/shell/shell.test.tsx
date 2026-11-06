@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { getContent } from '@/content';
 import type { SiteContent } from '@/content/types';
@@ -44,6 +44,9 @@ const storageWith = (content?: SiteContent): StorageLike => {
 
 const openDialog = () => document.querySelector('dialog[open]') as HTMLElement;
 
+// The store loads asynchronously outside act, so passive effects (store subscription, document title) may still be pending when the shell appears.
+const settle = () => act(async () => {});
+
 const renderShell = async (pathname: string, storage: StorageLike = storageWith()) => {
   render(
     <AdminStoreProvider storage={storage}>
@@ -53,6 +56,7 @@ const renderShell = async (pathname: string, storage: StorageLike = storageWith(
     </AdminStoreProvider>,
   );
   await screen.findByRole('main');
+  await settle();
 };
 
 describe('AdminShell', () => {
@@ -117,6 +121,7 @@ describe('AdminShell', () => {
       </AdminStoreProvider>,
     );
     await screen.findByRole('main');
+    await settle();
     const count = () => screen.getByRole('link', { name: /Gelen kutusu/ }).textContent;
     expect(count()).toContain('2');
     fireEvent.click(screen.getByRole('button', { name: 'Okundu' }));
@@ -168,6 +173,7 @@ describe('AdminShell', () => {
       </AdminStoreProvider>,
     );
     await screen.findByRole('main');
+    await settle();
     await waitFor(() => expect(document.title).toBe('Gelen kutusu | Yönetim'));
     expect(document.activeElement).toBe(document.body);
     document.title = 'Gül CAN Mimarlık';
@@ -202,6 +208,7 @@ describe('AdminShell', () => {
     );
     const { rerender } = render(tree('/yonetim/medya', 'Medya'));
     await screen.findByRole('main');
+    await settle();
     await waitFor(() => expect(document.title).toBe('Medya kütüphanesi | Yönetim'));
     expect(document.activeElement).toBe(document.body);
     rerender(tree('/yonetim/seo', 'SEO'));
@@ -220,6 +227,7 @@ describe('AdminShell', () => {
     );
     const { rerender } = render(tree('/yonetim/medya'));
     await screen.findByRole('main');
+    await settle();
     rerender(tree('/yonetim/seo'));
     expect(document.activeElement).toBe(screen.getByRole('main'));
   });
@@ -356,8 +364,28 @@ describe('Overview', () => {
         <Overview />
       </AdminStoreProvider>,
     );
-    const link = await screen.findByRole('link', { name: 'Görsel açıklaması boş' });
+    const file = seed.media[0].file.split('/').pop();
+    const link = await screen.findByRole('link', { name: `Görsel ${file}: Görsel açıklaması boş` });
     expect(link.getAttribute('href')).toBe('/yonetim/medya');
+    const list = link.closest('ul') as HTMLElement;
+    expect(list.textContent).not.toMatch(/media\[|\.alt/);
+  });
+
+  it('names a project in its missing items instead of showing the content path', async () => {
+    const broken: SiteContent = {
+      ...seed,
+      projects: seed.projects.map((p, i) => (i === 0 ? { ...p, categoryId: 'yok' } : p)),
+    };
+    render(
+      <AdminStoreProvider storage={storageWith(broken)}>
+        <Overview />
+      </AdminStoreProvider>,
+    );
+    await screen.findByRole('list', { name: 'Özet' });
+    const missing = screen.getByRole('region', { name: 'Eksik olanlar' });
+    expect(missing.textContent).not.toMatch(/projects\[/);
+    const link = within(missing).getAllByRole('link')[0];
+    expect(link.getAttribute('href')).toBe(`/yonetim/projeler/${seed.projects[0].slug}`);
   });
 
   it('does not flag optional SEO fields as missing', async () => {
@@ -393,6 +421,35 @@ describe('Overview', () => {
       </AdminStoreProvider>,
     );
     expect(await screen.findByText('Yayında, değişiklik yok')).toBeTruthy();
+  });
+
+  it('shows when the site was last published', async () => {
+    const at = new Date(2026, 10, 5, 9, 7).getTime();
+    const data = new Map<string, string>();
+    data.set(
+      STORAGE_NAME,
+      JSON.stringify({ version: 1, draft: seed, published: seed, messages: [], lastPublishedAt: at }),
+    );
+    const storage: StorageLike = {
+      getItem: (k) => data.get(k) ?? null,
+      setItem: (k, v) => void data.set(k, v),
+      removeItem: (k) => void data.delete(k),
+    };
+    render(
+      <AdminStoreProvider storage={storage}>
+        <Overview />
+      </AdminStoreProvider>,
+    );
+    expect(await screen.findByText(/^Son yayın: .*09:07$/)).toBeTruthy();
+  });
+
+  it('says the site was never published when there is no publish time', async () => {
+    render(
+      <AdminStoreProvider storage={storageWith()}>
+        <Overview />
+      </AdminStoreProvider>,
+    );
+    expect(await screen.findByText('Henüz yayınlanmadı')).toBeTruthy();
   });
 
   it('resets after confirmation with Vazgeç as the first dialog action', async () => {

@@ -7,45 +7,12 @@
     max-width: none;
   }
 }
-.pg-section {
-  border-top: 1px solid var(--color-golge);
-  padding: 8px 0;
-}
-.pg-summary {
-  min-height: 48px;
-  display: flex;
-  align-items: center;
-  font-family: var(--font-display);
-  font-weight: 600;
-  font-size: 20px;
-  cursor: pointer;
-}
-.pg-section-body {
-  display: grid;
-  gap: 16px;
-  padding: 8px 0 24px;
-}
 .pg-card {
   display: grid;
   gap: 12px;
   margin: 0;
   padding: 16px;
   border: 1px solid var(--color-golge);
-}
-.pg-select {
-  width: 100%;
-  min-height: 48px;
-  padding: 0 12px;
-  border: 1px solid var(--color-golge);
-  border-radius: 0;
-  background: var(--color-kagit);
-  color: var(--color-pose);
-  font-size: 16px;
-}
-.pg-warning {
-  padding: 8px 12px;
-  border-left: 3px solid var(--color-golge);
-  font-size: 15px;
 }
 .pg-readonly {
   display: flex;

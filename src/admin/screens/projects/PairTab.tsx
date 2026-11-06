@@ -3,7 +3,8 @@
 import { useState } from 'react';
 import ImagePicker from '../media/ImagePicker';
 import { RATIOS } from '../media/ratios';
-import { LongField, SelectField } from '../pages/common';
+import SelectField from '../../ui/SelectField';
+import { LongField } from '../pages/common';
 import type { TabProps } from './tab-props';
 
 export default function PairTab({ w, set, draft, errors }: TabProps) {
@@ -17,30 +18,32 @@ export default function PairTab({ w, set, draft, errors }: TabProps) {
   const setPair = (patch: Partial<typeof w.pair>) => set({ pair: { ...w.pair, ...patch } });
 
   return (
-    <div className="pg-section-body">
+    <div className="pj-body">
       <p className="caption">
         İkisi birlikte seçilmeli ya da ikisi de boş kalmalı. Başlık sayfa metinlerinden gelir; burada yalnız giriş
         cümlesi yazılır.
       </p>
-      <ImagePicker
-        label="Önce görseli"
-        slot={RATIOS.compare}
-        media={media}
-        value={before}
-        onChange={(v) => setPair({ before: v })}
-      />
-      <ImagePicker
-        label="Sonra görseli"
-        slot={RATIOS.compare}
-        media={media}
-        value={after}
-        onChange={(v) => setPair({ after: v })}
-      />
-      {errors.pair && (
-        <p className="err" role="alert">
-          {errors.pair}
-        </p>
-      )}
+      <div data-pj-field="pair" className="pj-pair">
+        <ImagePicker
+          label="Önce görseli"
+          slot={RATIOS.compare}
+          media={media}
+          value={before}
+          onChange={(v) => setPair({ before: v })}
+        />
+        <ImagePicker
+          label="Sonra görseli"
+          slot={RATIOS.compare}
+          media={media}
+          value={after}
+          onChange={(v) => setPair({ after: v })}
+        />
+        {errors.pair && (
+          <p className="err" aria-live="polite">
+            {errors.pair}
+          </p>
+        )}
+      </div>
       <LongField label="Giriş cümlesi" value={w.pair.lead} rows={2} max={220} onChange={(lead) => setPair({ lead })} />
 
       <SelectField

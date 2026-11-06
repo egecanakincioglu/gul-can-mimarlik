@@ -36,7 +36,7 @@ export default function EmphasisField({ label, value, onChange, plain, baseWeigh
     if (!caret.current) return;
     input.current?.setSelectionRange(...caret.current);
     caret.current = null;
-  });
+  }, [raw, sel]);
 
   const apply = (next: string, selection: [number, number]) => {
     setRaw(next);
@@ -82,7 +82,7 @@ export default function EmphasisField({ label, value, onChange, plain, baseWeigh
         <label htmlFor={id} className="label adm-field-label">
           {label}
         </label>
-        <Button aria-pressed={pressed} onClick={toggle}>
+        <Button aria-pressed={pressed} aria-label={`Vurgu: ${label}`} onClick={toggle}>
           Vurgu
         </Button>
       </div>
@@ -103,7 +103,7 @@ export default function EmphasisField({ label, value, onChange, plain, baseWeigh
       />
       <p id={helperId} className="caption adm-field-note">
         {helper ??
-          `Vurgu için *sözcük* (kalın)${plain === undefined ? ' veya _sözcük_ (ince)' : ''} yazın; işaretsiz metin başlığın kendi kalınlığındadır.`}
+          `Kalın yazmak için sözcüğü seçip Vurgu'ya basın veya *sözcük* yazın.${plain === undefined ? ' İnce yazmak için _sözcük_ yazın.' : ''}`}
         {max !== undefined && ` ${length}/${max}`}
       </p>
       {message && (
@@ -111,13 +111,16 @@ export default function EmphasisField({ label, value, onChange, plain, baseWeigh
           {message}
         </p>
       )}
-      <p className="adm-emphasis-preview" style={{ fontWeight: baseWeight }} aria-label={`${label} önizlemesi`}>
-        {value.map((s, i) => (
-          <span key={i} className={s.weight === 800 ? 'w8' : (s.weight ?? plain) === 300 ? 'w3' : undefined}>
-            {s.text}
-          </span>
-        ))}
-      </p>
+      <div className="adm-emphasis-sample">
+        <span className="caption">Önizleme:</span>
+        <p className="adm-emphasis-preview" style={{ fontWeight: baseWeight }}>
+          {value.map((s, i) => (
+            <span key={i} className={s.weight === 800 ? 'w8' : (s.weight ?? plain) === 300 ? 'w3' : undefined}>
+              {s.text}
+            </span>
+          ))}
+        </p>
+      </div>
     </div>
   );
 }

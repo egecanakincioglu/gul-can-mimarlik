@@ -65,6 +65,18 @@ export function useAdminStore(): AdminState & Omit<AdminStore, 'getState' | 'sub
   };
 }
 
+export type AdminActions = Pick<
+  AdminStore,
+  'updateDraft' | 'publish' | 'discardDraft' | 'reset' | 'setMessageStatus' | 'flush' | 'dispose'
+>;
+
+/** The store's action functions. They are stable, and reading them never subscribes to state. */
+export function useAdminActions(): AdminActions {
+  const store = useContext(StoreContext);
+  if (!store) throw new Error('useAdminActions must be used inside AdminStoreProvider');
+  return store;
+}
+
 /**
  * Subscribes to a slice of the state. The component re-renders only when the selected
  * value changes (Object.is by default). Pass an equality function when the selector builds a new object.

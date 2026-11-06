@@ -2,7 +2,10 @@
 
 import type { StudioPageContent } from '@/content/types';
 import SortableList from '../../ui/SortableList';
-import { ImageField, LongField, Screen, Section, TextField, replaceAt, useContent } from './common';
+import EmptyState from '../../ui/EmptyState';
+import Section from '../../ui/Section';
+import { studioPage } from '@/content/seed/studio';
+import { ImageField, LongField, Screen, TextField, TokenField, replaceAt, useContent } from './common';
 import EmphasisField from '../shared/EmphasisField';
 
 export default function StudioScreen() {
@@ -15,11 +18,19 @@ export default function StudioScreen() {
 
   return (
     <Screen title="Stüdyo" preview="/yonetim/onizleme/studyo">
-      <Section title="Metinler">
+      <Section title="Metinler" defaultOpen>
         <EmphasisField label="Başlık" value={page.heading} baseWeight={300} onChange={(heading) => set({ heading })} />
-        <LongField label="Giriş cümlesi" value={page.lead} max={220} rows={3} onChange={(lead) => set({ lead })} />
-        <LongField
+        <TokenField
+          label="Kısa tanıtım cümlesi"
+          defaultText={studioPage.lead}
+          value={page.lead}
+          max={220}
+          rows={3}
+          onChange={(lead) => set({ lead })}
+        />
+        <TokenField
           label="Paragraf"
+          defaultText={studioPage.paragraph}
           value={page.paragraph}
           max={600}
           rows={5}
@@ -49,7 +60,7 @@ export default function StudioScreen() {
         />
       </Section>
 
-      <Section title="Görsel">
+      <Section title="Görsel" defaultOpen>
         <ImageField label="Stüdyo görseli" ratio="portrait" value={page.image} onChange={(image) => set({ image })} />
         <TextField
           label="Görsel açıklaması"
@@ -64,7 +75,13 @@ export default function StudioScreen() {
         />
       </Section>
 
-      <Section title="İlkeler">
+      <Section title="İlkeler" defaultOpen>
+        {page.principles.length === 0 && (
+          <EmptyState
+            message="Henüz ilke yok."
+            description="İlkeler stüdyo sayfasında kısa başlık ve metin olarak görünür."
+          />
+        )}
         <SortableList
           items={page.principles}
           getId={(p) => p.id}
@@ -73,13 +90,13 @@ export default function StudioScreen() {
           renderItem={(p, i) => (
             <span className="pg-stack">
               <TextField
-                label={`İlke başlığı: ${p.title}`}
+                label={`${i + 1}. ilke başlığı`}
                 value={p.title}
                 max={24}
                 onChange={(title) => setPrinciple(i, { title })}
               />
               <LongField
-                label={`İlke metni: ${p.title}`}
+                label={`${i + 1}. ilke metni`}
                 value={p.text}
                 rows={3}
                 onChange={(t) => setPrinciple(i, { text: t })}

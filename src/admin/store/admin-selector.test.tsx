@@ -1,6 +1,6 @@
 import { act, render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
-import { AdminStoreProvider, useAdminSelector, useAdminStore } from './AdminStoreProvider';
+import { AdminStoreProvider, useAdminActions, useAdminSelector, useAdminStore } from './AdminStoreProvider';
 import type { StorageLike } from './admin-store';
 
 const storage: StorageLike = { getItem: () => null, setItem: () => undefined, removeItem: () => undefined };
@@ -41,5 +41,31 @@ describe('useAdminSelector', () => {
     act(() => setStatus('sample-1', 'read'));
     expect(unread).toBe(1);
     expect(renders).toBeGreaterThan(before);
+  });
+});
+
+describe('useAdminActions', () => {
+  it('returns stable actions and never re-renders on state changes', async () => {
+    let renders = 0;
+    let actions: ReturnType<typeof useAdminActions> | null = null;
+    const seen = new Set<unknown>();
+
+    function Probe() {
+      renders += 1;
+      actions = useAdminActions();
+      seen.add(actions.updateDraft);
+      return <p>ready</p>;
+    }
+    const view = render(
+      <AdminStoreProvider storage={storage}>
+        <Probe />
+      </AdminStoreProvider>,
+    );
+    await view.findByText('ready');
+    await act(async () => {});
+    const before = renders;
+    act(() => actions?.updateDraft((d) => ({ ...d, site: { ...d.site, name: 'Başka' } })));
+    expect(renders).toBe(before);
+    expect(seen.size).toBe(1);
   });
 });

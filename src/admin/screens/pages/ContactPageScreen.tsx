@@ -4,7 +4,10 @@ import type { ContactPageContent } from '@/content/types';
 import Button from '../../ui/Button';
 import SortableList from '../../ui/SortableList';
 import Toggle from '../../ui/Toggle';
-import { LongField, Screen, Section, TextField, replaceAt, useContent } from './common';
+import EmptyState from '../../ui/EmptyState';
+import Notice from '../../ui/Notice';
+import Section from '../../ui/Section';
+import { LongField, Screen, TextField, replaceAt, useContent } from './common';
 import EmphasisField from '../shared/EmphasisField';
 
 type Form = ContactPageContent['form'];
@@ -48,7 +51,7 @@ export default function ContactPageScreen() {
 
   return (
     <Screen title="İletişim sayfası" preview="/yonetim/onizleme/iletisim">
-      <Section title="Sayfa metinleri">
+      <Section title="Sayfa metinleri" defaultOpen>
         <EmphasisField
           label="Başlık"
           value={page.heading}
@@ -59,7 +62,7 @@ export default function ContactPageScreen() {
         <TextField label="E-posta düğmesi" value={page.mailLabel} onChange={(mailLabel) => setPage({ mailLabel })} />
       </Section>
 
-      <Section title="Form">
+      <Section title="Form" defaultOpen>
         <TextField label="Form başlığı" value={form.heading} onChange={(heading) => setForm({ heading })} />
         <LongField label="Form notu" value={form.note} rows={3} onChange={(note) => setForm({ note })} />
         {(Object.keys(FIELD_LABELS) as (keyof Form['fields'])[]).map((k) => (
@@ -77,7 +80,15 @@ export default function ContactPageScreen() {
         />
       </Section>
 
-      <Section title="Proje türleri">
+      <Section title="Proje türleri" defaultOpen>
+        {form.projectTypes.length === 0 && (
+          <EmptyState
+            message="Henüz proje türü yok."
+            description="Proje türleri iletişim formundaki seçim listesinde görünür."
+            actionLabel="Tür ekle"
+            onAction={addType}
+          />
+        )}
         <SortableList
           items={form.projectTypes}
           getId={(t) => t.id}
@@ -85,7 +96,7 @@ export default function ContactPageScreen() {
           onChange={(projectTypes) => setForm({ projectTypes })}
           renderItem={(t, i) => (
             <TextField
-              label={`Proje türü ${i + 1}`}
+              label={`${i + 1}. proje türü`}
               value={t.label}
               max={24}
               onChange={(label) => setForm({ projectTypes: replaceAt(form.projectTypes, i, { ...t, label }) })}
@@ -95,7 +106,7 @@ export default function ContactPageScreen() {
         <Button onClick={addType}>Tür ekle</Button>
       </Section>
 
-      <Section title="Doğrulama iletileri">
+      <Section title="Doğrulama iletileri" defaultOpen>
         {(Object.keys(ERROR_LABELS) as (keyof Form['errors'])[]).map((k) => (
           <TextField
             key={k}
@@ -106,7 +117,7 @@ export default function ContactPageScreen() {
         ))}
       </Section>
 
-      <Section title="Gönderim">
+      <Section title="Gönderim" defaultOpen>
         <TextField label="Gönder düğmesi" value={form.submit} onChange={(submit) => setForm({ submit })} />
         <LongField label="Başarı metni" value={form.success} rows={2} onChange={(success) => setForm({ success })} />
         <TextField
@@ -116,11 +127,7 @@ export default function ContactPageScreen() {
           error={emailError}
           onChange={(notifyTo) => setForm({ notifyTo })}
         />
-        {form.notifyTo.trim() === '' && (
-          <p className="pg-warning">
-            <strong>Uyarı: </strong>Mesajlar yalnız gelen kutusuna düşer.
-          </p>
-        )}
+        {form.notifyTo.trim() === '' && <Notice variant="warning">Mesajlar yalnız gelen kutusuna düşer.</Notice>}
       </Section>
     </Screen>
   );
