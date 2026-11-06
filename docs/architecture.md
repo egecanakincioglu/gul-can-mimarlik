@@ -57,6 +57,15 @@ The admin panel is built on mock data ([ADR 0009](adr/0009-admin-panel-and-conte
 - In the mock phase, edits stay in the browser and do not reach the public site.
 - Below 1024 pixels, the sidebar opens from a `Menü` button. Screens that need width show a notice below 768 pixels.
 
+The screens live in `src/admin/screens` and each has its own route. The groups are:
+
+- Site settings, with the demo mode switch, contact details, navigation, SEO, texts and footer.
+- The media library, with the image picker and the focal point picker.
+- The inbox and the redirects.
+- Page editors for the home page (with four fixed project slots), services, process steps, studio, the contact page and the projects page.
+
+Heading fields use a small emphasis syntax: `*word*` is bold (weight 800) and `_word_` is light (weight 300). Screens that need width show a notice below 768 pixels.
+
 ## Contact form
 
 The contact form validates its input in the browser and sends nothing. A backend that receives the message is planned.
