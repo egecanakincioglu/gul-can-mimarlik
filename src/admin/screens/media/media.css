@@ -2,10 +2,10 @@
 
 .ml-drop {
   display: grid;
-  gap: 12px;
+  gap: var(--adm-s3);
   justify-items: start;
-  padding: 24px;
-  margin-bottom: 16px;
+  padding: var(--adm-s5);
+  margin-bottom: var(--adm-s4);
   background: var(--color-kagit);
   border: 1px dashed var(--color-golge);
 }
@@ -13,23 +13,14 @@
   border: 3px solid var(--color-pose);
 }
 .ml-note {
-  margin-bottom: 16px;
-  padding: 12px 16px;
-  border-left: 3px solid var(--color-golge);
-  background: var(--color-kagit);
-  font-size: 15px;
-}
-.ml-note:empty {
-  margin: 0;
-  padding: 0;
-  border: 0;
+  margin-bottom: var(--adm-s4);
 }
 .ml-bar {
   display: flex;
   flex-wrap: wrap;
   align-items: end;
-  gap: 16px;
-  margin-bottom: 24px;
+  gap: var(--adm-s4);
+  margin-bottom: var(--adm-s5);
 }
 .ml-bar .adm-toggle-row {
   min-height: 44px;
@@ -40,7 +31,7 @@
 }
 .ml-body {
   display: grid;
-  gap: 32px;
+  gap: var(--adm-s6);
 }
 @media (min-width: 1024px) {
   .ml-body[data-open] {
@@ -48,17 +39,9 @@
   }
 }
 .ml-grid,
-.ml-usage,
-.mp-grid,
-.mf-strip {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.ml-grid,
 .mp-grid {
   display: grid;
-  gap: 16px;
+  gap: var(--adm-s4);
 }
 .ml-grid {
   grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -70,7 +53,7 @@
 .ml-grid li,
 .mp-grid li {
   content-visibility: auto;
-  padding: 4px;
+  padding: var(--adm-s1);
   margin: -4px;
 }
 .ml-grid li {
@@ -102,18 +85,18 @@
 }
 .ml-name {
   display: block;
-  padding: 8px 12px;
+  padding: var(--adm-s2) var(--adm-s3);
   font-size: 14px;
   overflow-wrap: anywhere;
 }
 .ml-badge {
   display: inline-block;
-  margin: 0 12px 8px;
-  padding: 2px 8px;
+  margin: 0 var(--adm-s3) var(--adm-s2);
+  padding: var(--adm-s1) var(--adm-s2);
   border: 1px solid var(--color-pose);
 }
 td .ml-badge {
-  margin: 0 0 0 8px;
+  margin: 0 0 0 var(--adm-s2);
 }
 .ml-link {
   overflow-wrap: anywhere;
@@ -130,9 +113,9 @@ td .ml-badge {
 }
 .ml-detail {
   display: grid;
-  gap: 16px;
+  gap: var(--adm-s4);
   align-content: start;
-  padding: 24px;
+  padding: var(--adm-s5);
   background: var(--color-kagit);
   border: 1px solid var(--color-golge);
   min-width: 0;
@@ -140,7 +123,7 @@ td .ml-badge {
 .ml-facts {
   display: grid;
   grid-template-columns: auto 1fr;
-  gap: 8px 16px;
+  gap: var(--adm-s2) var(--adm-s4);
   margin: 0;
 }
 .ml-facts dd {
@@ -148,7 +131,7 @@ td .ml-badge {
   overflow-wrap: anywhere;
 }
 .ml-sub {
-  margin-top: 8px;
+  margin-top: var(--adm-s2);
 }
 .ml-usage li {
   min-height: 44px;
@@ -157,14 +140,14 @@ td .ml-badge {
 }
 .ml-delete {
   display: grid;
-  gap: 8px;
+  gap: var(--adm-s2);
   justify-items: start;
 }
 
 /* Image picker */
 .mp {
   display: grid;
-  gap: 8px;
+  gap: var(--adm-s2);
 }
 .mp-trigger {
   display: block;
@@ -199,7 +182,7 @@ td .ml-badge {
 }
 .mp-strip {
   display: block;
-  padding: 8px 12px;
+  padding: var(--adm-s2) var(--adm-s3);
   background: var(--color-pose);
   color: var(--color-kirec);
 }
@@ -209,12 +192,12 @@ td .ml-badge {
 }
 .mp-grid li {
   display: grid;
-  gap: 4px;
+  gap: var(--adm-s1);
   align-content: start;
 }
 .mp-state {
   display: block;
-  padding: 8px 12px;
+  padding: var(--adm-s2) var(--adm-s3);
   overflow-wrap: anywhere;
 }
 .mp-name {
@@ -222,9 +205,9 @@ td .ml-badge {
 }
 .mp-upload {
   display: grid;
-  gap: 8px;
+  gap: var(--adm-s2);
   justify-items: start;
-  margin: 16px 0;
+  margin: var(--adm-s4) 0;
 }
 .adm-dialog:has(.mp-dialog) {
   max-height: calc(100dvh - 32px);
@@ -235,9 +218,9 @@ td .ml-badge {
   position: sticky;
   bottom: 0;
   display: grid;
-  gap: 12px;
+  gap: var(--adm-s3);
   margin: 24px -24px -24px;
-  padding: 16px 24px;
+  padding: var(--adm-s4) var(--adm-s5);
   background: var(--color-kirec);
   border-top: 1px solid var(--color-golge);
 }
@@ -249,7 +232,7 @@ td .ml-badge {
 }
 .mp-use {
   display: grid;
-  gap: 12px;
+  gap: var(--adm-s3);
   justify-items: start;
 }
 .mp-use .adm-field {
@@ -259,7 +242,7 @@ td .ml-badge {
 /* Focal picker */
 .mf {
   display: grid;
-  gap: 12px;
+  gap: var(--adm-s3);
   width: 100%;
 }
 .mf-stage {
@@ -279,7 +262,7 @@ td .ml-badge {
 }
 .mf-veil {
   position: absolute;
-  background: color-mix(in srgb, var(--color-pose) 50%, transparent);
+  background: var(--adm-veil);
   pointer-events: none;
 }
 .mf-crop {
@@ -311,18 +294,18 @@ td .ml-badge {
 .mf-nums {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: var(--adm-s3);
 }
 .mf-strip {
   display: flex;
   flex-wrap: wrap;
-  gap: 16px;
+  gap: var(--adm-s4);
   align-items: end;
 }
 .mf-strip li {
   justify-items: start;
   display: grid;
-  gap: 4px;
+  gap: var(--adm-s1);
 }
 .mf-thumb {
   display: block;

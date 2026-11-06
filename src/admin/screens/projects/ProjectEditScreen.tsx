@@ -174,7 +174,7 @@ function Editor({ original, onSaved }: { original: Project | null; onSaved?: (sl
         <Tabs label="Proje bölümleri" tabs={tabs} />
       </div>
 
-      <div className="pj-savebar">
+      <div className="adm-row pj-savebar">
         <Button variant="primary" onClick={trySave}>
           {original ? 'Kaydet' : 'Projeyi oluştur'}
         </Button>

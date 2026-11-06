@@ -1,8 +1,8 @@
 .adm-emphasis-tools {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 8px;
+  gap: var(--adm-s2);
+  margin-bottom: var(--adm-s2);
 }
 .adm-emphasis-tools .adm-field-label {
   margin: 0;
@@ -16,5 +16,5 @@
   font-size: 24px;
 }
 .adm-emphasis-sample .adm-emphasis-preview {
-  margin: 4px 0 0;
+  margin: var(--adm-s1) 0 0;
 }

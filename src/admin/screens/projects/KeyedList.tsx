@@ -78,7 +78,7 @@ export default function KeyedList<T>({ title, noun, accusative, items, onChange,
       {items.length === 0 && (
         <EmptyState message="Henüz satır yok." description="Aşağıdaki düğmeyle ekleyebilirsiniz." />
       )}
-      <ul ref={list} className="pj-items">
+      <ul ref={list} className="adm-reset-list pj-items">
         {items.map((item, i) => (
           <li key={item.key} data-id={item.key} className="pj-item" onKeyDown={(e) => onKeyDown(e, i)}>
             {renderRow(item.value, i, (value) =>

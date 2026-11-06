@@ -61,7 +61,7 @@ export default function Overview() {
         </a>
       </section>
 
-      <ul className="adm-counters" aria-label="Özet">
+      <ul className="adm-reset-list adm-counters" aria-label="Özet">
         {counters.map((c) => (
           <li key={c.label} className="adm-counter">
             <span className="label">{c.label}</span>
@@ -76,7 +76,7 @@ export default function Overview() {
           <h2 id="adm-unread" className="label">
             Okunmamış mesajlar
           </h2>
-          <ul className="adm-shortcuts">
+          <ul className="adm-reset-list adm-shortcuts">
             {unreadMessages.slice(0, MAX_UNREAD).map((m) => (
               <li key={m.id}>
                 <Link href={`/yonetim/gelen-kutusu/${m.id}`} className="tlink">
@@ -93,7 +93,7 @@ export default function Overview() {
         <h2 id="adm-shortcuts" className="label">
           Kısayollar
         </h2>
-        <ul className="adm-shortcuts">
+        <ul className="adm-reset-list adm-shortcuts">
           {SHORTCUTS.map((s) => (
             <li key={s.href}>
               <Link href={s.href} className="tlink">
@@ -111,7 +111,7 @@ export default function Overview() {
         {issues.length === 0 ? (
           <p>Eksik yok.</p>
         ) : (
-          <ul className="adm-missing">
+          <ul className="adm-reset-list adm-missing">
             {issues.slice(0, MAX_LISTED).map((issue, i) => {
               const { href } = issueLink(draft, issue);
               return (

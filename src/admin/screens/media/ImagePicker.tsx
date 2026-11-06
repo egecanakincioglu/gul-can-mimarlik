@@ -157,7 +157,7 @@ export default function ImagePicker({
               </p>
             )}
           </div>
-          <ul className="mp-grid" aria-label="Medya">
+          <ul className="adm-reset-list mp-grid" aria-label="Medya">
             {media.map((m) => {
               const reason = unfitReason(m, slot);
               const selected = draft?.media === m.id;

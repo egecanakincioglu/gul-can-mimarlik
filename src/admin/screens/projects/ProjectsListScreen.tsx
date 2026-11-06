@@ -90,7 +90,7 @@ export default function ProjectsListScreen() {
               renderItem={(p) => {
                 const cover = draft.media.find((m) => m.id === p.cover.media);
                 return (
-                  <span className="pj-row">
+                  <span className="adm-row">
                     <span className="pj-thumb">
                       {cover && (
                         // eslint-disable-next-line @next/next/no-img-element -- local object URLs cannot go through the image optimizer

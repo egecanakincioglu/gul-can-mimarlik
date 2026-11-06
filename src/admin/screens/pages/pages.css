@@ -9,15 +9,15 @@
 }
 .pg-card {
   display: grid;
-  gap: 12px;
+  gap: var(--adm-s3);
   margin: 0;
-  padding: 16px;
+  padding: var(--adm-s4);
   border: 1px solid var(--color-golge);
 }
 .pg-readonly {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: var(--adm-s2);
   align-items: baseline;
 }
 .pg-row {
@@ -25,9 +25,9 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--adm-s3);
 }
 .pg-stack {
   display: grid;
-  gap: 8px;
+  gap: var(--adm-s2);
 }
