@@ -4,11 +4,17 @@ import InView from './InView';
 import RichText from './RichText';
 import { visibleNav } from './shell-texts';
 import { getContent } from '@/content';
+import type { SiteContent } from '@/content/types';
 import { demoText, emailHref, phoneHref, text } from '@/content/select';
 
 /* Contact CTA + footer: one continuous dark mass. */
-export default async function Footer({ cta = true, step = 'l' }: { cta?: boolean; step?: 'l' | 'r' }) {
-  const c = await getContent();
+type FooterProps = { cta?: boolean; step?: 'l' | 'r' };
+
+export default async function Footer(props: FooterProps) {
+  return <FooterView c={await getContent()} {...props} />;
+}
+
+export function FooterView({ c, cta = true, step = 'l' }: FooterProps & { c: SiteContent }) {
   const demo = demoText(c, 'footer');
   return (
     <footer

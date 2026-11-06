@@ -4,7 +4,7 @@ import { getContent } from '@/content';
 import type { SiteContent } from '@/content/types';
 import Page from './page';
 
-vi.mock('@/components/Footer', () => ({ default: () => null }));
+vi.mock('@/components/Footer', () => ({ default: () => null, FooterView: () => null }));
 vi.mock('@/content', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/content')>();
   return { ...actual, getContent: vi.fn(actual.getContent) };

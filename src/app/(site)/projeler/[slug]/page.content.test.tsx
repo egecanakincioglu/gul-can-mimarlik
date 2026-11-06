@@ -20,7 +20,7 @@ vi.mock('@/content', async (orig) => {
   const mod = await orig<typeof import('@/content')>();
   return { ...mod, getContent: async () => state.content ?? (await mod.getContent()) };
 });
-vi.mock('@/components/Footer', () => ({ default: () => <footer data-stub /> }));
+vi.mock('@/components/Footer', () => ({ default: () => <footer data-stub />, FooterView: () => <footer data-stub /> }));
 
 const html = async (node: ReactNode) => {
   const { prelude } = await prerender(node);
