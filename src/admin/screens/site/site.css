@@ -102,13 +102,3 @@
   border: 3px solid var(--color-pose);
   padding: 8px 10px;
 }
-
-/* Narrow rows: the item takes its own line, the move buttons wrap below it. */
-@media (max-width: 520px) {
-  .adm-sortable-row {
-    flex-wrap: wrap;
-  }
-  .adm-sortable-main {
-    flex: 1 1 100%;
-  }
-}

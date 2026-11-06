@@ -69,7 +69,8 @@ The screens live in `src/admin/screens` and each has its own route. The groups a
 - The media library, with the image picker and the focal point picker.
 - The inbox and the redirects.
 - Page editors for the home page (with four fixed project slots), services, process steps, studio, the contact page and the projects page.
-- Projects at `/yonetim/projeler`, `/yonetim/projeler/yeni` and `/yonetim/projeler/<slug>`, and categories at `/yonetim/kategoriler`.
+
+Projects are managed at `/yonetim/projeler` (list), `/yonetim/projeler/yeni` (new project) and `/yonetim/projeler/<slug>` (editor with details, concept, gallery, before/after and SEO tabs); categories and archive filters at `/yonetim/kategoriler`. Changing the address of a published project adds a redirect.
 
 The live preview is at `/yonetim/onizleme/...`. It renders the public page from the draft that the panel posts to it (same origin only). It has no admin chrome and also shows unpublished projects. The editor and the preview sit side by side from 1280 pixels wide, and a toggle switches between them below that width.
 
