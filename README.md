@@ -34,6 +34,10 @@ More detail is in the [development setup guide](docs/guides/development-setup.md
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) first. In short: one branch per piece of work, signed Conventional Commits in English, a pull request, and all required CI checks green. The [Git workflow guide](docs/guides/git-workflow.md) has the details. To report a security problem, follow [SECURITY.md](SECURITY.md).
 
+## Documentation
+
+The [docs folder](docs/README.md) holds the architecture, the roadmap, the decision records, the guides and the runbooks.
+
 ## License
 
 The source code is licensed under the [PolyForm Noncommercial License 1.0.0](LICENSE). The name, logo, contact details, texts and images are not covered; see [NOTICE.md](NOTICE.md).

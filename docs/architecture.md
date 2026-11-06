@@ -1,0 +1,56 @@
+# Architecture
+
+This document describes how the application is built. The site code in `src/` and `public/` arrives in the next changes; until then this document describes the planned structure. Items marked "planned" are planned beyond the first site. The reasons for each choice are in the [decision records](adr/README.md).
+
+## Overview
+
+The project is one Next.js 16 application (App Router) with React 19 and TypeScript in strict mode. It serves the public website of Gül CAN in Turkish. All source code is under `src/`.
+
+```text
+src/app/          routes and the global stylesheet
+src/components/   presentational components (header, footer, gallery, contact form)
+src/content/      typed content: office details, services and projects
+public/           static files, including the images in public/images/
+tooling/          repository tools, site audit and Semgrep rules
+```
+
+## Routing
+
+The site is Turkish only, so it has no language routing ([ADR 0001](adr/0001-architecture-and-routing.md)). Routes follow the folders under `src/app`.
+
+| Route | Page |
+|---|---|
+| `/` | Home |
+| `/hizmetler` | Services |
+| `/projeler` | Project list |
+| `/projeler/<slug>` | Project detail (`avlulu-konut`, `daire-yenileme`, `yamac-evi`, `kose-kafe`) |
+| `/studyo` | Studio |
+| `/iletisim` | Contact |
+
+- The project detail route is generated from the project list in `src/content/projects.ts`. An unknown slug answers 404.
+- Unknown paths answer 404.
+- The page list used by the site audit is in `tooling/site-audit/pages.ts`. A new page is added there in the same pull request.
+
+## Styling
+
+Tailwind CSS 4 with design tokens defined in `src/app/globals.css` ([ADR 0002](adr/0002-styling-tailwind-4-with-tokens.md)).
+
+## Content layer
+
+Components receive content as typed props. The data lives in `src/content` ([ADR 0003](adr/0003-content-layer.md)): office details and navigation in `site.ts`, services in `site.ts`, and projects in `projects.ts`.
+
+The project pages show concept work with illustrative images. The site labels this on the page. The images are in `public/images/`.
+
+## Contact form
+
+The contact form validates its input in the browser and sends nothing. A backend that receives the message is planned.
+
+## Backend (planned)
+
+No database, API route or authentication exists yet. When a backend arrives, it replaces the data behind the content layer, and the contact form sends its message to it.
+
+## Quality and delivery
+
+- Tests, coverage and thresholds: [ADR 0004](adr/0004-testing-strategy.md) and [ADR 0006](adr/0006-quality-targets-and-thresholds.md).
+- CI and branch protection: [ADR 0005](adr/0005-ci-and-protection-layers.md).
+- Releases and deploys: [ADR 0007](adr/0007-versioning-and-releases.md) and the [release runbook](runbooks/release-and-rollback.md).
