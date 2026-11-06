@@ -14,7 +14,7 @@ export default function StudioScreen() {
   const alt = page.image.alt ?? draft.media.find((m) => m.id === page.image.media)?.alt ?? '';
 
   return (
-    <Screen title="Stüdyo">
+    <Screen title="Stüdyo" preview="/yonetim/onizleme/studyo">
       <Section title="Metinler">
         <EmphasisField label="Başlık" value={page.heading} baseWeight={300} onChange={(heading) => set({ heading })} />
         <LongField label="Giriş cümlesi" value={page.lead} max={220} rows={3} onChange={(lead) => set({ lead })} />

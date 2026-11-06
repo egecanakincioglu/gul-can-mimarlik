@@ -47,7 +47,7 @@ export default function ContactPageScreen() {
   };
 
   return (
-    <Screen title="İletişim sayfası">
+    <Screen title="İletişim sayfası" preview="/yonetim/onizleme/iletisim">
       <Section title="Sayfa metinleri">
         <EmphasisField
           label="Başlık"

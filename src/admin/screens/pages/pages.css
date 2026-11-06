@@ -1,6 +1,12 @@
 .pg {
   max-width: 760px;
 }
+/* The editor column keeps 760px through the split's grid track. */
+@media (min-width: 1280px) {
+  .pg.pg-with-preview {
+    max-width: none;
+  }
+}
 .pg-section {
   border-top: 1px solid var(--color-golge);
   padding: 8px 0;

@@ -8,7 +8,7 @@ export default function ProcessStepsScreen() {
   const steps = draft.processSteps;
 
   return (
-    <Screen title="Süreç adımları">
+    <Screen title="Süreç adımları" preview="/yonetim/onizleme/hizmetler">
       <ReadOnly label="Adım sayısı" value={String(steps.length)} />
       <SortableList
         items={steps}
