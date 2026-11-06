@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import {
-  agenticFailures,
+  CATEGORY_IDS,
   discardReason,
   nextStep,
   judge,
@@ -37,6 +37,10 @@ test('thresholds file has the expected shape', () => {
   assert.deepEqual(t.budgets, { scriptKB: 180, stylesheetKB: 30, fontFiles: 2, fontKB: 100, totalKB: 500 });
 });
 
+test('CATEGORY_IDS lists the four scored categories', () => {
+  assert.deepEqual(CATEGORY_IDS, ['performance', 'accessibility', 'best-practices', 'seo']);
+});
+
 test('median of odd and even lists, and of nothing', () => {
   assert.equal(median([3, 1, 2]), 2);
   assert.equal(median([4, 1, 2, 3]), 2.5);
@@ -60,43 +64,26 @@ test('transferOf sums by resource type and counts fonts', () => {
   assert.deepEqual(transferOf(r), { scriptKB: 3, stylesheetKB: 1, fontFiles: 1, fontKB: 2, totalKB: 7 });
 });
 
-test('agenticFailures ignores not applicable, informative and passing audits', () => {
-  const r = lhr(100);
-  r.categories['agentic-browsing'] = { score: null, auditRefs: [{ id: 'a' }, { id: 'b' }, { id: 'c' }, { id: 'd' }] };
-  r.audits.a = { title: 'A', score: 0, scoreDisplayMode: 'binary' };
-  r.audits.b = { title: 'B', score: null, scoreDisplayMode: 'notApplicable' };
-  r.audits.c = { title: 'C', score: 1, scoreDisplayMode: 'binary' };
-  r.audits.d = { title: 'D', score: 0, scoreDisplayMode: 'informative' };
-  assert.deepEqual(agenticFailures(r), ['A']);
-  assert.deepEqual(agenticFailures(lhr(100)), []);
-});
-
 test('judge: at or above expected is clean', () => {
-  assert.deepEqual(judge('p', scores, small, [], t), { failures: [], warnings: [] });
+  assert.deepEqual(judge('p', scores, small, t), { failures: [], warnings: [] });
 });
 
 test('judge: 90-94 warns, below 90 fails, exactly 90 and 95 are not red', () => {
-  const warn = judge('p', { ...scores, seo: 90, performance: 94 }, small, [], t);
+  const warn = judge('p', { ...scores, seo: 90, performance: 94 }, small, t);
   assert.equal(warn.failures.length, 0);
   assert.equal(warn.warnings.length, 2);
-  assert.equal(judge('p', { ...scores, seo: 95 }, small, [], t).warnings.length, 0);
-  const red = judge('p', { ...scores, accessibility: 89 }, small, [], t);
+  assert.equal(judge('p', { ...scores, seo: 95 }, small, t).warnings.length, 0);
+  const red = judge('p', { ...scores, accessibility: 89 }, small, t);
   assert.equal(red.failures.length, 1);
   assert.match(red.failures[0]!, /accessibility 89 is below 90/);
 });
 
 test('judge: each budget fails only above its limit', () => {
-  assert.equal(judge('p', scores, { ...small, scriptKB: 180, totalKB: 500, fontFiles: 2 }, [], t).failures.length, 0);
+  assert.equal(judge('p', scores, { ...small, scriptKB: 180, totalKB: 500, fontFiles: 2 }, t).failures.length, 0);
   for (const over of [{ scriptKB: 181 }, { stylesheetKB: 31 }, { fontFiles: 3 }, { fontKB: 101 }, { totalKB: 501 }]) {
-    const v = judge('p', scores, { ...small, ...over }, [], t);
+    const v = judge('p', scores, { ...small, ...over }, t);
     assert.equal(v.failures.length, 1, JSON.stringify(over));
   }
-});
-
-test('judge: a failed agentic audit is red', () => {
-  const v = judge('p', scores, small, ['agent-accessibility-tree'], t);
-  assert.equal(v.failures.length, 1);
-  assert.match(v.failures[0]!, /agent-accessibility-tree/);
 });
 
 const scored = (score: number | null): LhrLike => ({
