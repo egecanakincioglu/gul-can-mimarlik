@@ -1,6 +1,6 @@
 # ADR 0003: Content layer
 
-Status: Accepted
+Status: Superseded: [ADR 0009](0009-admin-panel-and-content-model.md)
 Date: 2026-11-05
 
 ## Context

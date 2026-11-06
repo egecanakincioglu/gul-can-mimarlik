@@ -6,12 +6,13 @@ This folder holds the architecture decisions of the project. Each one is numbere
 |---|---|---|---|
 | [0001](0001-architecture-and-routing.md) | Architecture: Next.js 16 App Router, no locale routing | Accepted | 2026-11-05 |
 | [0002](0002-styling-tailwind-4-with-tokens.md) | Styling: Tailwind CSS 4 with design tokens | Accepted | 2026-11-05 |
-| [0003](0003-content-layer.md) | Content layer: typed content in `src/content` | Accepted | 2026-11-05 |
+| [0003](0003-content-layer.md) | Content layer: typed content in `src/content` | Superseded: [ADR 0009](0009-admin-panel-and-content-model.md) | 2026-11-05 |
 | [0004](0004-testing-strategy.md) | Testing strategy: Vitest, Testing Library, coverage gate | Accepted | 2026-11-05 |
 | [0005](0005-ci-and-protection-layers.md) | CI and protection layers: 9 required checks and branch protection | Accepted | 2026-11-05 |
 | [0006](0006-quality-targets-and-thresholds.md) | Quality targets and thresholds: Lighthouse gate 90, `site-audit` | Accepted | 2026-11-05 |
 | [0007](0007-versioning-and-releases.md) | Versioning and releases: SemVer, deploy by signed tag | Accepted | 2026-11-05 |
 | [0008](0008-license-noncommercial.md) | License: noncommercial code, reserved content | Accepted | 2026-11-05 |
+| [0009](0009-admin-panel-and-content-model.md) | Admin panel and content model | Accepted | 2026-11-06 |
 
 ## Statuses
 

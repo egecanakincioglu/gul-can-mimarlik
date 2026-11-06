@@ -1,0 +1,65 @@
+import type { ContentLabels, DemoTexts, UiStrings } from '../types';
+
+export const ui: UiStrings = {
+  skipLink: 'İçeriğe geç',
+  menu: 'Menü',
+  menuClose: 'Kapat',
+  menuHome: 'Ana sayfa',
+  homeLinkAria: 'Gül CAN Mimarlık — ana sayfa',
+  mainNavAria: 'Ana menü',
+  mobileNavAria: 'Mobil menü',
+  footerNavAria: 'Alt menü',
+  viewProject: 'Projeyi incele',
+  nextProject: 'Sonraki proje',
+  allProjects: 'Tüm projeler',
+  filterAria: 'Kategori filtresi',
+  projectsShown: '{n} proje gösteriliyor',
+  phone: 'Telefon',
+  email: 'E-posta',
+  address: 'Adres',
+  pages: 'Sayfalar',
+  copyright: '© {year} {name}',
+  before: 'Önce',
+  after: 'Sonra',
+  compare: 'Karşılaştır',
+  beforeAfterAria: 'Önce ve sonra karşılaştırması',
+  beforeValueText: 'Önce görseli %{n} görünür',
+  viewGroupAria: 'Görünüm',
+  contactFormAria: 'Demo iletişim formu',
+  galleryAria: 'Görsel galerisi',
+  enlargeImage: 'Görseli büyüt',
+  prevImage: 'Önceki görsel',
+  nextImage: 'Sonraki görsel',
+  closeImage: 'Kapat',
+  spaceSequence: 'Mekân dizisi',
+  kind: 'Tür',
+  scope: 'Kapsam',
+  status: 'Durum',
+  location: 'Konum',
+  year: 'Yıl',
+  materials: 'Malzeme paleti',
+  related: 'İlgili konsept proje',
+};
+
+export const labels: ContentLabels = {
+  concept: 'Konsept Çalışma',
+  // Comparison and animation labels stand alone as sentences, so they carry their full stop.
+  illustrative: {
+    visual: 'İllüstratif görsel',
+    visual3d: 'İllüstratif 3D görselleştirme',
+    animation3d: 'İllüstratif 3D animasyon.',
+    comparison: 'İllüstratif karşılaştırma.',
+  },
+  video: 'Video',
+  statusConcept: 'Konsept / İllüstratif',
+  locationConcept: 'Temsilî',
+};
+
+export const demo: DemoTexts = {
+  footer: 'Bu site bir tasarım demosudur. Portföy içerikleri illüstratiftir.',
+  listing: 'Konsept çalışmalar — illüstratif görseller.',
+  servicesFootnote: 'Bu sayfa bir tasarım demosudur.',
+  studioTeaser: 'Aşağıdaki görsel stüdyonun gerçek ofisi değil, çalışma biçimini anlatan illüstratif bir atmosferdir.',
+  form: 'Demo form — mesaj gönderilmez.',
+  formSubmit: 'Formu doğrula',
+};

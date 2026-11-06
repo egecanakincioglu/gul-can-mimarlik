@@ -86,17 +86,18 @@ describe('.gitleaks.toml custom rules', { skip }, () => {
     }
   });
 
-  test('allows a Turkish mobile number only in src/content/site.ts', () => {
+  test('allows a Turkish mobile number only in the content site files', () => {
     const dir = realpathSync(mkdtempSync(path.join(os.tmpdir(), 'gitleaks-allow-')));
     try {
       const repo = path.join(dir, 'repo');
       const out = path.join(dir, 'out');
-      mkdirSync(path.join(repo, 'src', 'content'), { recursive: true });
+      mkdirSync(path.join(repo, 'src', 'content', 'seed'), { recursive: true });
       mkdirSync(path.join(repo, 'src', 'other'), { recursive: true });
       mkdirSync(out);
       copyFileSync(path.join(root, '.gitleaks.toml'), path.join(repo, '.gitleaks.toml'));
       const line = 'export const phone = "0500 000 00 00";\n'; // gitleaks:allow
       writeFileSync(path.join(repo, 'src', 'content', 'site.ts'), line);
+      writeFileSync(path.join(repo, 'src', 'content', 'seed', 'site.ts'), line);
       writeFileSync(path.join(repo, 'src', 'other', 'site.ts'), line);
       const git = (...args: string[]) => spawnSync('git', args, { cwd: repo, encoding: 'utf8' });
       git('init', '-q', '-b', 'main');

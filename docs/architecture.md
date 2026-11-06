@@ -39,6 +39,8 @@ Tailwind CSS 4 with design tokens defined in `src/app/globals.css` ([ADR 0002](a
 
 Components receive content as typed props. The data lives in `src/content` ([ADR 0003](adr/0003-content-layer.md)): office details and navigation in `site.ts`, services in `site.ts`, and projects in `projects.ts`.
 
+All editable content is becoming one typed object in `src/content`: types, seed files, selectors and validation ([ADR 0009](adr/0009-admin-panel-and-content-model.md)). Pages read it through `getContent()`. The migration happens page by page. The old `site.ts` and `projects.ts` modules stay until the migration ends.
+
 The project pages show concept work with illustrative images. The site labels this on the page. The images are in `public/images/`.
 
 ## Contact form

@@ -23,6 +23,9 @@ regex = '''[a-z][a-z0-9+.-]*://[^:\s/$@]+:[^@\s/$]+@[^\s/]+'''
 id = "tr-phone-number"
 description = "Turkish mobile phone number"
 regex = '''(?:\+?90|\b0)[\s-]?\(?5\d{2}\)?[\s-]?\d{3}[\s-]?\d{2}[\s-]?\d{2}\b'''
-# The number in this file is published on purpose, with the owner's permission.
+# The number in these files is published on purpose, with the owner's permission.
 [[rules.allowlists]]
-paths = ['''^src/content/site\.ts$''']
+paths = ['''^src/content/(site|seed/site)\.ts$''']
+# A test in this commit compared against the published number; later commits derive it from the seed.
+[[rules.allowlists]]
+commits = ["eed53d4c28337894b1e8d8887e18bb3f0c3e9b00"]
