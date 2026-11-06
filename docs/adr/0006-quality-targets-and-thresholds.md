@@ -17,7 +17,7 @@ The site is the public face of an office. It must be fast, accessible and correc
 
 ## Decision
 
-The `site-audit` jobs build the site and audit its pages in CI. The Lighthouse gate is 90 in all four categories (performance, accessibility, best practices, SEO), on mobile and on desktop. Lighthouse runs only these four categories, so the stored reports hold nothing else. The expected score is 95 or more. Thresholds are in `tooling/site-audit/thresholds.json` and only go up.
+`pnpm site-audit` audits the pages of the built site. It runs locally and is not a CI check, so CI stays fast. It returns to CI in the search and performance pass on the [roadmap](../roadmap.md). The Lighthouse gate is 90 in all four categories (performance, accessibility, best practices, SEO), on mobile and on desktop. Lighthouse runs only these four categories, so the stored reports hold nothing else. The expected score is 95 or more. Thresholds are in `tooling/site-audit/thresholds.json` and only go up.
 
 Rules:
 
@@ -30,9 +30,9 @@ Rules:
 
 ## Consequences
 
-- Positive: regressions show up in the pull request that causes them.
+- Positive: one command measures every page against the same thresholds.
 - Negative: Lighthouse scores vary between runs. The gate is 90, below the 95+ expected, to leave room for noise.
-- The audit runs three jobs (pages, mobile, desktop) and adds CI time.
+- The audit has three legs (pages, mobile, desktop). It is not a required check, so a regression shows up only when the audit is run.
 
 ## Sources
 
