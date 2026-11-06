@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { DragEvent } from 'react';
 import { mediaUsage } from '@/content/select';
 import type { MediaItem } from '@/content/types';
@@ -13,6 +13,7 @@ import Field from '../../ui/Field';
 import Toggle from '../../ui/Toggle';
 import FocalPicker from './FocalPicker.tsx';
 import { fileName } from './ratios.ts';
+import { UPLOADED_STATUS, createMediaItem, revokeIfBlob } from './upload.ts';
 import { describeUsage } from './usage.ts';
 import './media.css';
 
@@ -27,54 +28,57 @@ const formatSize = (bytes: number | undefined) => {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 };
 
-const slugify = (name: string) =>
-  name
-    .replace(/\.[^.]+$/, '')
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '') || 'gorsel';
-
-const readDimensions = (url: string) =>
-  new Promise<{ width: number; height: number }>((resolve, reject) => {
-    const img = new Image();
-    img.onload = () => resolve({ width: img.naturalWidth, height: img.naturalHeight });
-    img.onerror = () => reject(new Error('unreadable'));
-    img.src = url;
-  });
+const missingAlt = (m: MediaItem) => m.decorative !== true && !m.alt.trim();
 
 function MediaDetail({
   item,
-  meta,
+  name,
+  size,
+  focusTarget,
   onPatch,
-  onDelete,
+  onAskDelete,
+  onClose,
 }: {
   item: MediaItem;
-  meta: Meta | undefined;
+  name: string;
+  size: number | undefined;
+  /** Where focus goes when the panel opens: the heading after a tile click, the description after an upload. */
+  focusTarget: 'heading' | 'alt';
   onPatch: (patch: Partial<MediaItem>) => void;
-  onDelete: () => void;
+  onAskDelete: () => void;
+  onClose: () => void;
 }) {
   const { draft } = useAdminStore();
-  const [confirming, setConfirming] = useState(false);
+  const panel = useRef<HTMLElement>(null);
+  const heading = useRef<HTMLHeadingElement>(null);
+  const [focal, setFocal] = useState(item.focal);
   const decorative = item.decorative === true;
   const usage = mediaUsage(draft, item.id);
   const used = usage.length > 0;
   const altError = decorative
     ? undefined
     : !item.alt.trim()
-      ? 'Alt metni zorunlu. Görsel yalnız süs ise Dekoratif seçin.'
+      ? 'Görsel açıklaması zorunlu. Görsel yalnız süs ise Dekoratif seçin.'
       : item.alt.length > ALT_MAX
-        ? `Alt metni en çok ${ALT_MAX} karakter olabilir.`
+        ? `Görsel açıklaması en çok ${ALT_MAX} karakter olabilir.`
         : undefined;
-  const name = meta?.name ?? fileName(item.file);
+
+  useEffect(() => {
+    if (focusTarget === 'alt') panel.current?.querySelector<HTMLElement>('textarea')?.focus();
+    else heading.current?.focus();
+  }, [focusTarget]);
 
   return (
-    <aside className="ml-detail" aria-label="Medya ayrıntıları">
-      <h2 className="adm-dialog-title">{name}</h2>
+    <aside ref={panel} className="ml-detail" aria-label="Medya ayrıntıları">
+      <Button onClick={onClose}>Listeye dön</Button>
+      <h2 ref={heading} tabIndex={-1} className="adm-dialog-title ml-heading">
+        {name}
+      </h2>
       <dl className="ml-facts">
         <dt className="label">Ad</dt>
         <dd>{name}</dd>
         <dt className="label">Boyut</dt>
-        <dd>{formatSize(meta?.size)}</dd>
+        <dd>{formatSize(size)}</dd>
         <dt className="label">Ölçü</dt>
         <dd>
           {item.width}×{item.height} px
@@ -85,11 +89,15 @@ function MediaDetail({
         boxed
         multiline
         rows={3}
-        label="Varsayılan alt metni"
+        label="Görsel açıklaması"
         value={item.alt}
         max={ALT_MAX}
         error={altError}
-        helper={decorative ? 'Dekoratif görsel ekran okuyucuya bildirilmez.' : undefined}
+        helper={
+          decorative
+            ? 'Dekoratif görsel ekran okuyucuya bildirilmez.'
+            : 'Görme engelli ziyaretçilere ve arama motorlarına görseli anlatır. Örnek: Avlulu konutun bahçeden görünüşü.'
+        }
         onChange={(alt) => !decorative && onPatch({ alt })}
       />
       <Toggle
@@ -97,9 +105,10 @@ function MediaDetail({
         checked={decorative}
         onChange={(on) => onPatch(on ? { decorative: true, alt: '' } : { decorative: undefined })}
       />
+      <p className="caption">Yalnız süs amaçlıysa işaretleyin; ekran okuyucular atlar.</p>
 
       <h3 className="label ml-sub">Odak noktası</h3>
-      <FocalPicker media={item} value={item.focal} onChange={(focal) => onPatch({ focal })} alt="" />
+      <FocalPicker media={item} value={focal} onChange={setFocal} onCommit={(f) => onPatch({ focal: f })} alt="" />
 
       <h3 className="label ml-sub">Kullanıldığı yerler</h3>
       {used ? (
@@ -120,7 +129,7 @@ function MediaDetail({
       )}
 
       <div className="ml-delete">
-        <Button variant="destructive" disabled={used} onClick={() => setConfirming(true)}>
+        <Button variant="destructive" disabled={used} onClick={onAskDelete}>
           Sil
         </Button>
         {used && (
@@ -129,21 +138,6 @@ function MediaDetail({
           </p>
         )}
       </div>
-      <Dialog open={confirming} onClose={() => setConfirming(false)} title="Görsel silinsin mi?">
-        <p>{name} medya kütüphanesinden kaldırılır.</p>
-        <div className="adm-dialog-actions">
-          <Button
-            variant="destructive"
-            onClick={() => {
-              setConfirming(false);
-              onDelete();
-            }}
-          >
-            Evet, sil
-          </Button>
-          <Button onClick={() => setConfirming(false)}>Vazgeç</Button>
-        </div>
-      </Dialog>
     </aside>
   );
 }
@@ -152,20 +146,53 @@ export default function MediaLibraryScreen() {
   const { draft, updateDraft } = useAdminStore();
   const [view, setView] = useState<View>('grid');
   const [query, setQuery] = useState('');
+  const [onlyMissing, setOnlyMissing] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [focusAlt, setFocusAlt] = useState(false);
+  const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const [metas, setMetas] = useState<Record<string, Meta>>({});
-  const [notice, setNotice] = useState<string | null>(null);
+  const [status, setStatus] = useState('');
   const [problem, setProblem] = useState<string | null>(null);
   const [over, setOver] = useState(false);
+  const root = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLInputElement>(null);
+  // Media id (or 'upload') that should receive focus once the next render has committed.
+  const pendingFocus = useRef<string | null>(null);
 
   const nameOf = (m: MediaItem) => metas[m.id]?.name ?? fileName(m.file);
   const q = query.trim().toLowerCase();
-  const items = draft.media.filter((m) => !q || [nameOf(m), m.id, m.alt].some((s) => s.toLowerCase().includes(q)));
+  const items = draft.media.filter(
+    (m) => (!q || [nameOf(m), m.id, m.alt].some((x) => x.toLowerCase().includes(q))) && (!onlyMissing || missingAlt(m)),
+  );
   const selected = draft.media.find((m) => m.id === selectedId) ?? null;
+  const confirming = draft.media.find((m) => m.id === confirmingId) ?? null;
+
+  useEffect(() => {
+    const target = pendingFocus.current;
+    if (!target) return;
+    pendingFocus.current = null;
+    const all = Array.from(root.current?.querySelectorAll<HTMLElement>('[data-media-id], [data-upload]') ?? []);
+    all.find((el) => (target === 'upload' ? el.hasAttribute('data-upload') : el.dataset.mediaId === target))?.focus();
+  });
 
   const patchMedia = (id: string, patch: Partial<MediaItem>) =>
     updateDraft((c) => ({ ...c, media: c.media.map((m) => (m.id === id ? { ...m, ...patch } : m)) }));
+
+  const select = (id: string) => {
+    setFocusAlt(false);
+    setSelectedId(id);
+  };
+
+  const removeConfirmed = (id: string) => {
+    const removed = draft.media.find((m) => m.id === id);
+    if (removed) revokeIfBlob(removed.file);
+    const at = items.findIndex((m) => m.id === id);
+    const next = items[at + 1] ?? items[at - 1];
+    pendingFocus.current = next ? next.id : 'upload';
+    updateDraft((c) => ({ ...c, media: c.media.filter((m) => m.id !== id) }));
+    setSelectedId(null);
+    setConfirmingId(null);
+  };
 
   const addFiles = async (files: File[]) => {
     setProblem(null);
@@ -175,26 +202,18 @@ export default function MediaLibraryScreen() {
         setProblem(`${file.name} bir görsel dosyası değil.`);
         continue;
       }
-      const url = URL.createObjectURL(file);
       try {
-        const { width, height } = await readDimensions(url);
-        const base = slugify(file.name);
-        const id = `${base}-${Date.now().toString(36)}${added}`;
-        const item: MediaItem = { id, file: url, width, height, alt: '', focal: { x: 50, y: 50 }, illustrative: null };
+        const item = await createMediaItem(file, added);
         updateDraft((c) => ({ ...c, media: [...c.media, item] }));
-        setMetas((m) => ({ ...m, [id]: { name: file.name, size: file.size } }));
-        setSelectedId(id);
+        setMetas((m) => ({ ...m, [item.id]: { name: file.name, size: file.size } }));
+        setFocusAlt(true);
+        setSelectedId(item.id);
         added += 1;
       } catch {
-        URL.revokeObjectURL(url);
         setProblem(`${file.name} okunamadı.`);
       }
     }
-    if (added) {
-      setNotice(
-        'Üretici üst verisi temizlendi. Bu bir simülasyondur: demo sürümünde dosya tarayıcıdan çıkmaz ve gerçek bir temizlik yapılmaz.',
-      );
-    }
+    if (added) setStatus(UPLOADED_STATUS);
   };
 
   const onDrop = (e: DragEvent) => {
@@ -204,7 +223,7 @@ export default function MediaLibraryScreen() {
   };
 
   return (
-    <div className="ml">
+    <div className="ml" ref={root}>
       <h1 className="adm-title">Medya kütüphanesi</h1>
 
       <div
@@ -218,7 +237,6 @@ export default function MediaLibraryScreen() {
         onDrop={onDrop}
       >
         <p>Görselleri buraya bırakın veya dosya seçin.</p>
-        <p className="caption">Demo: dosya yalnız tarayıcıda kalır, sunucuya gönderilmez.</p>
         <p className="caption">Demo: yüklenen görsel bu tarayıcıda tutulur ve sayfa yenilenince görünmeyebilir.</p>
         <input
           ref={input}
@@ -233,15 +251,13 @@ export default function MediaLibraryScreen() {
             e.target.value = '';
           }}
         />
-        <Button variant="primary" onClick={() => input.current?.click()}>
+        <Button variant="primary" data-upload onClick={() => input.current?.click()}>
           Dosya seç
         </Button>
       </div>
-      {notice && (
-        <p role="status" className="ml-note">
-          {notice}
-        </p>
-      )}
+      <p role="status" className="ml-note">
+        {status}
+      </p>
       {problem && (
         <p role="alert" className="err">
           {problem}
@@ -250,6 +266,7 @@ export default function MediaLibraryScreen() {
 
       <div className="ml-bar">
         <Field boxed label="Ara" type="search" value={query} onChange={setQuery} />
+        <Toggle label="Yalnız açıklaması eksikler" checked={onlyMissing} onChange={setOnlyMissing} />
         <div className="seg" role="group" aria-label="Görünüm">
           <button type="button" aria-pressed={view === 'grid'} onClick={() => setView('grid')}>
             Izgara
@@ -263,7 +280,11 @@ export default function MediaLibraryScreen() {
       <div className="ml-body" data-open={selected ? true : undefined}>
         <div>
           {items.length === 0 ? (
-            <EmptyState message={q ? 'Aramanıza uyan görsel yok.' : 'Henüz görsel yok.'} />
+            <EmptyState
+              message={
+                q ? 'Aramanıza uyan görsel yok.' : onlyMissing ? 'Açıklaması eksik görsel yok.' : 'Henüz görsel yok.'
+              }
+            />
           ) : view === 'grid' ? (
             <ul className="ml-grid" aria-label="Görseller">
               {items.map((m) => (
@@ -271,12 +292,14 @@ export default function MediaLibraryScreen() {
                   <button
                     type="button"
                     className="ml-tile"
+                    data-media-id={m.id}
                     aria-pressed={m.id === selectedId}
-                    onClick={() => setSelectedId(m.id)}
+                    onClick={() => select(m.id)}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs cannot go through the image optimizer */}
-                    <img src={m.file} alt="" />
+                    <img src={m.file} alt="" loading="lazy" decoding="async" />
                     <span className="ml-name">{nameOf(m)}</span>
+                    {missingAlt(m) && <span className="ml-badge label">Açıklaması eksik</span>}
                   </button>
                 </li>
               ))}
@@ -305,17 +328,19 @@ export default function MediaLibraryScreen() {
                   <tr key={m.id}>
                     <td data-label="Önizleme">
                       {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs cannot go through the image optimizer */}
-                      <img src={m.file} alt="" className="ml-thumb" />
+                      <img src={m.file} alt="" className="ml-thumb" loading="lazy" decoding="async" />
                     </td>
                     <td data-label="Ad">
                       <button
                         type="button"
-                        className="tlink"
+                        className="tlink ml-link"
+                        data-media-id={m.id}
                         aria-pressed={m.id === selectedId}
-                        onClick={() => setSelectedId(m.id)}
+                        onClick={() => select(m.id)}
                       >
                         {nameOf(m)}
                       </button>
+                      {missingAlt(m) && <span className="ml-badge label">Açıklaması eksik</span>}
                     </td>
                     <td data-label="Ölçü">
                       {m.width}×{m.height}
@@ -331,15 +356,30 @@ export default function MediaLibraryScreen() {
           <MediaDetail
             key={selected.id}
             item={selected}
-            meta={metas[selected.id]}
+            name={nameOf(selected)}
+            size={metas[selected.id]?.size}
+            focusTarget={focusAlt ? 'alt' : 'heading'}
             onPatch={(patch) => patchMedia(selected.id, patch)}
-            onDelete={() => {
-              updateDraft((c) => ({ ...c, media: c.media.filter((m) => m.id !== selected.id) }));
+            onAskDelete={() => setConfirmingId(selected.id)}
+            onClose={() => {
+              pendingFocus.current = selected.id;
               setSelectedId(null);
             }}
           />
         )}
       </div>
+
+      <Dialog open={confirming !== null} onClose={() => setConfirmingId(null)} title="Görsel silinsin mi?">
+        <div className="ml-confirm">
+          <p>{confirming ? nameOf(confirming) : ''} medya kütüphanesinden kaldırılır.</p>
+          <div className="adm-dialog-actions">
+            <Button onClick={() => setConfirmingId(null)}>Vazgeç</Button>
+            <Button variant="destructive" onClick={() => confirming && removeConfirmed(confirming.id)}>
+              Evet, sil
+            </Button>
+          </div>
+        </div>
+      </Dialog>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AdminStoreProvider } from '../../store/AdminStoreProvider';
 import MediaLibraryScreen from './MediaLibraryScreen';
@@ -13,8 +13,17 @@ const storage = {
   },
   removeItem: () => {},
 };
-const savedMedia = () =>
-  (JSON.parse(saved) as { draft: { media: { id: string; alt: string; decorative?: boolean }[] } }).draft.media;
+const savedMedia = () => {
+  // The store debounces writes; leaving the page flushes them.
+  act(() => {
+    window.dispatchEvent(new Event('pagehide'));
+  });
+  return (
+    JSON.parse(saved) as {
+      draft: { media: { id: string; alt: string; decorative?: boolean; focal?: { x: number; y: number } }[] };
+    }
+  ).draft.media;
+};
 
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
@@ -89,15 +98,15 @@ describe('MediaLibraryScreen', () => {
   it('requires an alt text unless the image is marked Dekoratif', async () => {
     await renderScreen();
     fireEvent.click(screen.getByRole('button', { name: /hero-poster\.png/ }));
-    const alt = screen.getByLabelText('Varsayılan alt metni');
+    const alt = screen.getByLabelText('Görsel açıklaması');
     fireEvent.change(alt, { target: { value: '' } });
-    expect(screen.getByText(/Alt metni zorunlu/)).not.toBeNull();
+    expect(screen.getByText(/Görsel açıklaması zorunlu/)).not.toBeNull();
     expect(alt.getAttribute('aria-invalid')).toBe('true');
 
     fireEvent.click(screen.getByRole('switch', { name: 'Dekoratif' }));
-    expect(screen.queryByText(/Alt metni zorunlu/)).toBeNull();
+    expect(screen.queryByText(/Görsel açıklaması zorunlu/)).toBeNull();
     fireEvent.click(screen.getByRole('switch', { name: 'Dekoratif' }));
-    expect(screen.getByText(/Alt metni zorunlu/)).not.toBeNull();
+    expect(screen.getByText(/Görsel açıklaması zorunlu/)).not.toBeNull();
 
     fireEvent.change(alt, { target: { value: 'a'.repeat(141) } });
     expect(screen.getByText(/en çok 140/)).not.toBeNull();
@@ -137,8 +146,8 @@ describe('MediaLibraryScreen', () => {
     expect(within(panel).getByText('800×600 px')).not.toBeNull();
     expect(within(panel).getAllByText('Yeni Görsel.png').length).toBeGreaterThan(0);
     expect(within(panel).getByText('1 KB')).not.toBeNull();
-    expect(screen.getByRole('status').textContent).toMatch(/Üretici üst verisi temizlendi.*simülasyon/);
-    expect(screen.getByText(/Alt metni zorunlu/)).not.toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('Yüklendi. Şimdi görsel açıklamasını yazın.');
+    expect(screen.getByText(/Görsel açıklaması zorunlu/)).not.toBeNull();
     expect(screen.getByRole('button', { name: /Yeni Görsel\.png/ })).not.toBeNull();
 
     const del = within(panel).getByRole('button', { name: 'Sil' });
@@ -147,6 +156,7 @@ describe('MediaLibraryScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Evet, sil' }));
     await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull());
     expect(screen.queryByRole('button', { name: /Yeni Görsel\.png/ })).toBeNull();
+    expect(URL.revokeObjectURL).toHaveBeenCalledWith('blob:demo-1');
   });
 
   it('rejects files that are not images', async () => {
@@ -155,7 +165,7 @@ describe('MediaLibraryScreen', () => {
       target: { files: [new File(['x'], 'not.txt', { type: 'text/plain' })] },
     });
     expect((await screen.findByRole('alert')).textContent).toMatch('not.txt bir görsel dosyası değil.');
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('');
   });
 
   it('reports a file that cannot be read as an image', async () => {
@@ -183,5 +193,82 @@ describe('MediaLibraryScreen', () => {
     fireEvent.drop(zone, { dataTransfer: { files: [new File(['x'], 'drop.png', { type: 'image/png' })] } });
     await screen.findByRole('complementary', { name: 'Medya ayrıntıları' });
     expect(zone.getAttribute('data-over')).toBeNull();
+  });
+
+  it('loads grid and list images lazily', async () => {
+    await renderScreen();
+    const grid = screen.getByRole('list', { name: 'Görseller' });
+    for (const img of Array.from(grid.querySelectorAll('img'))) {
+      expect(img.getAttribute('loading')).toBe('lazy');
+      expect(img.getAttribute('decoding')).toBe('async');
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'Liste' }));
+    const thumb = screen.getByRole('table').querySelector('img') as HTMLImageElement;
+    expect(thumb.getAttribute('loading')).toBe('lazy');
+  });
+
+  it('moves focus to the detail heading on select and back to the tile on Listeye dön', async () => {
+    await renderScreen();
+    const tile = screen.getByRole('button', { name: /hero-poster\.png/ });
+    fireEvent.click(tile);
+    const panel = screen.getByRole('complementary', { name: 'Medya ayrıntıları' });
+    expect(document.activeElement).toBe(within(panel).getByRole('heading', { level: 2 }));
+    fireEvent.click(within(panel).getByRole('button', { name: 'Listeye dön' }));
+    expect(screen.queryByRole('complementary')).toBeNull();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: /hero-poster\.png/ }));
+  });
+
+  it('puts Vazgeç first in the delete dialog and focuses the next tile after deleting', async () => {
+    await renderScreen();
+    await upload();
+    fireEvent.click(screen.getByRole('button', { name: 'Sil' }));
+    const dialog = screen.getByRole('dialog', { hidden: true });
+    const buttons = within(dialog).getAllByRole('button', { hidden: true });
+    expect(buttons.map((b) => b.textContent)).toEqual(['Vazgeç', 'Evet, sil']);
+    fireEvent.click(screen.getByRole('button', { name: 'Evet, sil' }));
+    await waitFor(() => expect(screen.queryByRole('complementary')).toBeNull());
+    const tiles = within(screen.getByRole('list', { name: 'Görseller' })).getAllByRole('button');
+    expect(document.activeElement).toBe(tiles[tiles.length - 1]);
+  });
+
+  it('focuses the upload button after deleting the last visible tile', async () => {
+    await renderScreen();
+    await upload();
+    fireEvent.click(screen.getByLabelText('Yalnız açıklaması eksikler'));
+    fireEvent.click(screen.getByRole('button', { name: 'Sil' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Evet, sil' }));
+    await waitFor(() => expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Dosya seç' })));
+  });
+
+  it('announces the upload and focuses the description of the new item', async () => {
+    await renderScreen();
+    await upload();
+    expect(screen.getByRole('status').textContent).toBe('Yüklendi. Şimdi görsel açıklamasını yazın.');
+    expect(document.activeElement).toBe(screen.getByLabelText('Görsel açıklaması'));
+  });
+
+  it('flags tiles without a description and filters to them', async () => {
+    await renderScreen();
+    expect(screen.queryByText('Açıklaması eksik')).toBeNull();
+    await upload();
+    expect(screen.getAllByText('Açıklaması eksik')).toHaveLength(1);
+    fireEvent.click(screen.getByLabelText('Yalnız açıklaması eksikler'));
+    const tiles = within(screen.getByRole('list', { name: 'Görseller' })).getAllByRole('button');
+    expect(tiles).toHaveLength(1);
+    expect(tiles[0]!.textContent).toMatch(/Yeni Görsel\.png/);
+  });
+
+  it('keeps a drag local and commits the focal point once the pointer is released', async () => {
+    await renderScreen();
+    fireEvent.click(screen.getByRole('button', { name: /hero-poster\.png/ }));
+    const stage = document.querySelector('.mf-stage') as HTMLElement;
+    stage.getBoundingClientRect = () => ({ left: 0, top: 0, width: 200, height: 100 }) as DOMRect;
+    const marker = screen.getByRole('button', { name: 'Odak noktası' });
+    fireEvent.pointerDown(marker, { clientX: 100, clientY: 50, isPrimary: true, button: 0 });
+    fireEvent.pointerMove(marker, { clientX: 20, clientY: 20, isPrimary: true });
+    expect((screen.getByLabelText('X (%)') as HTMLInputElement).value).toBe('10');
+    expect(savedMedia().find((m) => m.id === 'hero-poster')?.focal).not.toEqual({ x: 10, y: 20 });
+    fireEvent.pointerUp(marker);
+    expect(savedMedia().find((m) => m.id === 'hero-poster')).toMatchObject({ focal: { x: 10, y: 20 } });
   });
 });
