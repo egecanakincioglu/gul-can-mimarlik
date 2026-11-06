@@ -6,7 +6,18 @@ import Image from 'next/image';
 import { createPortal } from 'react-dom';
 import InView from './InView';
 import Photo from './Photo';
-import type { GalleryItem, Slot } from '@/content/projects';
+type Slot = 'wide' | 'landscape' | 'portrait' | 'square';
+
+export type GalleryPhoto = {
+  src: string;
+  alt: string;
+  focalX: number;
+  focalY: number;
+  slot: Slot;
+  caption: string;
+};
+
+export type GalleryTexts = { enlarge: string; prev: string; next: string; close: string; dialogAria: string };
 
 const RATIO: Record<Slot, string> = { wide: '21 / 9', landscape: '3 / 2', portrait: '4 / 5', square: '1 / 1' };
 const SPAN: Record<Slot, number> = { wide: 12, landscape: 7, portrait: 5, square: 5 };
@@ -22,7 +33,7 @@ const SINGLE: Record<number, string> = { 7: 'xl:col-start-2 xl:col-span-7', 5: '
 
 type Row = { wide: boolean; idx: number[] };
 
-function buildRows(items: GalleryItem[]): Row[] {
+function buildRows(items: GalleryPhoto[]): Row[] {
   const rows: Row[] = [];
   let i = 0;
   while (i < items.length) {
@@ -39,7 +50,15 @@ function buildRows(items: GalleryItem[]): Row[] {
   return rows;
 }
 
-export default function ProjectGallery({ items, note }: { items: GalleryItem[]; note?: string }) {
+export default function ProjectGallery({
+  items,
+  note,
+  texts,
+}: {
+  items: GalleryPhoto[];
+  note?: string;
+  texts: GalleryTexts;
+}) {
   const [open, setOpen] = useState<number | null>(null);
   const opener = useRef<HTMLElement | null>(null);
   const dialog = useRef<HTMLDivElement>(null);
@@ -105,7 +124,7 @@ export default function ProjectGallery({ items, note }: { items: GalleryItem[]; 
             style={{ aspectRatio: it.slot === 'wide' ? undefined : RATIO[it.slot] }}
             data-slot={it.slot}
             onClick={(e) => show(i, e.currentTarget)}
-            aria-label={`Görseli büyüt: ${it.alt}`}
+            aria-label={`${texts.enlarge}: ${it.alt}`}
           >
             {it.slot === 'wide' && <span className="block aspect-video md:aspect-[21/9]" />}
             <Photo img={it} sizes={SIZES[it.slot]} />
@@ -155,7 +174,7 @@ export default function ProjectGallery({ items, note }: { items: GalleryItem[]; 
             className="lb on-dark"
             role="dialog"
             aria-modal="true"
-            aria-label="Görsel galerisi"
+            aria-label={texts.dialogAria}
             onPointerDown={down}
             onPointerUp={up}
           >
@@ -178,16 +197,16 @@ export default function ProjectGallery({ items, note }: { items: GalleryItem[]; 
                 </span>
               </p>
               <div className="flex gap-2">
-                <button type="button" className="lb-btn" onClick={() => step(-1)} aria-label="Önceki görsel">
+                <button type="button" className="lb-btn" onClick={() => step(-1)} aria-label={texts.prev}>
                   ←
                 </button>
-                <button type="button" className="lb-btn" onClick={() => step(1)} aria-label="Sonraki görsel">
+                <button type="button" className="lb-btn" onClick={() => step(1)} aria-label={texts.next}>
                   →
                 </button>
               </div>
             </div>
             <button type="button" className="lb-btn label fixed right-4 top-4 !px-5" onClick={() => setOpen(null)}>
-              Kapat
+              {texts.close}
             </button>
           </div>,
           document.body,
