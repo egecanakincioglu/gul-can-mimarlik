@@ -188,7 +188,7 @@ export default function Home() {
             >
               <InView className="wipe" from="left">
                 <div className="zoom relative aspect-[4/5] overflow-hidden bg-beton">
-                  <Photo img={p2.cover} sizes="(min-width:1280px) 40vw, 50vw" />
+                  <Photo img={p2.cover} sizes="(min-width:1280px) 40vw, (min-width:768px) 50vw, 88vw" />
                 </div>
               </InView>
               <div className="mt-4 flex items-center justify-between gap-3">
@@ -317,7 +317,7 @@ export default function Home() {
                 <div className="relative aspect-square overflow-hidden bg-beton">
                   <Photo
                     img={{ src: m.src, alt: m.alt, focalX: 50, focalY: 50 }}
-                    sizes="(min-width:1280px) 30vw, 50vw"
+                    sizes="(min-width:1280px) 30vw, (min-width:768px) 50vw, 100vw"
                   />
                 </div>
               </InView>
@@ -409,7 +409,7 @@ export default function Home() {
                     focalX: 50,
                     focalY: 55,
                   }}
-                  sizes="(min-width:1280px) 30vw, 50vw"
+                  sizes="(min-width:1280px) 30vw, (min-width:768px) 50vw, 100vw"
                 />
               </div>
             </InView>
