@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import { prerender } from 'react-dom/static';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 import StudyoPage from './page';
 
 // The footer may be an async component, which the sync renderer rejects; text-split comments are dropped to match its output.
@@ -23,6 +23,16 @@ beforeEach(() => {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+// The footer prints the current year; freeze it so the snapshot stays valid in later years.
+beforeAll(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-11-06T12:00:00Z'));
+});
+
+afterAll(() => {
+  vi.useRealTimers();
 });
 
 describe('Studio page', () => {
