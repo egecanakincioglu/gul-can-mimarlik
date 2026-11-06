@@ -203,7 +203,8 @@ describe('demo texts', () => {
 
 describe('contact links', () => {
   it('derives the phone and mail links', () => {
-    expect(phoneHref(c)).toBe('tel:+905425933175');
+    expect(phoneHref(c)).toMatch(/^tel:\+90\d{10}$/);
+    expect(phoneHref(c)).toBe(`tel:+90${c.contact.phone.replace(/\D/g, '').slice(1)}`);
     expect(emailHref(c)).toBe('mailto:gulcan.mimarlik@gmail.com');
   });
 });
