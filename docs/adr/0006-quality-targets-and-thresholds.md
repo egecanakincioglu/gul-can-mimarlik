@@ -17,7 +17,7 @@ The site is the public face of an office. It must be fast, accessible and correc
 
 ## Decision
 
-The `site-audit` jobs build the site and audit its pages in CI. The Lighthouse gate is 90 in all four categories (performance, accessibility, best practices, SEO), on mobile and on desktop. The expected score is 95 or more. Thresholds are in `tooling/site-audit/thresholds.json` and only go up.
+The `site-audit` jobs build the site and audit its pages in CI. The Lighthouse gate is 90 in all four categories (performance, accessibility, best practices, SEO), on mobile and on desktop. Lighthouse runs only these four categories, so the stored reports hold nothing else. The expected score is 95 or more. Thresholds are in `tooling/site-audit/thresholds.json` and only go up.
 
 Rules:
 

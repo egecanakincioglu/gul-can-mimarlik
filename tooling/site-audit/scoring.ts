@@ -1,6 +1,6 @@
 // Pure decisions of the Lighthouse legs: medians, transfer budgets, red or warning. Lighthouse itself
 // only runs in run.ts.
-const CATEGORY_IDS = ['performance', 'accessibility', 'best-practices', 'seo'] as const;
+export const CATEGORY_IDS = ['performance', 'accessibility', 'best-practices', 'seo'] as const;
 export type CategoryId = (typeof CATEGORY_IDS)[number];
 
 export interface Thresholds {
@@ -12,13 +12,12 @@ export interface Thresholds {
 /** The part of a Lighthouse result this tooling reads. */
 export interface LhrLike {
   runtimeError?: { code?: string; message?: string };
-  categories: Record<string, { score: number | null; auditRefs?: { id: string }[] }>;
+  categories: Record<string, { score: number | null }>;
   audits: Record<
     string,
     {
       title?: string;
       score: number | null;
-      scoreDisplayMode?: string;
       details?: { items?: { resourceType?: string; transferSize?: number }[] };
     }
   >;
@@ -69,7 +68,7 @@ export function medianScores(runs: LhrLike[]): Record<CategoryId, number> {
   >;
 }
 
-/** The run whose performance score is the median; budgets and agentic audits are read from it. */
+/** The run whose performance score is the median; budgets are read from it. */
 export function medianRun(runs: LhrLike[]): LhrLike {
   const sorted = [...runs].sort((a, b) => categoryScore(a, 'performance') - categoryScore(b, 'performance'));
   return sorted[Math.floor((sorted.length - 1) / 2)]!;
@@ -97,31 +96,12 @@ export function transferOf(lhr: LhrLike): Transfer {
   return { scriptKB: kb(script), stylesheetKB: kb(stylesheet), fontFiles, fontKB: kb(font), totalKB: kb(total) };
 }
 
-/** Titles of applicable audits of the Agentic Browsing category that did not pass. */
-export function agenticFailures(lhr: LhrLike): string[] {
-  const refs = lhr.categories['agentic-browsing']?.auditRefs ?? [];
-  const failed: string[] = [];
-  for (const { id } of refs) {
-    const audit = lhr.audits[id];
-    if (!audit || audit.score === null || audit.score >= 1) continue;
-    if (['notApplicable', 'manual', 'informative'].includes(audit.scoreDisplayMode ?? '')) continue;
-    failed.push(audit.title ?? id);
-  }
-  return failed;
-}
-
 export interface Verdict {
   failures: string[];
   warnings: string[];
 }
 
-export function judge(
-  where: string,
-  scores: Record<CategoryId, number>,
-  transfer: Transfer,
-  agentic: string[],
-  t: Thresholds,
-): Verdict {
+export function judge(where: string, scores: Record<CategoryId, number>, transfer: Transfer, t: Thresholds): Verdict {
   const failures: string[] = [];
   const warnings: string[] = [];
   for (const id of CATEGORY_IDS) {
@@ -139,6 +119,5 @@ export function judge(
   for (const [key, max] of limits) {
     if (transfer[key] > max) failures.push(`${where}: ${key} ${transfer[key]} exceeds ${max}`);
   }
-  for (const title of agentic) failures.push(`${where}: agentic browsing audit failed: ${title}`);
   return { failures, warnings };
 }

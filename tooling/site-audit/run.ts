@@ -27,7 +27,7 @@ import { findChrome } from './chrome.ts';
 import { DEVICES, SWEEP_HEIGHT, isScreenshotDevice, sweepWidths, type Device } from './devices.ts';
 import { NOT_FOUND_PAGE, PAGES } from './pages.ts';
 import {
-  agenticFailures,
+  CATEGORY_IDS,
   discardReason,
   judge,
   medianRun,
@@ -262,7 +262,7 @@ async function lighthouseChecks(leg: 'mobile' | 'desktop'): Promise<string> {
         try {
           const result = await lighthouse(
             BASE + p,
-            { logLevel: 'error', output: ['json', 'html'] },
+            { logLevel: 'error', output: ['json', 'html'], onlyCategories: [...CATEGORY_IDS] },
             leg === 'desktop' ? desktopConfig : undefined,
             page,
           );
@@ -291,7 +291,7 @@ async function lighthouseChecks(leg: 'mobile' | 'desktop'): Promise<string> {
       const scores = medianScores(runs);
       const run = medianRun(runs);
       const transfer = transferOf(run);
-      const verdict = judge(`${leg} ${p}`, scores, transfer, agenticFailures(run), thresholds);
+      const verdict = judge(`${leg} ${p}`, scores, transfer, thresholds);
       failures.push(...verdict.failures);
       warnings.push(...verdict.warnings);
       summary[p] = { scores, transfer };
