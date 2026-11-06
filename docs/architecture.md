@@ -61,6 +61,8 @@ The admin panel is built on mock data ([ADR 0009](adr/0009-admin-panel-and-conte
 
 The contact form validates its input in the browser and sends nothing. A backend that receives the message is planned.
 
+In the demo phase a valid submission is not sent anywhere. It is queued in the browser's local storage, and the admin panel adds queued messages to its demo inbox when it loads.
+
 ## Backend (planned)
 
 No database, API route or authentication exists yet. When a backend arrives, it replaces the data behind the content layer, and the contact form sends its message to it.

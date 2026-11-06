@@ -3,6 +3,7 @@ import type { ContentRepository } from '@/content/store';
 import { validate } from '@/content/validate';
 import type { Issue } from '@/content/validate';
 import type { InboxMessage, SiteContent } from '@/content/types';
+import { DEMO_INBOX_NAME, readDemoInbox } from './demo-inbox';
 import { sampleMessages } from './sample-messages';
 
 export const STORAGE_NAME = 'gcm-admin:v1';
@@ -103,6 +104,21 @@ export const createAdminStore = (seed: SiteContent, storage: StorageLike | null)
     state = { ...state, saveState: persist() };
     emit();
   };
+
+  const queued = storage ? readDemoInbox(storage) : [];
+  if (queued.length) {
+    const known = new Set(state.messages.map((m) => m.id));
+    state = { ...state, messages: [...state.messages, ...queued.filter((m) => !known.has(m.id))] };
+    state = { ...state, saveState: persist() };
+    // Keep the queue until the merged inbox is stored, so a blocked write loses nothing.
+    if (state.saveState.kind === 'saved') {
+      try {
+        storage?.removeItem(DEMO_INBOX_NAME);
+      } catch {
+        // The ids above keep a second merge from duplicating anything.
+      }
+    }
+  }
 
   return {
     getState: () => state,

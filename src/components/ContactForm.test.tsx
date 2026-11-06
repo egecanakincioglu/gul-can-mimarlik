@@ -1,10 +1,13 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { addDemoMessage } from '@/admin/store/demo-inbox';
 import { contactPage } from '@/content/seed/contact';
 import { demo, ui } from '@/content/seed/strings';
 import ContactForm from './ContactForm';
 import type { ContactFormTexts } from './ContactForm';
+
+vi.mock('@/admin/store/demo-inbox', () => ({ addDemoMessage: vi.fn() }));
 
 const { form } = contactPage;
 const texts: ContactFormTexts = {
@@ -18,7 +21,10 @@ const texts: ContactFormTexts = {
   success: form.success,
 };
 
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  vi.mocked(addDemoMessage).mockClear();
+});
 
 // The label text also holds the error message once there is one, so match on its start.
 const field = (label: string) => screen.getByLabelText(new RegExp(`^${label}`));
@@ -100,6 +106,39 @@ describe('ContactForm', () => {
     submit();
     expect(screen.queryByRole('alert')).toBeNull();
     expect(screen.getByRole('status').textContent).toContain('gerçek gönderim yapılmadı');
+  });
+});
+
+describe('ContactForm demo inbox', () => {
+  it('hands a valid submit to the demo inbox', () => {
+    render(<ContactForm texts={texts} />);
+    fillValid();
+    fill('Konum', ' Örnek konum ');
+    submit();
+    expect(addDemoMessage).toHaveBeenCalledTimes(1);
+    expect(addDemoMessage).toHaveBeenCalledWith({
+      name: 'Ayşe Yılmaz',
+      phone: '+90 212 000 00 00',
+      email: 'ayse@example.com',
+      projectType: 'Mimari Proje',
+      location: 'Örnek konum',
+      message: 'Avlulu bir konut için görüşmek istiyoruz.',
+    });
+  });
+
+  it('leaves the location out when it is empty', () => {
+    render(<ContactForm texts={texts} />);
+    fillValid();
+    submit();
+    expect(vi.mocked(addDemoMessage).mock.calls[0][0]).not.toHaveProperty('location');
+  });
+
+  it('does not touch the demo inbox on an invalid submit', () => {
+    render(<ContactForm texts={texts} />);
+    fillValid();
+    fill('E-posta', 'ayse@');
+    submit();
+    expect(addDemoMessage).not.toHaveBeenCalled();
   });
 });
 
