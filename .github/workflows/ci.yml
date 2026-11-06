@@ -215,27 +215,14 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      # Nothing to build until the site is merged; this step and its `if` conditions go away then.
-      - name: Detect the site
-        id: site
-        run: |
-          if [ -f 'src/app/page.tsx' ]; then
-            echo "present=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "present=false" >> "$GITHUB_OUTPUT"
-            echo "The site is not in the repository yet; the remaining steps are skipped."
-          fi
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
-        if: steps.site.outputs.present == 'true'
         with:
           node-version-file: .node-version
       - name: Install dependencies
-        if: steps.site.outputs.present == 'true'
         run: |
           corepack enable
           pnpm install --frozen-lockfile
       - name: Build
-        if: steps.site.outputs.present == 'true'
         run: pnpm build
 
   tooling-linux:
