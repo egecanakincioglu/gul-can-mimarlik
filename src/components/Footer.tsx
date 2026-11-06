@@ -1,10 +1,15 @@
 import Link from 'next/link';
 import { LogoWide } from './Logo';
 import InView from './InView';
-import { nav, site } from '@/content/site';
+import RichText from './RichText';
+import { visibleNav } from './shell-texts';
+import { getContent } from '@/content';
+import { demoText, emailHref, phoneHref, text } from '@/content/select';
 
 /* Contact CTA + footer: one continuous dark mass. */
-export default function Footer({ cta = true, step = 'l' }: { cta?: boolean; step?: 'l' | 'r' }) {
+export default async function Footer({ cta = true, step = 'l' }: { cta?: boolean; step?: 'l' | 'r' }) {
+  const c = await getContent();
+  const demo = demoText(c, 'footer');
   return (
     <footer
       className={`sec-k on-dark ${step === 'l' ? 'mass-in-l' : 'mass-in-r'}`}
@@ -15,23 +20,23 @@ export default function Footer({ cta = true, step = 'l' }: { cta?: boolean; step
           <div className="pb-[clamp(64px,8vw,128px)]">
             <InView className="rise">
               <h2 className="d-xl max-w-[14ch] xl:max-w-none">
-                Bir sonraki mekânı <span className="w8">birlikte</span> çizelim.
+                <RichText value={c.footer.ctaHeading} />
               </h2>
             </InView>
             <InView className="rise mt-12 flex flex-col gap-3 md:mt-16" delay={0.1}>
-              <a href={site.phoneHref} className="d-m big-link inline-flex min-h-[44px] items-center self-start">
-                {site.phone}
+              <a href={phoneHref(c)} className="d-m big-link inline-flex min-h-[44px] items-center self-start">
+                {c.contact.phone}
               </a>
               <a
-                href={site.emailHref}
+                href={emailHref(c)}
                 className="d-m big-link inline-flex min-h-[44px] items-center self-start break-all"
               >
-                {site.email}
+                {c.contact.email}
               </a>
             </InView>
             <InView className="rise mt-10" delay={0.2}>
-              <Link href="/iletisim" className="btn btn-day w-full sm:w-auto">
-                <span>Projenizi konuşalım</span>
+              <Link href={c.footer.cta.href} className="btn btn-day w-full sm:w-auto">
+                <span>{c.footer.cta.label}</span>
                 <span className="arr" aria-hidden>
                   →
                 </span>
@@ -45,19 +50,19 @@ export default function Footer({ cta = true, step = 'l' }: { cta?: boolean; step
             <LogoWide width={320} />
           </div>
           <div className="col-span-4 md:col-span-2 xl:col-span-3 xl:col-start-6">
-            <p className="label muted">Adres</p>
+            <p className="label muted">{c.ui.address}</p>
             <address className="mt-3 not-italic">
-              {site.address.map((l) => (
+              {c.contact.address.map((l) => (
                 <span key={l} className="block">
                   {l}
                 </span>
               ))}
             </address>
           </div>
-          <nav aria-label="Alt menü" className="col-span-4 md:col-span-2 xl:col-span-3 xl:col-start-10">
-            <p className="label muted">Sayfalar</p>
+          <nav aria-label={c.ui.footerNavAria} className="col-span-4 md:col-span-2 xl:col-span-3 xl:col-start-10">
+            <p className="label muted">{c.ui.pages}</p>
             <ul className="mt-3 flex flex-col">
-              {nav.map((n) => (
+              {visibleNav(c).map((n) => (
                 <li key={n.href}>
                   <Link href={n.href} className="big-link inline-flex min-h-[44px] items-center">
                     {n.label}
@@ -69,8 +74,8 @@ export default function Footer({ cta = true, step = 'l' }: { cta?: boolean; step
         </div>
 
         <div className="mt-12 flex flex-col gap-2 border-t border-golge pt-6 text-[14px] text-siva md:flex-row md:justify-between">
-          <p>© 2026 {site.name}</p>
-          <p>{site.demoNote}</p>
+          <p>{text(c, c.ui.copyright)}</p>
+          {demo && <p>{demo}</p>}
         </div>
       </div>
     </footer>

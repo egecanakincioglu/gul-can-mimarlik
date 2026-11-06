@@ -1,12 +1,15 @@
 import Header from '@/components/Header';
+import { headerTexts } from '@/components/shell-texts';
+import { getContent } from '@/content';
 
-export default function SiteLayout({ children }: { children: React.ReactNode }) {
+export default async function SiteLayout({ children }: { children: React.ReactNode }) {
+  const c = await getContent();
   return (
     <>
       <a href="#icerik" className="skip">
-        İçeriğe geç
+        {c.ui.skipLink}
       </a>
-      <Header />
+      <Header texts={headerTexts(c)} />
       <main id="icerik">{children}</main>
     </>
   );

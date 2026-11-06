@@ -5,6 +5,8 @@ import HeroMark from '@/components/HeroMark';
 import BeforeAfter from '@/components/BeforeAfter';
 import ServicesBands from '@/components/ServicesBands';
 import Footer from '@/components/Footer';
+import { beforeAfterTexts } from '@/components/shell-texts';
+import { getContent } from '@/content';
 import { getProject } from '@/content/projects';
 import { processSteps, site } from '@/content/site';
 
@@ -46,7 +48,8 @@ const arrow = (
   </span>
 );
 
-export default function Home() {
+export default async function Home() {
+  const content = await getContent();
   const p1 = getProject('avlulu-konut')!;
   const p2 = getProject('daire-yenileme')!;
   const p3 = getProject('yamac-evi')!;
@@ -287,7 +290,11 @@ export default function Home() {
             </Link>
           </div>
           <div className="col-span-4 md:col-span-8 xl:order-1 xl:col-span-8">
-            <BeforeAfter before={p2.beforeAfter!.before} after={p2.beforeAfter!.after} />
+            <BeforeAfter
+              texts={beforeAfterTexts(content)}
+              before={p2.beforeAfter!.before}
+              after={p2.beforeAfter!.after}
+            />
           </div>
         </div>
       </section>

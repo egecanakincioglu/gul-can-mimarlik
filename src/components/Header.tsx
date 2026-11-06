@@ -4,9 +4,21 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import Logo from './Logo';
-import { nav, site } from '@/content/site';
 
-export default function Header() {
+export type HeaderTexts = {
+  homeAria: string;
+  mainNavAria: string;
+  mobileNavAria: string;
+  menu: string;
+  menuClose: string;
+  menuHome: string;
+  nav: { href: string; label: string }[];
+  phone: { label: string; href: string };
+  email: { label: string; href: string };
+};
+
+export default function Header({ texts }: { texts: HeaderTexts }) {
+  const { nav, phone, email } = texts;
   const pathname = usePathname();
   const isHome = pathname === '/';
   const [scrolled, setScrolled] = useState(false);
@@ -112,18 +124,18 @@ export default function Header() {
     <>
       <header className="hdr" data-tone={tone} data-compact={scrolled ? '1' : '0'}>
         <div className="flex h-full items-center justify-between px-[var(--pad)]">
-          <Link href="/" aria-label="Gül CAN Mimarlık — ana sayfa" className="block">
+          <Link href="/" aria-label={texts.homeAria} className="block">
             <Logo height={28} />
           </Link>
 
-          <nav aria-label="Ana menü" className="hidden items-center gap-9 md:flex">
+          <nav aria-label={texts.mainNavAria} className="hidden items-center gap-9 md:flex">
             {nav.map((n) => (
               <Link key={n.href} href={n.href} className="navlink" aria-current={isActive(n.href) ? 'page' : undefined}>
                 {n.label}
               </Link>
             ))}
-            <a href={site.phoneHref} className="navlink hidden lg:inline-flex">
-              {site.phone}
+            <a href={phone.href} className="navlink hidden lg:inline-flex">
+              {phone.label}
             </a>
           </nav>
 
@@ -135,7 +147,7 @@ export default function Header() {
             aria-controls="mobil-menu"
             onClick={() => setOpen(true)}
           >
-            <span className="label">Menü</span>
+            <span className="label">{texts.menu}</span>
             <span aria-hidden className="flex flex-col gap-[6px]">
               <span className="block h-[2px] w-7 bg-current" />
               <span className="block h-[2px] w-7 bg-current" />
@@ -151,7 +163,7 @@ export default function Header() {
         data-open={open ? '1' : '0'}
         role="dialog"
         aria-modal="true"
-        aria-label="Menü"
+        aria-label={texts.menu}
         aria-hidden={!open}
       >
         <div className="flex min-h-full flex-col px-5 pb-8 pt-4">
@@ -162,11 +174,11 @@ export default function Header() {
               className="label min-h-[48px] border border-golge px-5"
               onClick={() => setOpen(false)}
             >
-              Kapat
+              {texts.menuClose}
             </button>
           </div>
-          <nav aria-label="Mobil menü" className="mt-12 flex flex-col">
-            {[{ href: '/', label: 'Ana sayfa' }, ...nav].map((n, i) => (
+          <nav aria-label={texts.mobileNavAria} className="mt-12 flex flex-col">
+            {[{ href: '/', label: texts.menuHome }, ...nav].map((n, i) => (
               <Link
                 key={n.href}
                 href={n.href}
@@ -180,14 +192,14 @@ export default function Header() {
             ))}
           </nav>
           <div className="mt-auto flex flex-col gap-3 pt-12">
-            <a href={site.phoneHref} className="d-m flex min-h-[56px] items-center border border-golge px-5">
-              {site.phone}
+            <a href={phone.href} className="d-m flex min-h-[56px] items-center border border-golge px-5">
+              {phone.label}
             </a>
             <a
-              href={site.emailHref}
+              href={email.href}
               className="flex min-h-[56px] items-center break-all border border-golge px-5 text-[17px]"
             >
-              {site.email}
+              {email.label}
             </a>
           </div>
         </div>

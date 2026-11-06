@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import { Funnel_Display, Funnel_Sans } from 'next/font/google';
 import Script from 'next/script';
+import { getContent } from '@/content';
 import './globals.css';
 
 // Funnel Display / Funnel Sans: latin-ext alt kümesi Türkçe glifleri (ı İ ğ Ğ ş Ş) kapsar.
@@ -16,11 +17,13 @@ const sans = Funnel_Sans({
   display: 'swap',
 });
 
-export const metadata: Metadata = {
-  title: { default: 'Gül CAN Mimarlık', template: '%s · Gül CAN Mimarlık' },
-  description:
-    'Gül CAN Mimarlık: mimari proje, iç mimarlık, 3D görselleştirme ve uygulama. Çizimden anahtar teslime tek elden. (Tasarım demosu.)',
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const c = await getContent();
+  return {
+    title: { default: c.site.name, template: c.seo.titleTemplate },
+    description: c.seo.description + (c.site.demoMode ? c.seo.demoSuffix : ''),
+  };
+}
 
 const boot = `document.documentElement.classList.add('js');try{if(sessionStorage.getItem('gc-hero'))document.documentElement.dataset.hero='seen'}catch(e){}`;
 

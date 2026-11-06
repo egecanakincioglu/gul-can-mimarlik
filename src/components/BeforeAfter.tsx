@@ -3,9 +3,21 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import Photo from './Photo';
+import { fill } from '@/lib/text';
 import type { Img } from '@/content/site';
 
+export type BeforeAfterTexts = {
+  before: string;
+  after: string;
+  compare: string;
+  sliderAria: string;
+  valueText: string; // contains {n}
+  groupAria: string;
+  caption: string;
+};
+
 type Props = {
+  texts: BeforeAfterTexts;
   before: Img;
   after: Img;
   /* "toggle": use if a pair is visibly misaligned — drag is disabled, only Önce | Sonra. */
@@ -14,6 +26,7 @@ type Props = {
 };
 
 export default function BeforeAfter({
+  texts,
   before,
   after,
   mode = 'slider',
@@ -112,20 +125,20 @@ export default function BeforeAfter({
         <div className="ba-top">
           <Photo img={before} sizes={sizes} />
         </div>
-        <span className="ba-tag l label">Önce</span>
-        <span className="ba-tag r label">Sonra</span>
+        <span className="ba-tag l label">{texts.before}</span>
+        <span className="ba-tag r label">{texts.after}</span>
         {mode === 'slider' && (
           <div className="ba-bar">
             <div
               className="ba-grip"
               role="slider"
               tabIndex={0}
-              aria-label="Önce ve sonra karşılaştırması"
+              aria-label={texts.sliderAria}
               aria-orientation="horizontal"
               aria-valuemin={0}
               aria-valuemax={100}
               aria-valuenow={Math.round(pos)}
-              aria-valuetext={`Önce görseli %${Math.round(pos)} görünür`}
+              aria-valuetext={fill(texts.valueText, { n: String(Math.round(pos)) })}
               onKeyDown={key}
             >
               <span aria-hidden>‹ ›</span>
@@ -135,20 +148,20 @@ export default function BeforeAfter({
       </div>
 
       <div className="mt-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div className="seg" role="group" aria-label="Görünüm">
+        <div className="seg" role="group" aria-label={texts.groupAria}>
           <button type="button" aria-pressed={state === 'before'} onClick={() => choose('before')}>
-            Önce
+            {texts.before}
           </button>
           {mode === 'slider' && (
             <button type="button" aria-pressed={state === 'compare'} onClick={() => choose('compare')}>
-              Karşılaştır
+              {texts.compare}
             </button>
           )}
           <button type="button" aria-pressed={state === 'after'} onClick={() => choose('after')}>
-            Sonra
+            {texts.after}
           </button>
         </div>
-        <p className="caption">İllüstratif karşılaştırma.</p>
+        <p className="caption">{texts.caption}</p>
       </div>
     </div>
   );
