@@ -135,7 +135,7 @@ describe('HomeScreen', () => {
       (m) => fitsRatio(m, RATIOS.square) && m.id !== current.home.materials.items[0].image.media,
     );
     if (!square) throw new Error('seed has no square image');
-    fireEvent.click(screen.getByRole('button', { name: '1. malzeme görseli' }));
+    fireEvent.click(screen.getByRole('button', { name: /^1. malzeme görseli/ }));
     fireEvent.click(screen.getByRole('button', { name: fileName(square.file) }));
     await act(async () => {
       fireEvent.click(screen.getByRole('button', { name: 'Seç' }));

@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useEffect, useState, useSyncExternalStore } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { ReactNode } from 'react';
 import { getContent } from '@/content';
 import Skeleton from '../ui/Skeleton';
@@ -23,11 +23,15 @@ export function AdminStoreProvider({ children, storage }: { children: ReactNode;
 
   useEffect(() => {
     let live = true;
+    let created: AdminStore | null = null;
     void getContent().then((seed) => {
-      if (live) setStore(createAdminStore(seed, storage === undefined ? browserStorage() : storage));
+      if (!live) return;
+      created = createAdminStore(seed, storage === undefined ? browserStorage() : storage);
+      setStore(created);
     });
     return () => {
       live = false;
+      created?.dispose();
     };
   }, [storage]);
 
@@ -56,5 +60,27 @@ export function useAdminStore(): AdminState & Omit<AdminStore, 'getState' | 'sub
     discardDraft: store.discardDraft,
     reset: store.reset,
     setMessageStatus: store.setMessageStatus,
+    flush: store.flush,
+    dispose: store.dispose,
   };
+}
+
+/**
+ * Subscribes to a slice of the state. The component re-renders only when the selected
+ * value changes (Object.is by default). Pass an equality function when the selector builds a new object.
+ */
+export function useAdminSelector<T>(selector: (s: AdminState) => T, isEqual: (a: T, b: T) => boolean = Object.is): T {
+  const store = useContext(StoreContext);
+  if (!store) throw new Error('useAdminSelector must be used inside AdminStoreProvider');
+  const cache = useRef<{ state: AdminState; selector: (s: AdminState) => T; value: T } | null>(null);
+  const getSnapshot = (): T => {
+    const state = store.getState();
+    const prev = cache.current;
+    if (prev && prev.state === state && prev.selector === selector) return prev.value;
+    const picked = selector(state);
+    const value = prev && isEqual(prev.value, picked) ? prev.value : picked;
+    cache.current = { state, selector, value };
+    return value;
+  };
+  return useSyncExternalStore(store.subscribe, getSnapshot, getSnapshot);
 }
