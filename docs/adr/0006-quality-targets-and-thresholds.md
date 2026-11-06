@@ -21,12 +21,13 @@ The site is the public face of an office. It must be fast, accessible and correc
 
 Rules:
 
-1. **Status codes:** every page in `tooling/site-audit/pages.ts` answers 200, and an unknown path answers 404.
+1. **Status codes:** every page in `tooling/site-audit/pages.ts` answers 200, and an unknown path answers 404. The audit loads every page without the browser cache.
 2. **Responsive:** no horizontal overflow at the audited device sizes (320 to 2560 pixels wide, including phone landscape).
 3. **Accessibility:** no axe violations; text has enough contrast.
-4. **Images:** an image that is much larger than its display size fails the audit.
+4. **Images:** an image that is much larger than its display size fails the audit, and so does one that is too small. A source that is as wide as its original file passes.
 5. **Console:** no errors or warnings on audited pages.
-6. **Budgets:** script, stylesheet, font and total transfer sizes stay within the budgets in `thresholds.json`.
+6. **Dialogs:** no dialog is open when a page loads. A hidden menu panel does not count.
+7. **Budgets:** script, stylesheet, font and total transfer sizes stay within the budgets in `thresholds.json`.
 
 ## Consequences
 
