@@ -116,7 +116,7 @@ export type ProcessStep = { id: string; title: string };
 
 export type GallerySlot = 'wide' | 'landscape' | 'portrait' | 'square';
 export type GalleryItem = { image: ImageRef; slot: GallerySlot; caption?: string };
-type BeforeAfterPair = { before: ImageRef; after: ImageRef; lead: string };
+type BeforeAfterPair = { before: ImageRef; after: ImageRef; lead: string; mode?: 'slider' | 'toggle' };
 type ProjectNote = { title: string; text: string };
 export type Project = {
   id: ProjectId;
