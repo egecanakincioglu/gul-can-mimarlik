@@ -1,7 +1,6 @@
 import type { Metadata } from 'next';
 import { Funnel_Display, Funnel_Sans } from 'next/font/google';
 import Script from 'next/script';
-import Header from '@/components/Header';
 import './globals.css';
 
 // Funnel Display / Funnel Sans: latin-ext alt kümesi Türkçe glifleri (ı İ ğ Ğ ş Ş) kapsar.
@@ -33,13 +32,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {boot}
         </Script>
       </head>
-      <body>
-        <a href="#icerik" className="skip">
-          İçeriğe geç
-        </a>
-        <Header />
-        <main id="icerik">{children}</main>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }
