@@ -59,6 +59,9 @@ The admin panel is built on mock data ([ADR 0009](adr/0009-admin-panel-and-conte
 - The save status reads `Yayınlanmamış değişiklikler var` or `Yayında, değişiklik yok`. The discard action is called `Değişiklikleri geri al`.
 - The top bar stays fixed only on windows at least 768 px wide and 501 px tall. Each screen sets the tab title `<screen> | Yönetim`. Client navigation moves focus to the screen heading.
 - Shared UI pieces `Notice`, `Section` and `SelectField` are in `src/admin/ui`.
+- Admin styles use one spacing scale (`--adm-s1` to `--adm-s8`: 4, 8, 12, 16, 24, 32, 48 and 64 pixels) and shared utilities (`.adm-reset-list`, `.adm-row`).
+- The primary button is used only for saving, publishing and the one confirming action in a dialog. Other actions use the secondary button.
+- Tables keep their table roles when the phone layout stacks them.
 - `/yonetim/giris` is the login screen. It has no shell. It is a demo until authentication exists.
 - Screens that are not built yet show a placeholder page.
 - The mock store keeps a draft and a published copy of the content in the browser's local storage under a versioned name (`gcm-admin:v1`). When storage is unavailable, it falls back to the seed content and shows a save error.
