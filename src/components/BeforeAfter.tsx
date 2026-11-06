@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent, PointerEvent } from 'react';
 import Photo from './Photo';
 import { fill } from '@/lib/text';
-import type { Img } from '@/content/site';
+import type { Img } from '@/content/types';
 
 export type BeforeAfterTexts = {
   before: string;

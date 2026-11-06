@@ -1,6 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { getContent } from './index';
-import { filters, matchesFilter, projects as oldProjects } from './projects';
 import {
   captionOf,
   conceptBadge,
@@ -28,6 +27,7 @@ import {
   text,
   tokens,
 } from './select';
+import { validate } from './validate';
 import type { Project, SiteContent } from './types';
 
 let c: SiteContent;
@@ -167,6 +167,35 @@ describe('concept labels and facts', () => {
   });
 });
 
+describe('seed project data', () => {
+  it('has unique slugs and a known category for every project', () => {
+    expect(new Set(c.projects.map((p) => p.slug)).size).toBe(c.projects.length);
+    for (const p of c.projects) expect(c.projectCategories.some((x) => x.id === p.categoryId)).toBe(true);
+  });
+
+  it('maps every scope entry to a services anchor', () => {
+    for (const p of c.projects) {
+      const links = scopeLinks(c, p);
+      expect(links, p.slug).toHaveLength(p.scope.length);
+      for (const l of links) expect(l.href).toMatch(/^\/hizmetler#.+/);
+    }
+  });
+
+  it('calls every before/after comparison illustrative', () => {
+    const withPair = c.projects.filter((p) => p.beforeAfter);
+    expect(withPair.length).toBeGreaterThan(0);
+    for (const p of withPair) expect(p.narrative.join(' ').toLowerCase()).toContain('illüstratif');
+  });
+
+  it('keeps the pair mode through a clone and leaves it absent in the seed', () => {
+    const p = project('daire-yenileme');
+    expect(p.beforeAfter?.mode).toBeUndefined();
+    p.beforeAfter!.mode = 'toggle';
+    expect(structuredClone(c).projects.find((x) => x.id === 'daire-yenileme')?.beforeAfter?.mode).toBe('toggle');
+    expect(validate(c)).toEqual([]);
+  });
+});
+
 describe('counts and tokens', () => {
   it('counts categories, services and steps', () => {
     expect(counts(c)).toEqual({ categories: 4, services: 10, steps: 6 });
@@ -222,12 +251,14 @@ describe('contact links', () => {
 });
 
 describe('filters', () => {
-  it('matches the previous filter behaviour on every project', () => {
-    expect(c.projectFilters.map((f) => f.label)).toEqual([...filters]);
-    for (const [i, filter] of filters.entries()) {
-      const expected = oldProjects.filter((p) => matchesFilter(p, filter)).map((p) => p.slug);
-      const actual = filterProjects(c, c.projectFilters[i].id).map((p) => p.slug);
-      expect(actual, filter).toEqual(expected);
+  it('keeps every project for "all" and only matching ones for the other rules', () => {
+    expect(filterProjects(c, 'tumu')).toHaveLength(c.projects.length);
+    for (const f of c.projectFilters) {
+      const got = filterProjects(c, f.id);
+      expect(got.length, f.label).toBeGreaterThan(0);
+      const rule = f.rule;
+      if (rule.kind === 'category') expect(got.every((p) => p.categoryId === rule.categoryId)).toBe(true);
+      if (rule.kind === 'service') expect(got.every((p) => p.scope.includes(rule.serviceId))).toBe(true);
     }
   });
 
