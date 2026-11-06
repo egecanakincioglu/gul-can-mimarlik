@@ -1,6 +1,7 @@
 'use client';
 
 import SortableList from '../../ui/SortableList';
+import EmptyState from '../../ui/EmptyState';
 import { ReadOnly, Screen, TextField, replaceAt, useContent } from './common';
 
 export default function ProcessStepsScreen() {
@@ -10,6 +11,9 @@ export default function ProcessStepsScreen() {
   return (
     <Screen title="Süreç adımları" preview="/yonetim/onizleme/hizmetler">
       <ReadOnly label="Adım sayısı" value={String(steps.length)} />
+      {steps.length === 0 && (
+        <EmptyState message="Henüz süreç adımı yok." description="Adımlar hizmetler sayfasında sırayla görünür." />
+      )}
       <SortableList
         items={steps}
         getId={(s) => s.id}

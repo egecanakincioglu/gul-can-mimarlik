@@ -75,8 +75,10 @@ describe('EmphasisField', () => {
 describe('HomeScreen', () => {
   it('shows seed values and updates the draft on edit', async () => {
     await mount(<HomeScreen />);
-    expect((screen.getAllByLabelText('Giriş cümlesi')[0] as HTMLTextAreaElement).value).toBe(seed.home.hero.lead);
-    await change('Aşağı bağlantısı', 'Aşağı');
+    expect((screen.getAllByLabelText('Kısa tanıtım cümlesi')[0] as HTMLTextAreaElement).value).toBe(
+      seed.home.hero.lead,
+    );
+    await change('Aşağı kaydırma bağlantısı', 'Aşağı');
     expect(current.home.hero.anchor).toBe('Aşağı');
     expect(seed.home.hero.anchor).not.toBe('Aşağı');
   });
@@ -85,15 +87,17 @@ describe('HomeScreen', () => {
     await mount(<HomeScreen />);
     const titles = Array.from(document.querySelectorAll('summary')).map((s) => s.textContent);
     expect(titles).toEqual([
-      '1. Karşılama',
-      '2. Giriş',
-      '3. Seçili çalışmalar',
-      '4. Önce / Sonra',
+      '1. Karşılama (en üst bölüm)',
+      '2. Giriş yazısı',
+      '3. Seçili çalışmalar (4 proje)',
+      '4. Önce / sonra karşılaştırması',
       '5. Malzemeler',
-      '6. Hizmetler',
+      '6. Hizmetler bandı',
       '7. Süreç',
-      '8. Stüdyo',
+      '8. Stüdyo tanıtımı',
     ]);
+    expect(Array.from(document.querySelectorAll('summary h2'))).toHaveLength(8);
+    expect(document.querySelectorAll('details > p.adm-section-note')).toHaveLength(8);
     expect(screen.getAllByText('Otomatik, düzenlenemez.').length).toBeGreaterThan(2);
   });
 
@@ -179,8 +183,9 @@ describe('ServicesScreen', () => {
     await mount(<ServicesScreen />);
     const first = seed.serviceCategories[0];
     fireEvent.click(screen.getByRole('button', { name: `Düzenle: ${first.name}` }));
-    await change('Adres (slug)', 'Kötü Adres');
+    await change('Sayfa adresi (URL)', 'Kötü Adres');
     expect(screen.getByText('Yalnız küçük harf, rakam ve tire kullanın.')).toBeTruthy();
+    expect(screen.getByText(/^Sitede görünen adres: \/hizmetler#/)).toBeTruthy();
     await change('Ad', 'Yeni ad');
     expect(current.serviceCategories[0].name).toBe('Yeni ad');
     await change('İlgili proje', '');
@@ -194,6 +199,84 @@ describe('ServicesScreen', () => {
     await mount(<ServicesScreen />);
     fireEvent.click(screen.getByRole('button', { name: `Aşağı taşı: ${seed.serviceCategories[0].name}` }));
     expect(current.serviceCategories[1].id).toBe(seed.serviceCategories[0].id);
+  });
+});
+
+describe('HomeScreen labels and tokens', () => {
+  it('uses visitor-facing labels and puts the cover images before the buttons', async () => {
+    await mount(<HomeScreen />);
+    for (const label of [
+      '1. düğme: yazı',
+      '1. düğme: bağlantı',
+      '2. düğme: yazı',
+      '2. düğme: bağlantı',
+      'Aşağı kaydırma bağlantısı',
+      'Üst bant etiketi 1',
+      'Üst bant etiketi 4',
+    ]) {
+      expect(screen.getByLabelText(label)).toBeTruthy();
+    }
+    expect(screen.getByRole('button', { name: /^Kapak görseli, geniş ekran/ })).toBeTruthy();
+    expect(screen.getByRole('button', { name: /^Kapak görseli, telefon/ })).toBeTruthy();
+    const cover = screen.getByRole('button', { name: /^Kapak görseli, geniş ekran/ });
+    const button = screen.getByLabelText('1. düğme: yazı');
+    expect(cover.compareDocumentPosition(button) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByLabelText('Masaüstü afiş')).toBeNull();
+  });
+
+  it('offers no home project placeholder as a choosable option', async () => {
+    const { slots } = seed.home.featured;
+    await mount(<HomeScreen />, {
+      ...seed,
+      home: {
+        ...seed.home,
+        featured: {
+          ...seed.home.featured,
+          slots: [{ ...slots[0], projectId: '' }, slots[1], slots[2], slots[3]],
+        },
+      },
+    });
+    const select = screen.getByLabelText('1. kart: proje') as HTMLSelectElement;
+    expect(select.options[0].textContent).toBe('Proje seçin');
+    expect(select.options[0].disabled).toBe(true);
+  });
+
+  it('lists the tokens of a paragraph and flags an unknown one', async () => {
+    await mount(<HomeScreen />);
+    expect(screen.getByText(/Bu metinde şu ifadeler otomatik doldurulur: {Steps}/)).toBeTruthy();
+    await act(async () => {
+      fireEvent.change(screen.getByDisplayValue(/{Steps}/), { target: { value: '{Yok} adım' } });
+    });
+    expect(screen.getAllByText(/Bilinmeyen ifade: {Yok}. Kullanılabilenler: /).length).toBeGreaterThan(0);
+  });
+});
+
+describe('page screen structure', () => {
+  it('renders section titles as h2 under the h1 on every page screen', async () => {
+    await mount(<ServicesScreen />);
+    expect(document.querySelectorAll('h1')).toHaveLength(1);
+    expect(document.querySelectorAll('summary h2').length).toBeGreaterThan(1);
+    expect(document.querySelector('.pg-section')).toBeNull();
+  });
+
+  it('explains an empty category list with an empty state', async () => {
+    await mount(<ServicesScreen />, { ...seed, serviceCategories: [] });
+    expect(screen.getByText('Henüz kategori yok.')).toBeTruthy();
+  });
+
+  it('names service fields by position, not by live value', async () => {
+    await mount(<ServicesScreen />);
+    fireEvent.click(screen.getByRole('button', { name: `Düzenle: ${seed.serviceCategories[0].name}` }));
+    expect(screen.getByLabelText('1. hizmet adı')).toBeTruthy();
+    expect(screen.getByLabelText('1. hizmet açıklaması')).toBeTruthy();
+  });
+
+  it('shows the recipient warning as a notice', async () => {
+    await mount(<ContactPageScreen />, {
+      ...seed,
+      contactPage: { ...seed.contactPage, form: { ...seed.contactPage.form, notifyTo: '' } },
+    });
+    expect(screen.getByText(/Mesajlar yalnız gelen kutusuna düşer/).closest('.adm-notice-warning')).toBeTruthy();
   });
 });
 
@@ -225,7 +308,7 @@ describe('StudioScreen', () => {
     await change('Görsel alt yazısı', '');
     expect(current.studioPage.imageCaption).toBeUndefined();
     const p = seed.studioPage.principles[0];
-    await change(`İlke başlığı: ${p.title}`, 'Yeni');
+    await change('1. ilke başlığı', 'Yeni');
     expect(current.studioPage.principles[0].title).toBe('Yeni');
     fireEvent.click(screen.getByRole('button', { name: `Aşağı taşı: Yeni` }));
     expect(current.studioPage.principles[1].id).toBe(p.id);
@@ -263,13 +346,13 @@ describe('ProjectsPageScreen', () => {
     await mount(<ProjectsPageScreen />);
     expect((screen.getByLabelText('Başlık') as HTMLInputElement).value).toBe(seed.projectsPage.title);
     await change('Başlık', 'Çalışmalar');
-    await change('Giriş cümlesi', 'Kısa');
+    await change('Kısa tanıtım cümlesi', 'Kısa');
     expect(current.projectsPage).toEqual({ title: 'Çalışmalar', lead: 'Kısa' });
   });
 
   it('flags a lead over 220 characters', async () => {
     await mount(<ProjectsPageScreen />);
-    await change('Giriş cümlesi', 'a'.repeat(221));
+    await change('Kısa tanıtım cümlesi', 'a'.repeat(221));
     expect(screen.getByText('En çok 220 karakter olmalı.')).toBeTruthy();
   });
 });

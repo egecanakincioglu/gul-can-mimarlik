@@ -1,19 +1,12 @@
 'use client';
 
 import { counts, text } from '@/content/select';
+import { home as seedHome } from '@/content/seed/home';
 import type { HomeContent, Project } from '@/content/types';
 import Button from '../../ui/Button';
-import {
-  ImageField,
-  LongField,
-  ReadOnly,
-  Screen,
-  Section,
-  SelectField,
-  TextField,
-  replaceAt,
-  useContent,
-} from './common';
+import Section from '../../ui/Section';
+import SelectField from '../../ui/SelectField';
+import { ImageField, LongField, ReadOnly, Screen, TextField, TokenField, replaceAt, useContent } from './common';
 import EmphasisField from '../shared/EmphasisField';
 
 type Slots = HomeContent['featured']['slots'];
@@ -69,7 +62,11 @@ export default function HomeScreen() {
 
   return (
     <Screen title="Ana sayfa" preview="/yonetim/onizleme">
-      <Section title="1. Karşılama">
+      <Section
+        title="1. Karşılama (en üst bölüm)"
+        description="Sayfanın en üstünde görünür: başlık, kapak görseli, düğmeler ve üst bant."
+        defaultOpen
+      >
         {home.hero.lines.map((line, i) => (
           <EmphasisField
             key={i}
@@ -81,66 +78,71 @@ export default function HomeScreen() {
             onChange={(next) => setHero({ lines: replaceAt(home.hero.lines, i, next) })}
           />
         ))}
+        <ImageField
+          label="Kapak görseli, geniş ekran"
+          ratio="wide"
+          value={home.hero.posterDesktop}
+          onChange={(posterDesktop) => setHero({ posterDesktop })}
+        />
+        <ImageField
+          label="Kapak görseli, telefon"
+          ratio="portrait"
+          value={home.hero.posterMobile}
+          onChange={(posterMobile) => setHero({ posterMobile })}
+        />
         <LongField
-          label="Giriş cümlesi"
+          label="Kısa tanıtım cümlesi"
           value={home.hero.lead}
           max={220}
           rows={3}
           onChange={(lead) => setHero({ lead })}
         />
         <TextField
-          label="Birinci düğme: yazı"
+          label="1. düğme: yazı"
           value={home.hero.primary.label}
           onChange={(label) => setHero({ primary: { ...home.hero.primary, label } })}
         />
         <TextField
-          label="Birinci düğme: adres"
+          label="1. düğme: bağlantı"
           value={home.hero.primary.href}
           onChange={(href) => setHero({ primary: { ...home.hero.primary, href } })}
         />
         <TextField
-          label="İkinci düğme: yazı"
+          label="2. düğme: yazı"
           value={home.hero.secondary.label}
           onChange={(label) => setHero({ secondary: { ...home.hero.secondary, label } })}
         />
         <TextField
-          label="İkinci düğme: adres"
+          label="2. düğme: bağlantı"
           value={home.hero.secondary.href}
           onChange={(href) => setHero({ secondary: { ...home.hero.secondary, href } })}
         />
         {home.hero.band.map((chip, i) => (
           <TextField
             key={i}
-            label={`Bant etiketi ${i + 1}`}
+            label={`Üst bant etiketi ${i + 1}`}
             value={chip}
             max={24}
             onChange={(v) => setHero({ band: replaceAt(home.hero.band, i, v) })}
           />
         ))}
-        <TextField label="Aşağı bağlantısı" value={home.hero.anchor} onChange={(anchor) => setHero({ anchor })} />
-        <ImageField
-          label="Masaüstü afiş"
-          ratio="wide"
-          value={home.hero.posterDesktop}
-          onChange={(posterDesktop) => setHero({ posterDesktop })}
-        />
-        <ImageField
-          label="Mobil afiş"
-          ratio="portrait"
-          value={home.hero.posterMobile}
-          onChange={(posterMobile) => setHero({ posterMobile })}
+        <TextField
+          label="Aşağı kaydırma bağlantısı"
+          value={home.hero.anchor}
+          onChange={(anchor) => setHero({ anchor })}
         />
       </Section>
 
-      <Section title="2. Giriş" open={false}>
+      <Section title="2. Giriş yazısı" description="Karşılamanın altındaki tanıtım cümlesi ve paragrafı.">
         <EmphasisField
           label="Cümle"
           value={home.intro.sentence}
           baseWeight={300}
           onChange={(sentence) => setIntro({ sentence })}
         />
-        <LongField
+        <TokenField
           label="Paragraf"
+          defaultText={seedHome.intro.paragraph}
           value={home.intro.paragraph}
           max={600}
           rows={5}
@@ -150,7 +152,7 @@ export default function HomeScreen() {
         <ReadOnly label="Hizmet" value={`${n.categories} kategori, ${n.services} hizmet`} />
       </Section>
 
-      <Section title="3. Seçili çalışmalar" open={false}>
+      <Section title="3. Seçili çalışmalar (4 proje)" description="Seçtiğiniz dört proje kart olarak görünür.">
         <TextField label="Başlık" value={home.featured.heading} onChange={(heading) => setFeatured({ heading })} />
         <TextField label="Bağlantı yazısı" value={home.featured.link} onChange={(link) => setFeatured({ link })} />
         {home.featured.slots.map((slot, i) => (
@@ -161,10 +163,8 @@ export default function HomeScreen() {
             <SelectField
               label={`${i + 1}. kart: proje`}
               value={slot.projectId}
-              options={[
-                ...(slot.projectId === '' ? [{ value: '', label: 'Proje seçin', disabled: true }] : []),
-                ...projectOptions(slot.projectId, published),
-              ]}
+              options={[...projectOptions(slot.projectId, published)]}
+              placeholder="Proje seçin"
               warning={isDraft(slot.projectId) ? 'Bu proje yayında değil; ana sayfada yayınlanamaz.' : undefined}
               onChange={(projectId) => setSlot(i, { projectId })}
             />
@@ -186,7 +186,10 @@ export default function HomeScreen() {
         ))}
       </Section>
 
-      <Section title="4. Önce / Sonra" open={false}>
+      <Section
+        title="4. Önce / sonra karşılaştırması"
+        description="Seçilen projenin önce ve sonra görsellerini yan yana gösterir."
+      >
         <EmphasisField
           label="Başlık"
           value={home.beforeAfter.heading}
@@ -194,7 +197,7 @@ export default function HomeScreen() {
           onChange={(heading) => setBA({ heading })}
         />
         <LongField
-          label="Giriş cümlesi"
+          label="Kısa tanıtım cümlesi"
           value={home.beforeAfter.lead}
           max={220}
           rows={3}
@@ -212,7 +215,7 @@ export default function HomeScreen() {
         />
       </Section>
 
-      <Section title="5. Malzemeler" open={false}>
+      <Section title="5. Malzemeler" description="Malzeme görselleri ve her birinin bağlı olduğu proje.">
         <EmphasisField
           label="Başlık"
           value={home.materials.heading}
@@ -220,7 +223,7 @@ export default function HomeScreen() {
           onChange={(heading) => setMaterials({ heading })}
         />
         <LongField
-          label="Giriş cümlesi"
+          label="Kısa tanıtım cümlesi"
           value={home.materials.lead}
           max={220}
           rows={3}
@@ -236,7 +239,7 @@ export default function HomeScreen() {
               onChange={(image) => setItem(i, { image })}
             />
             <TextField
-              label={`${i + 1}. malzeme: görsel açıklaması`}
+              label="Görsel açıklaması"
               value={item.image.alt ?? draft.media.find((m) => m.id === item.image.media)?.alt ?? ''}
               max={140}
               onChange={(alt) => setItem(i, { image: { ...item.image, alt } })}
@@ -257,7 +260,10 @@ export default function HomeScreen() {
         ))}
       </Section>
 
-      <Section title="6. Hizmetler" open={false}>
+      <Section
+        title="6. Hizmetler bandı"
+        description="Hizmet sayılarını ve hizmetler sayfasına giden düğmeyi gösterir."
+      >
         <EmphasisField
           label="Başlık"
           value={home.services.heading}
@@ -268,25 +274,25 @@ export default function HomeScreen() {
         <ReadOnly label="Sayılar" value={`${n.categories} kategori, ${n.services} hizmet`} />
       </Section>
 
-      <Section title="7. Süreç" open={false}>
+      <Section title="7. Süreç" description="Süreç başlığı, kısa açıklama ve adım sayısı.">
         <EmphasisField
           label="Başlık"
           value={home.process.heading}
           baseWeight={600}
           onChange={(heading) => setProcess({ heading })}
         />
-        <LongField
+        <TokenField
           label="Paragraf"
+          defaultText={seedHome.process.text}
           value={home.process.text}
           max={600}
           rows={3}
-          helper="{Steps} adım sayısından otomatik üretilir."
           onChange={(t) => setProcess({ text: t })}
         />
         <ReadOnly label="Adım sayısı" value={String(n.steps)} />
       </Section>
 
-      <Section title="8. Stüdyo" open={false}>
+      <Section title="8. Stüdyo tanıtımı" description="Stüdyoyu tanıtan metin, görsel ve stüdyo sayfasına bağlantı.">
         <EmphasisField
           label="Başlık"
           value={home.studioTeaser.heading}
@@ -294,9 +300,10 @@ export default function HomeScreen() {
           onChange={(heading) => setTeaser({ heading })}
         />
         {home.studioTeaser.paragraphs.map((p, i) => (
-          <LongField
+          <TokenField
             key={i}
             label={`${i + 1}. paragraf`}
+            defaultText={seedHome.studioTeaser.paragraphs[i] ?? ''}
             value={p}
             max={600}
             rows={4}

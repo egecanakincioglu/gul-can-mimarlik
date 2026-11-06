@@ -1,12 +1,12 @@
 'use client';
 
-import { useId } from 'react';
 import type { ComponentProps, ReactNode } from 'react';
 import type { SiteContent } from '@/content/types';
 import { useAdminStore } from '../../store/AdminStoreProvider';
 import Field from '../../ui/Field';
 import EditPreviewLayout from '../../preview/EditPreviewLayout';
 import PreviewPane from '../../preview/PreviewPane';
+import { allowedTokens, tokenError, tokenHelper } from '../shared/tokens.ts';
 import ImagePicker from '../media/ImagePicker';
 import { RATIOS } from '../media/ratios';
 import type { ImageRef } from '@/content/types';
@@ -32,60 +32,18 @@ export function LongField(props: Omit<ComponentProps<typeof Field>, 'boxed' | 'm
   return <Field boxed multiline {...props} error={props.error ?? overMessage(props.value, props.max)} />;
 }
 
-export type Option = { value: string; label: string; disabled?: boolean };
-
-export function SelectField({
-  label,
-  value,
-  onChange,
-  options,
-  helper,
-  warning,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: Option[];
-  helper?: string;
-  warning?: string;
-}) {
-  const id = useId();
-  const noteId = `${id}-note`;
-  const note = warning ?? helper;
+/** Long text field that may hold {...} tokens: only the ones in `defaultText` are allowed. */
+export function TokenField({
+  defaultText,
+  ...props
+}: Omit<ComponentProps<typeof Field>, 'boxed' | 'multiline'> & { defaultText: string }) {
+  const allowed = allowedTokens(defaultText);
   return (
-    <div className="field adm-field adm-boxed">
-      <label htmlFor={id} className="label adm-field-label">
-        {label}
-      </label>
-      <select
-        id={id}
-        className="pg-select"
-        value={value}
-        aria-describedby={note ? noteId : undefined}
-        onChange={(e) => onChange(e.target.value)}
-      >
-        {options.map((o) => (
-          <option key={o.value} value={o.value} disabled={o.disabled}>
-            {o.label}
-          </option>
-        ))}
-      </select>
-      {note && (
-        <p id={noteId} className={warning ? 'pg-warning' : 'caption adm-field-note'}>
-          {warning && <strong>Uyarı: </strong>}
-          {note}
-        </p>
-      )}
-    </div>
-  );
-}
-
-export function Section({ title, children, open = true }: { title: string; children: ReactNode; open?: boolean }) {
-  return (
-    <details className="pg-section" open={open}>
-      <summary className="pg-summary">{title}</summary>
-      <div className="pg-section-body">{children}</div>
-    </details>
+    <LongField
+      {...props}
+      helper={props.helper ?? tokenHelper(allowed)}
+      error={props.error ?? tokenError(allowed, props.value)}
+    />
   );
 }
 

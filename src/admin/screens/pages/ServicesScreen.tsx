@@ -1,11 +1,16 @@
 'use client';
 
 import { useState } from 'react';
+import { servicesPage } from '@/content/seed/services';
 import type { ServiceCategory, ServicesPageContent, SiteContent } from '@/content/types';
 import Button from '../../ui/Button';
 import Dialog from '../../ui/Dialog';
 import SortableList from '../../ui/SortableList';
-import { ImageField, LongField, Screen, Section, SelectField, TextField, replaceAt, useContent } from './common';
+import EmptyState from '../../ui/EmptyState';
+import Notice from '../../ui/Notice';
+import Section from '../../ui/Section';
+import SelectField from '../../ui/SelectField';
+import { ImageField, LongField, Screen, TextField, TokenField, replaceAt, useContent } from './common';
 import EmphasisField from '../shared/EmphasisField';
 
 const SLUG = /^[a-z0-9]+(-[a-z0-9]+)*$/;
@@ -63,22 +68,30 @@ export default function ServicesScreen() {
 
   return (
     <Screen title="Hizmetler" preview="/yonetim/onizleme/hizmetler">
-      <Section title="Sayfa metinleri">
+      <Section title="Sayfa metinleri" defaultOpen>
         <EmphasisField
           label="Başlık"
           value={page.heading}
           baseWeight={300}
           onChange={(heading) => setPage({ heading })}
         />
-        <LongField label="Giriş cümlesi" value={page.lead} max={220} rows={3} onChange={(lead) => setPage({ lead })} />
+        <TokenField
+          label="Kısa tanıtım cümlesi"
+          defaultText={servicesPage.lead}
+          value={page.lead}
+          max={220}
+          rows={3}
+          onChange={(lead) => setPage({ lead })}
+        />
         <EmphasisField
           label="Süreç başlığı"
           value={page.processHeading}
           baseWeight={600}
           onChange={(processHeading) => setPage({ processHeading })}
         />
-        <LongField
+        <TokenField
           label="Süreç açıklaması"
+          defaultText={servicesPage.processLead}
           value={page.processLead}
           max={220}
           rows={3}
@@ -87,7 +100,13 @@ export default function ServicesScreen() {
         <LongField label="Dipnot" value={page.footnote} rows={3} onChange={(footnote) => setPage({ footnote })} />
       </Section>
 
-      <Section title="Kategoriler">
+      <Section title="Kategoriler" defaultOpen>
+        {draft.serviceCategories.length === 0 && (
+          <EmptyState
+            message="Henüz kategori yok."
+            description="Kategoriler hizmetler sayfasında kartlar olarak görünür."
+          />
+        )}
         <SortableList
           items={draft.serviceCategories}
           getId={(c) => c.id}
@@ -105,22 +124,22 @@ export default function ServicesScreen() {
           )}
         />
         {blocked && (
-          <div role="alert" className="adm-error">
-            <p className="label">Hata</p>
+          <Notice variant="error">
             <p>{blocked.name} silinemez; şu yerlerde kullanılıyor:</p>
             <ul>
               {blocked.usage.map((u) => (
                 <li key={u}>{u}</li>
               ))}
             </ul>
-          </div>
+          </Notice>
         )}
       </Section>
 
       {cat && (
-        <Section title={`Kategori: ${cat.name}`}>
+        <Section title={`Kategori: ${cat.name}`} defaultOpen>
           <TextField
-            label="Adres (slug)"
+            label="Sayfa adresi (URL)"
+            helper={`Sitede görünen adres: /hizmetler#${cat.slug || '<adres>'}`}
             value={cat.slug}
             error={slugError(draft, cat)}
             onChange={(slug) => setCat(cat.id, { slug })}
@@ -149,6 +168,9 @@ export default function ServicesScreen() {
             onChange={(v) => setCat(cat.id, { projectId: v === '' ? null : v })}
           />
           <h3 className="label">Hizmetler</h3>
+          {cat.services.length === 0 && (
+            <EmptyState message="Bu kategoride hizmet yok." description="Hizmetler kategori kartında listelenir." />
+          )}
           <SortableList
             items={cat.services}
             getId={(s) => s.id}
@@ -157,12 +179,12 @@ export default function ServicesScreen() {
             renderItem={(s, i) => (
               <span className="pg-stack">
                 <TextField
-                  label={`Hizmet adı: ${s.name}`}
+                  label={`${i + 1}. hizmet adı`}
                   value={s.name}
                   onChange={(name) => setCat(cat.id, { services: replaceAt(cat.services, i, { ...s, name }) })}
                 />
                 <LongField
-                  label={`Hizmet açıklaması: ${s.name}`}
+                  label={`${i + 1}. hizmet açıklaması`}
                   value={s.desc}
                   rows={2}
                   onChange={(desc) => setCat(cat.id, { services: replaceAt(cat.services, i, { ...s, desc }) })}
