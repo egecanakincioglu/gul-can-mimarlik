@@ -21,7 +21,7 @@ The project uses the Next.js 16 App Router with React 19 and TypeScript in stric
 
 Rules:
 
-1. Public pages live under `src/app`: `/`, `/hizmetler`, `/projeler`, `/projeler/<slug>`, `/studyo` and `/iletisim`.
+1. Public pages live under the route group `src/app/(site)`: `/`, `/hizmetler`, `/projeler`, `/projeler/<slug>`, `/studyo` and `/iletisim`. The admin panel lives under `src/app/(yonetim)/yonetim`. Search engines do not index it, and it is off unless `ADMIN_ENABLED` is `true`.
 2. The project detail route is generated from the project list. A slug that is not in the list answers 404.
 3. Unknown paths answer 404.
 4. All source code is under `src/`.

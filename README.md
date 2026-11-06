@@ -16,6 +16,7 @@ The site is built and runs. The project pages show concept work with illustrativ
 | `/projeler/<slug>` | Project detail: `avlulu-konut`, `daire-yenileme`, `yamac-evi`, `kose-kafe` |
 | `/studyo` | Studio |
 | `/iletisim` | Contact |
+| `/yonetim` | Admin panel (mock data; off unless `ADMIN_ENABLED=true`) |
 
 Unknown paths show a 404 page.
 
@@ -25,7 +26,7 @@ Unknown paths show a 404 page.
 2. Install the dependencies: `pnpm install --frozen-lockfile`.
 3. Start the development server: `pnpm dev`. Open http://localhost:3000.
 
-The site needs no environment variables and no database. The [development setup guide](docs/guides/development-setup.md) has the details, the daily commands and troubleshooting.
+The site needs no database. The admin panel at `/yonetim` is off unless `ADMIN_ENABLED=true` is set in `.env.local`. The [development setup guide](docs/guides/development-setup.md) has the details, the daily commands and troubleshooting.
 
 ## Contributing
 
