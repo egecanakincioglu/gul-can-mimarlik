@@ -1,0 +1,253 @@
+/* Media screen and pickers. Tokens come from globals.css; radius 0, no shadows. */
+
+.ml-drop {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  padding: 24px;
+  margin-bottom: 16px;
+  background: var(--color-kagit);
+  border: 1px dashed var(--color-golge);
+}
+.ml-drop[data-over] {
+  border: 3px solid var(--color-pose);
+}
+.ml-note {
+  margin-bottom: 16px;
+  padding: 12px 16px;
+  border-left: 3px solid var(--color-golge);
+  background: var(--color-kagit);
+  font-size: 15px;
+}
+.ml-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.ml-bar .adm-field {
+  flex: 1 1 240px;
+  max-width: 420px;
+}
+.ml-body {
+  display: grid;
+  gap: 32px;
+}
+@media (min-width: 1024px) {
+  .ml-body[data-open] {
+    grid-template-columns: minmax(0, 1fr) 360px;
+  }
+}
+.ml-grid,
+.ml-usage,
+.mp-grid,
+.mf-strip {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.ml-grid,
+.mp-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 16px;
+}
+.ml-tile,
+.mp-item {
+  display: block;
+  width: 100%;
+  padding: 0;
+  text-align: left;
+  background: var(--color-kagit);
+  border: 1px solid var(--color-golge);
+  color: var(--color-pose);
+}
+.ml-tile[aria-pressed='true'],
+.mp-item[data-selected] {
+  border: 3px solid var(--color-pose);
+}
+.ml-tile img,
+.mp-item img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+}
+.ml-name {
+  display: block;
+  padding: 8px 12px;
+  font-size: 14px;
+  overflow-wrap: anywhere;
+}
+.ml-thumb {
+  width: 64px;
+  height: 48px;
+  object-fit: cover;
+}
+.ml-detail {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  padding: 24px;
+  background: var(--color-kagit);
+  border: 1px solid var(--color-golge);
+  min-width: 0;
+}
+.ml-facts {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 16px;
+  margin: 0;
+}
+.ml-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.ml-sub {
+  margin-top: 8px;
+}
+.ml-usage li {
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+}
+.ml-delete {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+/* Image picker */
+.mp {
+  display: grid;
+  gap: 8px;
+}
+.mp-trigger {
+  display: block;
+  width: 100%;
+  max-width: 360px;
+  padding: 0;
+  text-align: left;
+  background: transparent;
+  border: 1px solid var(--color-golge);
+}
+.mp-trigger[data-narrow] {
+  max-width: 260px;
+}
+.mp-frame {
+  display: block;
+  width: 100%;
+  background: var(--color-kagit);
+  overflow: hidden;
+}
+.mp-frame img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.mp-empty {
+  display: grid;
+  place-items: center;
+  height: 100%;
+  min-height: 96px;
+  font-size: 15px;
+}
+.mp-strip {
+  display: block;
+  padding: 8px 12px;
+  background: var(--color-pose);
+  color: var(--color-kirec);
+}
+.mp-item[data-unfit] {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.mp-grid li {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+}
+.mp-chosen {
+  font-weight: 600;
+}
+.mp-use {
+  display: grid;
+  gap: 16px;
+  justify-items: start;
+  margin-top: 24px;
+}
+.mp-use .adm-field {
+  width: 100%;
+}
+
+/* Focal picker */
+.mf {
+  display: grid;
+  gap: 12px;
+  width: 100%;
+}
+.mf-stage {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  background: var(--color-kagit);
+  cursor: crosshair;
+  touch-action: none;
+}
+.mf-stage > img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+}
+.mf-veil {
+  position: absolute;
+  background: color-mix(in srgb, var(--color-pose) 50%, transparent);
+  pointer-events: none;
+}
+.mf-crop {
+  position: absolute;
+  border: 2px solid var(--color-pose);
+  pointer-events: none;
+}
+.mf-marker {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  transform: translate(-50%, -50%);
+  background: transparent;
+  border: 2px solid var(--color-pose);
+}
+.mf-marker span {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 1px solid var(--color-kirec);
+}
+.mf-nums {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.mf-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  align-items: end;
+}
+.mf-strip li {
+  justify-items: start;
+  display: grid;
+  gap: 4px;
+}
+.mf-thumb {
+  display: block;
+  height: 64px;
+  background-size: cover;
+  background-repeat: no-repeat;
+  border: 1px solid var(--color-golge);
+}
