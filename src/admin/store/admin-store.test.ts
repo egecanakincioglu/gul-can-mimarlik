@@ -109,6 +109,23 @@ describe('admin store', () => {
     expect(s.saveState.kind).toBe('saved');
   });
 
+  it('records the publish time, persists it and tolerates stores without one', async () => {
+    const storage = memoryStorage();
+    const store = createAdminStore(seed, storage);
+    expect(store.getState().lastPublishedAt).toBeNull();
+    store.updateDraft((d) => withProjectName(d, 'Yayında'));
+    const before = Date.now();
+    await store.publish();
+    const at = store.getState().lastPublishedAt ?? 0;
+    expect(at).toBeGreaterThanOrEqual(before);
+    expect(createAdminStore(seed, storage).getState().lastPublishedAt).toBe(at);
+    store.reset();
+    expect(store.getState().lastPublishedAt).toBeNull();
+    const old = memoryStorage();
+    old.setItem(STORAGE_NAME, JSON.stringify({ version: 1, draft: seed, published: seed, messages: [] }));
+    expect(createAdminStore(seed, old).getState().lastPublishedAt).toBeNull();
+  });
+
   it('discards the draft back to the published content', () => {
     const store = createAdminStore(seed, memoryStorage());
     store.updateDraft((d) => withProjectName(d, 'Geçici'));

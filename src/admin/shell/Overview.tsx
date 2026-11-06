@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { useState } from 'react';
-import { useAdminStore } from '../store/AdminStoreProvider';
+import { useAdminActions, useAdminSelector } from '../store/AdminStoreProvider';
 import Button from '../ui/Button';
 import Dialog from '../ui/Dialog';
-import { issueLink } from '../preview/issue-links';
+import { issueLabel, issueLink } from '../preview/issue-links';
 
 const SHORTCUTS = [
   { href: '/yonetim/projeler/yeni', label: 'Yeni proje' },
@@ -14,11 +14,22 @@ const SHORTCUTS = [
   { href: '/yonetim/gelen-kutusu', label: 'Gelen kutusu' },
 ];
 
+const formatPublished = (ms: number) => {
+  const d = new Date(ms);
+  const time = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+  return `${d.toLocaleDateString('tr-TR')} ${time}`;
+};
+
 const MAX_LISTED = 8;
 const MAX_UNREAD = 3;
 
 export default function Overview() {
-  const { draft, messages, issues, dirty, reset } = useAdminStore();
+  const { reset } = useAdminActions();
+  const draft = useAdminSelector((s) => s.draft);
+  const messages = useAdminSelector((s) => s.messages);
+  const issues = useAdminSelector((s) => s.issues);
+  const dirty = useAdminSelector((s) => s.dirty);
+  const lastPublishedAt = useAdminSelector((s) => s.lastPublishedAt);
   const [confirmReset, setConfirmReset] = useState(false);
 
   const unreadMessages = messages
@@ -42,6 +53,9 @@ export default function Overview() {
           Site durumu
         </h2>
         <p>{dirty ? 'Yayınlanmamış değişiklikler var' : 'Yayında, değişiklik yok'}</p>
+        <p className="caption">
+          {lastPublishedAt === null ? 'Henüz yayınlanmadı' : `Son yayın: ${formatPublished(lastPublishedAt)}`}
+        </p>
         <a href="/" target="_blank" rel="noopener noreferrer" className="tlink">
           Siteyi görüntüle <span className="caption">(yeni sekme)</span>
         </a>
@@ -99,13 +113,12 @@ export default function Overview() {
         ) : (
           <ul className="adm-missing">
             {issues.slice(0, MAX_LISTED).map((issue, i) => {
-              const d = issueLink(draft, issue);
+              const { href } = issueLink(draft, issue);
               return (
                 <li key={`${issue.path}-${i}`}>
-                  <Link href={d.href} className="tlink">
-                    {d.text}
+                  <Link href={href} className="tlink">
+                    {issueLabel(issue, draft)}
                   </Link>
-                  <span className="caption"> {issue.path}</span>
                 </li>
               );
             })}

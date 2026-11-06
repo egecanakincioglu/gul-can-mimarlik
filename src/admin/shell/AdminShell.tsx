@@ -3,10 +3,21 @@
 import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
-import { useAdminStore } from '../store/AdminStoreProvider';
+import { useAdminSelector } from '../store/AdminStoreProvider';
 import PublishPanel from '../preview/PublishPanel';
 import SaveStatus from '../ui/SaveStatus';
+import type { Crumb } from './nav';
 import { INBOX_HREF, crumbsFor, currentState, labelFor, navGroups } from './nav';
+
+// Subscribing here keeps the shell itself from re-rendering on every save state change.
+function ShellSaveStatus() {
+  const saveState = useAdminSelector((s) => s.saveState);
+  const dirty = useAdminSelector((s) => s.dirty);
+  return <SaveStatus state={saveState} dirty={dirty} />;
+}
+
+const sameCrumbs = (a: Crumb[], b: Crumb[]) =>
+  a.length === b.length && a.every((c, i) => c.label === b[i]?.label && c.href === b[i]?.href);
 
 export default function AdminShell({
   pathname,
@@ -17,7 +28,16 @@ export default function AdminShell({
   onLogout?: () => void;
   children: ReactNode;
 }) {
-  const { messages, dirty, saveState, draft } = useAdminStore();
+  const unread = useAdminSelector((s) => s.messages.filter((m) => m.status === 'new').length);
+  const crumbs = useAdminSelector(
+    (s) =>
+      crumbsFor(
+        pathname,
+        (slug) => s.draft.projects.find((p) => p.slug === slug)?.title,
+        (id) => s.messages.find((m) => m.id === id)?.name,
+      ),
+    sameCrumbs,
+  );
   // The menu is open for the route it was opened on, so navigating closes it.
   const [openFor, setOpenFor] = useState<string | null>(null);
   const menuButton = useRef<HTMLButtonElement>(null);
@@ -58,12 +78,6 @@ export default function AdminShell({
     }
   }, [menuOpen]);
 
-  const unread = messages.filter((m) => m.status === 'new').length;
-  const crumbs = crumbsFor(
-    pathname,
-    (slug) => draft.projects.find((p) => p.slug === slug)?.title,
-    (id) => messages.find((m) => m.id === id)?.name,
-  );
   const last = crumbs.at(-1)?.label;
   const screenLabel = (crumbs.length > 1 ? last : (labelFor(pathname) ?? last)) ?? null;
   const title = screenLabel ? `${screenLabel} | Yönetim` : 'Yönetim';
@@ -179,7 +193,7 @@ export default function AdminShell({
                 ))}
               </ol>
             </nav>
-            <SaveStatus state={saveState} dirty={dirty} />
+            <ShellSaveStatus />
             <PublishPanel />
           </div>
         </header>

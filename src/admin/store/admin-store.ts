@@ -18,6 +18,8 @@ export type AdminState = {
   published: SiteContent;
   messages: InboxMessage[];
   saveState: SaveState;
+  /** Epoch milliseconds of the last successful publish; null when never published. */
+  lastPublishedAt: number | null;
   /** The draft differs from the published content. */
   dirty: boolean;
   /** Validation issues of the draft; publishing is blocked while there are any. */
@@ -40,7 +42,13 @@ export interface AdminStore {
   dispose(): void;
 }
 
-type Persisted = { version: 1; draft: SiteContent; published: SiteContent; messages: InboxMessage[] };
+type Persisted = {
+  version: 1;
+  draft: SiteContent;
+  published: SiteContent;
+  messages: InboxMessage[];
+  lastPublishedAt?: number | null;
+};
 
 const isContent = (v: unknown): v is SiteContent => {
   if (!v || typeof v !== 'object') return false;
@@ -124,11 +132,12 @@ export const createAdminStore = (seed: SiteContent, storage: StorageLike | null)
     published: initialPublished,
     messages: saved?.messages ?? sampleMessages(),
     saveState: { kind: 'idle' },
+    lastPublishedAt: typeof saved?.lastPublishedAt === 'number' ? saved.lastPublishedAt : null,
   });
 
   const set = (patch: Partial<Fields>) => {
-    const { draft, published, messages, saveState } = state;
-    state = build({ draft, published, messages, saveState, ...patch });
+    const { draft, published, messages, saveState, lastPublishedAt } = state;
+    state = build({ draft, published, messages, saveState, lastPublishedAt, ...patch });
   };
 
   const emit = () => listeners.forEach((l) => l());
@@ -136,7 +145,13 @@ export const createAdminStore = (seed: SiteContent, storage: StorageLike | null)
   const persistNow = (): SaveState => {
     if (!storage) return { kind: 'error', message: STORAGE_ERROR };
     try {
-      const data: Persisted = { version: 1, draft: state.draft, published: state.published, messages: state.messages };
+      const data: Persisted = {
+        version: 1,
+        draft: state.draft,
+        published: state.published,
+        messages: state.messages,
+        lastPublishedAt: state.lastPublishedAt,
+      };
       storage.setItem(STORAGE_NAME, JSON.stringify(data));
       return { kind: 'saved', at: new Date().toISOString() };
     } catch {
@@ -230,7 +245,7 @@ export const createAdminStore = (seed: SiteContent, storage: StorageLike | null)
           emit();
           return { ok: false, issues: result.reason === 'invalid' ? result.issues : [] };
         }
-        commit({ published: structuredClone(state.draft) }, true);
+        commit({ published: structuredClone(state.draft), lastPublishedAt: Date.now() }, true);
         return { ok: true };
       } finally {
         publishing = false;
@@ -239,7 +254,15 @@ export const createAdminStore = (seed: SiteContent, storage: StorageLike | null)
     discardDraft: () => commit({ draft: structuredClone(state.published) }, true),
     reset: () => {
       repo = createMemoryRepository(seed);
-      commit({ draft: structuredClone(seed), published: structuredClone(seed), messages: sampleMessages() }, true);
+      commit(
+        {
+          draft: structuredClone(seed),
+          published: structuredClone(seed),
+          messages: sampleMessages(),
+          lastPublishedAt: null,
+        },
+        true,
+      );
     },
     setMessageStatus: (id, status) => {
       if (!state.messages.some((m) => m.id === id && m.status !== status)) return;

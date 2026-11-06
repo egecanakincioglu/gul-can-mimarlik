@@ -76,7 +76,7 @@ export default function MessageScreen({ id }: { id: string }) {
       </dl>
       <p className="adm-message-text">{m.message}</p>
       <div className="adm-message-actions">
-        <a href={mailto} className="adm-btn adm-btn-secondary">
+        <a href={mailto} className="adm-btn">
           E-posta ile yanıtla
         </a>
         {archived ? (

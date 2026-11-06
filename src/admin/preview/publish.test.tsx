@@ -1,3 +1,4 @@
+import { Profiler } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 import { getContent } from '@/content';
@@ -34,6 +35,9 @@ function Edits() {
     <>
       <p data-testid="name">{draft.site.name}</p>
       <button onClick={() => updateDraft((c) => ({ ...c, site: { ...c.site, name: 'Yeni ad' } }))}>rename</button>
+      <button onClick={() => updateDraft((c) => ({ ...c, site: { ...c.site, name: 'Başka ad' } }))}>
+        rename again
+      </button>
       <button
         onClick={() =>
           updateDraft((c) => ({
@@ -167,6 +171,30 @@ describe('PublishPanel', () => {
       .getAllByRole('button', { hidden: true })
       .map((b) => b.textContent);
     expect(names).toEqual(['Vazgeç', 'Yayınla']);
+  });
+});
+
+describe('PublishPanel renders', () => {
+  it('skips draft edits that leave the flags unchanged and still tracks the dirty flag', async () => {
+    let commits = 0;
+    render(
+      <AdminStoreProvider storage={memoryStorage()}>
+        <Edits />
+        <Profiler id="panel" onRender={() => void (commits += 1)}>
+          <PublishPanel />
+        </Profiler>
+      </AdminStoreProvider>,
+    );
+    await screen.findByTestId('name');
+    fireEvent.click(screen.getByText('rename'));
+    await waitFor(() => expect(publishButton().disabled).toBe(false));
+    const afterFirst = commits;
+    fireEvent.click(screen.getByText('rename'));
+    expect(commits).toBe(afterFirst);
+    fireEvent.click(screen.getByText('rename again'));
+    await waitFor(() => expect(screen.getByTestId('name').textContent).toBe('Başka ad'));
+    expect(commits).toBe(afterFirst);
+    expect(publishButton().disabled).toBe(false);
   });
 });
 
