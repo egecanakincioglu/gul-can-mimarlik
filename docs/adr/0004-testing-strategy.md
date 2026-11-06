@@ -17,7 +17,7 @@ The site contains typed content, helpers that find and order projects, and inter
 
 ## Decision
 
-The project uses Vitest with Testing Library and jsdom. Browser-level checks are done by the `site-audit` jobs.
+The project uses Vitest with Testing Library and jsdom. Browser-level checks are done by the `site-audit` jobs ([ADR 0006](0006-quality-targets-and-thresholds.md)).
 
 Rules:
 
