@@ -44,7 +44,7 @@ export default function SortableList<T>({ items, getId, getLabel, onChange, rend
 
   return (
     <div>
-      <ul ref={list} className="adm-sortable">
+      <ul ref={list} className="adm-reset-list adm-sortable">
         {items.map((item, i) => {
           const label = getLabel(item);
           return (

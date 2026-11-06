@@ -24,12 +24,7 @@ export default function EmptyState({
           {actionLabel}
         </Link>
       ) : (
-        actionLabel &&
-        onAction && (
-          <Button variant="primary" onClick={onAction}>
-            {actionLabel}
-          </Button>
-        )
+        actionLabel && onAction && <Button onClick={onAction}>{actionLabel}</Button>
       )}
     </div>
   );

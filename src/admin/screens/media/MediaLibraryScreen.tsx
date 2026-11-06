@@ -112,7 +112,7 @@ function MediaDetail({
 
       <h3 className="label ml-sub">Kullanıldığı yerler</h3>
       {used ? (
-        <ul className="ml-usage">
+        <ul className="adm-reset-list ml-usage">
           {usage.map((path) => {
             const u = describeUsage(draft, path);
             return (
@@ -251,11 +251,11 @@ export default function MediaLibraryScreen() {
             e.target.value = '';
           }}
         />
-        <Button variant="primary" data-upload onClick={() => input.current?.click()}>
+        <Button data-upload onClick={() => input.current?.click()}>
           Dosya seç
         </Button>
       </div>
-      <p role="status" className="ml-note">
+      <p role="status" className="adm-notice adm-notice-info ml-note">
         {status}
       </p>
       {problem && (
@@ -286,7 +286,7 @@ export default function MediaLibraryScreen() {
               }
             />
           ) : view === 'grid' ? (
-            <ul className="ml-grid" aria-label="Görseller">
+            <ul className="adm-reset-list ml-grid" aria-label="Görseller">
               {items.map((m) => (
                 <li key={m.id}>
                   <button

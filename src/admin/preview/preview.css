@@ -1,7 +1,7 @@
 .adm-preview {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--adm-s3);
   min-width: 0;
 }
 .adm-preview-widths {
@@ -31,16 +31,16 @@
   position: absolute;
   inset: 0;
   z-index: 1;
-  padding: 24px;
+  padding: var(--adm-s5);
   background: var(--color-kagit);
   pointer-events: none;
 }
 .adm-preview-note {
-  padding: 24px;
+  padding: var(--adm-s5);
 }
 .adm-split {
   display: grid;
-  gap: 24px;
+  gap: var(--adm-s5);
   min-width: 0;
 }
 .adm-split-editor,
@@ -54,7 +54,7 @@
 @media (min-width: 1280px) {
   .adm-split {
     grid-template-columns: minmax(0, 760px) minmax(480px, 1fr);
-    gap: 32px;
+    gap: var(--adm-s6);
     align-items: start;
   }
   .adm-split-toggle {
@@ -74,8 +74,8 @@
   }
 }
 .adm-publish-issues ul {
-  margin: 8px 0 16px;
-  padding-left: 20px;
+  margin: var(--adm-s2) 0 var(--adm-s4);
+  padding-left: var(--adm-s5);
 }
 .adm-publish-issues code {
   font-size: 13px;

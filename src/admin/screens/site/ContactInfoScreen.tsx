@@ -59,7 +59,7 @@ export default function ContactInfoScreen() {
       </Section>
 
       <Section title="Adres">
-        <ul className="adm-site-lines">
+        <ul className="adm-reset-list adm-site-lines">
           {contact.address.map((line, i) => (
             <li key={i}>
               <Field
@@ -94,7 +94,7 @@ export default function ContactInfoScreen() {
       </Section>
 
       <Section title="Kullanıldığı yerler">
-        <ul className="adm-site-plain">
+        <ul className="adm-reset-list adm-site-plain">
           {USAGE.map((u) => (
             <li key={u}>{u}</li>
           ))}

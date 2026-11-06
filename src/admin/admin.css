@@ -1,5 +1,20 @@
 /* Panel styles. Tokens come from globals.css; radius 0, no shadows, no diagonals. */
 
+/* Spacing scale, overlays and the disabled look, shared by every panel screen. The sign-in screen sits outside .adm. */
+.adm,
+.adm-login-wrap {
+  --adm-s1: 4px;
+  --adm-s2: 8px;
+  --adm-s3: 12px;
+  --adm-s4: 16px;
+  --adm-s5: 24px;
+  --adm-s6: 32px;
+  --adm-s7: 48px;
+  --adm-s8: 64px;
+  --adm-scrim: color-mix(in srgb, var(--color-pose) 60%, transparent);
+  --adm-veil: color-mix(in srgb, var(--color-pose) 50%, transparent);
+  --adm-disabled-opacity: var(--adm-disabled-opacity);
+}
 .adm {
   min-height: 100dvh;
   background: var(--color-kirec);
@@ -7,12 +22,24 @@
 }
 .adm-loading {
   display: grid;
-  gap: 16px;
-  padding: 24px;
+  gap: var(--adm-s4);
+  padding: var(--adm-s5);
 }
 .adm-skel {
   display: block;
   background: var(--color-siva);
+}
+
+.adm-reset-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.adm-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--adm-s4);
 }
 
 /* ---------- Layout ---------- */
@@ -43,7 +70,7 @@
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 18px;
-  padding: 16px 24px 4px;
+  padding: var(--adm-s4) var(--adm-s5) var(--adm-s1);
 }
 /* The nav is the scroll area; the foot links stay pinned below it. */
 .adm-nav {
@@ -51,18 +78,13 @@
   min-height: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-bottom: 8px;
+  padding-bottom: var(--adm-s2);
 }
 .adm-group {
-  padding-top: 8px;
+  padding-top: var(--adm-s2);
 }
 .adm-group .label {
-  padding: 0 24px 2px;
-}
-.adm-nav ul {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  padding: 0 var(--adm-s5) var(--adm-s1);
 }
 .adm-nav a,
 .adm-side-foot a,
@@ -70,10 +92,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: var(--adm-s3);
   width: 100%;
   min-height: 44px;
-  padding: 0 24px 0 21px;
+  padding: 0 var(--adm-s5) 0 calc(var(--adm-s5) - 3px);
   border-left: 3px solid transparent;
   font-size: 15px;
   text-align: left;
@@ -100,7 +122,7 @@
 }
 .adm-count {
   min-width: 24px;
-  padding: 2px 6px;
+  padding: var(--adm-s1) var(--adm-s2);
   border: 1px solid var(--color-siva);
   font-size: 12px;
   text-align: center;
@@ -108,7 +130,7 @@
 .adm-side-foot {
   flex: none;
   border-top: 1px solid var(--color-golge);
-  padding: 4px 0;
+  padding: var(--adm-s1) 0;
 }
 
 /* Height of the sticky top bar (64px bar + 1px border); 0 where the bar scrolls away. */
@@ -131,7 +153,7 @@
   }
 }
 .adm-banner {
-  padding: 6px 24px;
+  padding: var(--adm-s2) var(--adm-s5);
   font-size: 13px;
   line-height: 1.4;
   color: var(--color-golge);
@@ -140,9 +162,9 @@
 .adm-bar {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: var(--adm-s4);
   min-height: 64px;
-  padding: 0 24px;
+  padding: 0 var(--adm-s5);
 }
 .adm-crumbs {
   flex: 1;
@@ -151,15 +173,12 @@
 .adm-crumbs ol {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
+  gap: var(--adm-s2);
   font-size: 15px;
 }
 .adm-crumbs li + li::before {
   content: '/';
-  margin-right: 8px;
+  margin-right: var(--adm-s2);
   color: var(--color-golge);
 }
 .adm-crumbs li[aria-current] {
@@ -176,7 +195,7 @@
 }
 .adm-bar .btn {
   min-height: 48px;
-  padding: 0 20px;
+  padding: 0 var(--adm-s4);
 }
 .adm-btn.adm-menu-btn,
 .adm-side-close {
@@ -186,17 +205,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding-right: 16px;
+  padding-right: var(--adm-s4);
 }
 .adm-side-close {
   min-height: 44px;
-  padding: 0 20px;
+  padding: 0 var(--adm-s4);
   border: 1px solid var(--color-kirec);
   background: transparent;
   color: var(--color-kirec);
 }
 .adm-content {
-  padding: 32px 24px 64px;
+  padding: var(--adm-s6) var(--adm-s5) var(--adm-s8);
   max-width: 1200px;
 }
 /* Screens with a live preview use the full width so the preview track grows. */
@@ -213,7 +232,7 @@
   font-weight: 600;
   font-size: 28px;
   line-height: 1.2;
-  margin-bottom: 24px;
+  margin-bottom: var(--adm-s5);
 }
 .adm-scrim {
   display: none;
@@ -236,7 +255,7 @@
     position: fixed;
     inset: 0;
     z-index: 35;
-    background: color-mix(in srgb, var(--color-pose) 60%, transparent);
+    background: var(--adm-scrim);
   }
   .adm-btn.adm-menu-btn,
   .adm-side-close {
@@ -247,17 +266,17 @@
 @media (max-width: 767px) {
   .adm-bar {
     flex-wrap: wrap;
-    padding: 12px 16px;
+    padding: var(--adm-s3) var(--adm-s4);
   }
   .adm-crumbs {
     flex-basis: 100%;
     order: 5;
   }
   .adm-banner {
-    padding: 6px 16px;
+    padding: var(--adm-s2) var(--adm-s4);
   }
   .adm-content {
-    padding: 24px 16px 48px;
+    padding: var(--adm-s5) var(--adm-s4) var(--adm-s7);
   }
 }
 
@@ -267,7 +286,7 @@
   align-items: center;
   justify-content: center;
   min-height: 44px;
-  padding: 0 20px;
+  padding: 0 var(--adm-s4);
   font-size: 15px;
   font-weight: 500;
   background: transparent;
@@ -299,6 +318,13 @@
 .adm .btn:disabled:focus-visible .arr {
   transform: none;
 }
+/* Pressed: a one-pixel nudge, no colour change. */
+.adm-btn:active:not(:disabled),
+.adm .btn:active:not(:disabled),
+.adm-tab:active,
+.adm .seg button:active {
+  transform: translateY(1px);
+}
 .adm-btn-destructive {
   border-left-width: 3px;
 }
@@ -311,11 +337,11 @@
 
 /* ---------- Fields ---------- */
 .adm-field + .adm-field {
-  margin-top: 24px;
+  margin-top: var(--adm-s5);
 }
 .adm-field-label {
   display: block;
-  margin-bottom: 8px;
+  margin-bottom: var(--adm-s2);
 }
 /* Field labels read as sentence case; the uppercase micro style is for group headings only. */
 .adm .label,
@@ -338,7 +364,7 @@
   resize: vertical;
 }
 .adm .err {
-  padding-left: 8px;
+  padding-left: var(--adm-s2);
   border-left: 3px solid var(--color-pose);
   font-size: 14px;
   font-weight: 500;
@@ -350,7 +376,7 @@
   border: 0;
 }
 .adm-field-note {
-  margin-top: 6px;
+  margin-top: var(--adm-s2);
 }
 .adm-field input,
 .adm-field textarea {
@@ -361,9 +387,12 @@
 .adm-boxed select {
   width: 100%;
   min-height: 44px;
-  padding: 10px 12px;
+  padding: var(--adm-s2) var(--adm-s3);
+  font-size: 16px;
   background: var(--color-kagit);
   border: 1px solid var(--color-golge);
+  border-radius: 0;
+  color: var(--color-pose);
 }
 .adm-boxed input:focus,
 .adm-boxed textarea:focus,
@@ -371,36 +400,37 @@
   outline: 2px solid var(--color-pose);
   outline-offset: 3px;
   border: 1px solid var(--color-golge);
-  padding: 10px 12px;
+  padding: var(--adm-s2) var(--adm-s3);
 }
 .adm-boxed [aria-invalid='true'],
 .adm-boxed [aria-invalid='true']:focus {
   border: 3px solid var(--color-pose);
-  padding: 8px 10px;
+  /* The 3px border takes 2px more than the resting 1px one, so the box keeps its size. */
+  padding: calc(var(--adm-s2) - 2px) calc(var(--adm-s3) - 2px);
 }
 .adm-login-wrap {
   display: flex;
   align-items: center;
   justify-content: center;
   min-height: 100dvh;
-  padding: 24px 16px;
+  padding: var(--adm-s5) var(--adm-s4);
 }
 .adm-login {
   width: 100%;
   max-width: 420px;
 }
 .adm-login .btn {
-  margin-top: 32px;
+  margin-top: var(--adm-s6);
 }
 .adm-login .caption {
-  margin-top: 16px;
+  margin-top: var(--adm-s4);
 }
 
 /* ---------- Toggle ---------- */
 .adm-toggle-row {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: var(--adm-s3);
 }
 .adm-toggle {
   position: relative;
@@ -435,9 +465,9 @@
 .adm-tabs {
   display: flex;
   flex-wrap: wrap;
-  gap: 24px;
+  gap: var(--adm-s5);
   border-bottom: 1px solid var(--color-golge);
-  margin-bottom: 24px;
+  margin-bottom: var(--adm-s5);
 }
 .adm-tab {
   min-height: 44px;
@@ -454,7 +484,7 @@
   border-bottom-color: var(--color-pose);
 }
 .adm-tab-err {
-  padding-left: 6px;
+  padding-left: var(--adm-s2);
   border-left: 3px solid var(--color-pose);
   font-size: 13px;
 }
@@ -469,36 +499,31 @@
   border: 1px solid var(--color-pose);
 }
 .adm-dialog::backdrop {
-  background: color-mix(in srgb, var(--color-pose) 60%, transparent);
+  background: var(--adm-scrim);
 }
 .adm-dialog-body {
-  padding: 24px;
+  padding: var(--adm-s5);
 }
 .adm-dialog-title {
   font-family: var(--font-display);
   font-weight: 600;
   font-size: 22px;
-  margin-bottom: 12px;
+  margin-bottom: var(--adm-s3);
 }
 .adm-dialog-actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 24px;
+  gap: var(--adm-s3);
+  margin-top: var(--adm-s5);
 }
 
 /* ---------- Sortable list ---------- */
-.adm-sortable {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
 .adm-sortable-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--adm-s2);
   min-height: 56px;
-  padding: 6px 0;
+  padding: var(--adm-s1) 0;
   border-top: 1px solid var(--color-golge);
 }
 .adm-sortable-row:last-child {
@@ -526,13 +551,13 @@
 }
 .adm-table th {
   text-align: left;
-  padding: 12px 16px;
+  padding: var(--adm-s3) var(--adm-s4);
   background: var(--color-kagit);
   border-bottom: 1px solid var(--color-golge);
 }
 .adm-table td {
   min-height: 56px;
-  padding: 12px 16px;
+  padding: var(--adm-s3) var(--adm-s4);
   border-bottom: 1px solid var(--color-siva);
   vertical-align: middle;
 }
@@ -554,11 +579,11 @@
   }
   .adm-table tr {
     border-bottom: 1px solid var(--color-golge);
-    padding: 8px 0;
+    padding: var(--adm-s2) 0;
   }
   .adm-table td {
     border: 0;
-    padding: 6px 16px;
+    padding: var(--adm-s2) var(--adm-s4);
   }
   .adm-table td::before {
     content: attr(data-label);
@@ -573,23 +598,26 @@
 .adm-empty {
   display: grid;
   justify-items: start;
-  gap: 16px;
-  padding: 32px 0;
+  gap: var(--adm-s4);
+  padding: var(--adm-s6) 0;
 }
 .adm-error {
   border: 1px solid var(--color-pose);
   border-left-width: 3px;
-  padding: 16px 20px;
+  padding: var(--adm-s4) var(--adm-s4);
   display: grid;
   justify-items: start;
-  gap: 12px;
+  gap: var(--adm-s3);
 }
 
 .adm-notice {
   border: 1px solid var(--color-golge);
   border-left: 3px solid var(--color-pose);
-  padding: 12px 16px;
+  padding: var(--adm-s3) var(--adm-s4);
   font-size: 14px;
+}
+.adm-notice:empty {
+  display: none;
 }
 .adm-notice-error {
   border-color: var(--color-pose);
@@ -606,7 +634,7 @@
   display: flex;
   align-items: center;
   min-height: 44px;
-  padding: 8px 0;
+  padding: var(--adm-s2) 0;
   cursor: pointer;
 }
 .adm-section-title {
@@ -617,10 +645,10 @@
   overflow-wrap: anywhere;
 }
 .adm-section-note {
-  margin-bottom: 12px;
+  margin-bottom: var(--adm-s3);
 }
 .adm-section-body {
-  padding-bottom: 24px;
+  padding-bottom: var(--adm-s5);
 }
 .adm-select select {
   display: block;
@@ -633,9 +661,9 @@
 .adm-site-status {
   display: grid;
   justify-items: start;
-  gap: 8px;
-  padding: 16px 20px;
-  margin-bottom: 24px;
+  gap: var(--adm-s2);
+  padding: var(--adm-s4) var(--adm-s4);
+  margin-bottom: var(--adm-s5);
   background: var(--color-kagit);
   border: 1px solid var(--color-siva);
   border-left: 3px solid var(--color-pose);
@@ -644,23 +672,20 @@
   margin-top: 0;
 }
 .adm-overview section {
-  margin-top: 40px;
+  margin-top: var(--adm-s7);
 }
 .adm-overview .label {
-  margin-bottom: 12px;
+  margin-bottom: var(--adm-s3);
 }
 .adm-counters {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 16px;
+  gap: var(--adm-s4);
 }
 .adm-counter {
   display: grid;
-  gap: 4px;
-  padding: 16px 20px;
+  gap: var(--adm-s1);
+  padding: var(--adm-s4) var(--adm-s4);
   background: var(--color-kagit);
   border: 1px solid var(--color-siva);
 }
@@ -672,16 +697,25 @@
 }
 .adm-shortcuts,
 .adm-missing {
-  list-style: none;
-  margin: 0;
-  padding: 0;
   display: grid;
-  gap: 4px;
+  gap: var(--adm-s1);
 }
 .adm-shortcuts a,
 .adm-missing a {
   min-height: 44px;
 }
 .adm-overview .adm-btn {
-  margin-top: 12px;
+  margin-top: var(--adm-s3);
+}
+
+/* ---------- Hover on pointer devices ---------- */
+@media (hover: hover) {
+  .adm .seg button[aria-pressed='false']:hover,
+  .adm-toggle[aria-checked='false']:hover {
+    background: var(--color-siva);
+  }
+  .adm .ml-tile:hover,
+  .adm .mp-item:hover:not([data-unfit]) {
+    border-color: var(--color-pose);
+  }
 }

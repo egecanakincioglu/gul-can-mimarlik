@@ -12,7 +12,7 @@ import type { TextRow } from './texts';
 function TextInput({ row, error, onChange }: { row: TextRow; error?: string; onChange: (v: string) => void }) {
   const id = useId();
   return (
-    <div className="adm-site-cell">
+    <div className="adm-boxed">
       <input
         type="text"
         aria-label={row.name}

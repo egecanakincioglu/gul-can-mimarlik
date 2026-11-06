@@ -13,13 +13,14 @@ export default function Table<T>({
   rows: readonly T[];
   getKey: (row: T) => string;
 }) {
+  // Explicit roles: the narrow layout sets rows and cells to display:block, which drops the native table semantics.
   return (
-    <table className="adm-table">
+    <table role="table" className="adm-table">
       <caption className="sr-only">{caption}</caption>
       <thead>
-        <tr>
+        <tr role="row">
           {columns.map((c) => (
-            <th key={c.id} scope="col" className="label">
+            <th key={c.id} role="columnheader" scope="col" className="label">
               {c.header}
             </th>
           ))}
@@ -27,9 +28,9 @@ export default function Table<T>({
       </thead>
       <tbody>
         {rows.map((row) => (
-          <tr key={getKey(row)}>
+          <tr key={getKey(row)} role="row">
             {columns.map((c) => (
-              <td key={c.id} data-label={c.header}>
+              <td key={c.id} role="cell" data-label={c.header}>
                 {c.render(row)}
               </td>
             ))}

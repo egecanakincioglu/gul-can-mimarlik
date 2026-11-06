@@ -137,7 +137,7 @@ export default function AdminShell({
                   {group.label}
                 </p>
               )}
-              <ul aria-labelledby={group.label ? `adm-group-${g}` : undefined}>
+              <ul className="adm-reset-list" aria-labelledby={group.label ? `adm-group-${g}` : undefined}>
                 {group.items.map((item) => (
                   <li key={item.href}>
                     <Link href={item.href} aria-current={currentState(item.href, pathname)}>
@@ -182,7 +182,7 @@ export default function AdminShell({
               Menü
             </button>
             <nav aria-label="Konum" className="adm-crumbs">
-              <ol>
+              <ol className="adm-reset-list">
                 <li>
                   <Link href="/yonetim">Yönetim</Link>
                 </li>

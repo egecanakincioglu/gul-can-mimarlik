@@ -27,7 +27,7 @@ export default function InboxScreen() {
   return (
     <div>
       <h1 className="adm-title">Gelen kutusu</h1>
-      <div className="adm-inbox-bar">
+      <div className="adm-row adm-inbox-bar">
         <div className="seg" role="group" aria-label="Mesaj filtresi">
           <button type="button" aria-pressed={filter === 'inbox'} onClick={() => setFilter('inbox')}>
             Gelen
@@ -43,7 +43,10 @@ export default function InboxScreen() {
           <p className="caption adm-inbox-hint">{empty.hint}</p>
         </>
       ) : (
-        <ul className="adm-inbox-list" aria-label={filter === 'archive' ? 'Arşivlenen mesajlar' : 'Gelen mesajlar'}>
+        <ul
+          className="adm-reset-list adm-inbox-list"
+          aria-label={filter === 'archive' ? 'Arşivlenen mesajlar' : 'Gelen mesajlar'}
+        >
           {shown.map((m) => {
             const unread = m.status === 'new';
             return (

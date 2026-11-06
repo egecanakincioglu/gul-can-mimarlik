@@ -213,6 +213,21 @@ describe('Table, EmptyState, ErrorBlock, Skeleton', () => {
     expect(screen.getByRole('cell', { name: 'Avlulu konut' }).getAttribute('data-label')).toBe('Başlık');
   });
 
+  it('keeps explicit table roles so the stacked narrow layout stays a table', () => {
+    const { container } = render(
+      <Table
+        caption="Projeler"
+        rows={[{ id: 'a', title: 'Avlulu konut' }]}
+        getKey={(r) => r.id}
+        columns={[{ id: 'title', header: 'Başlık', render: (r) => r.title }]}
+      />,
+    );
+    expect(container.querySelector('table')?.getAttribute('role')).toBe('table');
+    expect(Array.from(container.querySelectorAll('tr')).map((r) => r.getAttribute('role'))).toEqual(['row', 'row']);
+    expect(container.querySelector('th')?.getAttribute('role')).toBe('columnheader');
+    expect(container.querySelector('td')?.getAttribute('role')).toBe('cell');
+  });
+
   it('shows one sentence and one action in the empty state', () => {
     const onAction = vi.fn();
     render(<EmptyState message="Henüz proje yok." actionLabel="Yeni proje" onAction={onAction} />);

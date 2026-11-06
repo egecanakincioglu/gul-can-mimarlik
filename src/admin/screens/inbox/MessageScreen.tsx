@@ -50,7 +50,7 @@ export default function MessageScreen({ id }: { id: string }) {
         Gelen kutusuna dön
       </Link>
       {moved && archived && (
-        <p role="status" className="adm-message-moved">
+        <p role="status" className="adm-row adm-message-moved">
           <span>Arşive taşındı.</span>
           <Button
             onClick={() => {
@@ -75,7 +75,7 @@ export default function MessageScreen({ id }: { id: string }) {
         ))}
       </dl>
       <p className="adm-message-text">{m.message}</p>
-      <div className="adm-message-actions">
+      <div className="adm-row">
         <a href={mailto} className="adm-btn">
           E-posta ile yanıtla
         </a>
@@ -84,7 +84,6 @@ export default function MessageScreen({ id }: { id: string }) {
         ) : (
           <>
             <Button
-              variant="primary"
               onClick={() => {
                 setMessageStatus(m.id, 'archived');
                 setMoved(true);

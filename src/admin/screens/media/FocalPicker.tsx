@@ -190,7 +190,7 @@ export default function FocalPicker({
         </label>
       </div>
       {ratios.length > 0 && (
-        <ul className="mf-strip" aria-label="Kırpma önizlemeleri">
+        <ul className="adm-reset-list mf-strip" aria-label="Kırpma önizlemeleri">
           {ratios.map((r) => (
             <li key={r.id}>
               <span
