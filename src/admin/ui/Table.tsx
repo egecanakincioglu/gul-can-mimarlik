@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 
-export type Column<T> = { key: string; header: string; render: (row: T) => ReactNode };
+export type Column<T> = { id: string; header: string; render: (row: T) => ReactNode };
 
 export default function Table<T>({
   caption,
@@ -19,7 +19,7 @@ export default function Table<T>({
       <thead>
         <tr>
           {columns.map((c) => (
-            <th key={c.key} scope="col" className="label">
+            <th key={c.id} scope="col" className="label">
               {c.header}
             </th>
           ))}
@@ -29,7 +29,7 @@ export default function Table<T>({
         {rows.map((row) => (
           <tr key={getKey(row)}>
             {columns.map((c) => (
-              <td key={c.key} data-label={c.header}>
+              <td key={c.id} data-label={c.header}>
                 {c.render(row)}
               </td>
             ))}

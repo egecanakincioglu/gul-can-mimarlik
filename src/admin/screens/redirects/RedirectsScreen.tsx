@@ -100,15 +100,15 @@ export default function RedirectsScreen() {
             rows={rows}
             getKey={(r) => r.id}
             columns={[
-              { key: 'from', header: 'Eski adres', render: (r) => <code>{r.from}</code> },
-              { key: 'to', header: 'Yeni adres', render: (r) => <code>{r.to}</code> },
+              { id: 'from', header: 'Eski adres', render: (r) => <code>{r.from}</code> },
+              { id: 'to', header: 'Yeni adres', render: (r) => <code>{r.to}</code> },
               {
-                key: 'kind',
+                id: 'kind',
                 header: 'Tür',
                 render: (r) => (isAuto(r) ? <span className="badge">Otomatik</span> : 'Elle eklendi'),
               },
               {
-                key: 'actions',
+                id: 'actions',
                 header: 'İşlemler',
                 render: (r) => (
                   <span className="adm-redirects-actions">

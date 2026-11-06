@@ -35,9 +35,9 @@ const DEMO_NAMES: Record<keyof DemoTexts, string> = {
 };
 
 const CONCEPT_LABELS = [
-  { key: 'concept', label: 'Konsept rozeti' },
-  { key: 'statusConcept', label: 'Durum değeri' },
-  { key: 'locationConcept', label: 'Konum değeri' },
+  { id: 'concept', label: 'Konsept rozeti' },
+  { id: 'statusConcept', label: 'Durum değeri' },
+  { id: 'locationConcept', label: 'Konum değeri' },
 ] as const;
 
 const CHIP_MAX = 24;
@@ -121,15 +121,15 @@ export default function SiteSettingsScreen() {
       </Section>
 
       <Section title="Konsept etiketleri">
-        {CONCEPT_LABELS.map(({ key, label }) => (
+        {CONCEPT_LABELS.map(({ id, label }) => (
           <Field
-            key={key}
+            key={id}
             boxed
             label={label}
-            value={labels[key]}
+            value={labels[id]}
             max={CHIP_MAX}
-            error={requiredText(labels[key], CHIP_MAX)}
-            onChange={(value) => updateDraft((c) => ({ ...c, labels: { ...c.labels, [key]: value } }))}
+            error={requiredText(labels[id], CHIP_MAX)}
+            onChange={(value) => updateDraft((c) => ({ ...c, labels: { ...c.labels, [id]: value } }))}
           />
         ))}
       </Section>

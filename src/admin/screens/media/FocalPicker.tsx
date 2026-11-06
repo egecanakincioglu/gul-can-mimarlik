@@ -140,7 +140,7 @@ export default function FocalPicker({
       {ratios.length > 0 && (
         <ul className="mf-strip" aria-label="Kırpma önizlemeleri">
           {ratios.map((r) => (
-            <li key={r.key}>
+            <li key={r.id}>
               <span
                 className="mf-thumb"
                 role="img"

@@ -52,9 +52,9 @@ export default function FooterScreen() {
           rows={ROWS}
           getKey={(k) => k}
           columns={[
-            { key: 'page', header: 'Sayfa', render: (k) => ROW_NAMES[k] },
+            { id: 'page', header: 'Sayfa', render: (k) => ROW_NAMES[k] },
             {
-              key: 'show',
+              id: 'show',
               header: 'Çağrı',
               render: (k) => (
                 <Toggle

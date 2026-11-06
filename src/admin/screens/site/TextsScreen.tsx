@@ -45,9 +45,9 @@ export default function TextsScreen() {
             rows={rows.filter((r) => r.group === group)}
             getKey={(r) => r.id}
             columns={[
-              { key: 'name', header: 'Ad', render: (r) => r.name },
+              { id: 'name', header: 'Ad', render: (r) => r.name },
               {
-                key: 'value',
+                id: 'value',
                 header: 'Metin',
                 render: (r) => (
                   <TextInput
@@ -58,7 +58,7 @@ export default function TextsScreen() {
                 ),
               },
               {
-                key: 'impact',
+                id: 'impact',
                 header: 'Etki',
                 render: (r) => (
                   <span className="adm-site-impact">{r.impact > 0 ? `${r.impact} yerde` : 'Kullanılmıyor'}</span>

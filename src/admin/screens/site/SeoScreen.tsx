@@ -89,15 +89,15 @@ export default function SeoScreen() {
             rows={KEYS}
             getKey={(k) => k}
             columns={[
-              { key: 'page', header: 'Sayfa', render: (k) => PAGE_NAMES[k] },
-              { key: 'title', header: 'Başlık', render: (k) => seo.pages[k].title },
+              { id: 'page', header: 'Sayfa', render: (k) => PAGE_NAMES[k] },
+              { id: 'title', header: 'Başlık', render: (k) => seo.pages[k].title },
               {
-                key: 'state',
+                id: 'state',
                 header: 'Durum',
                 render: (k) => (warningsFor(k).length ? `Uyarı (${warningsFor(k).length})` : 'Uygun'),
               },
               {
-                key: 'edit',
+                id: 'edit',
                 header: 'İşlem',
                 render: (k) => (
                   <Button onClick={() => setSelected(k)} aria-label={`Düzenle: ${PAGE_NAMES[k]}`}>

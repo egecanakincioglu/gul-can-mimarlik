@@ -1,16 +1,16 @@
 import { ASPECT, ASPECT_TOLERANCE, fitsAspect } from '@/content/aspects';
 
-export type RatioSpec = { key: string; label: string; name: string; aspect: number };
+export type RatioSpec = { id: string; label: string; name: string; aspect: number };
 
 /** Slot ratios the content model knows, plus the two used outside the gallery (comparison and video). */
 export const RATIOS: Record<'wide' | 'landscape' | 'portrait' | 'square' | 'compare' | 'video' | 'og', RatioSpec> = {
-  wide: { key: 'wide', label: '21:9', name: 'Geniş', aspect: ASPECT.wide },
-  landscape: { key: 'landscape', label: '3:2', name: 'Yatay', aspect: ASPECT.landscape },
-  portrait: { key: 'portrait', label: '4:5', name: 'Dikey', aspect: ASPECT.portrait },
-  square: { key: 'square', label: '1:1', name: 'Kare', aspect: ASPECT.square },
-  compare: { key: 'compare', label: '4:3', name: 'Önce/Sonra', aspect: 4 / 3 },
-  og: { key: 'og', label: '1.91:1', name: 'Paylaşım', aspect: 1200 / 630 },
-  video: { key: 'video', label: '16:9', name: 'Video', aspect: 16 / 9 },
+  wide: { id: 'wide', label: '21:9', name: 'Geniş', aspect: ASPECT.wide },
+  landscape: { id: 'landscape', label: '3:2', name: 'Yatay', aspect: ASPECT.landscape },
+  portrait: { id: 'portrait', label: '4:5', name: 'Dikey', aspect: ASPECT.portrait },
+  square: { id: 'square', label: '1:1', name: 'Kare', aspect: ASPECT.square },
+  compare: { id: 'compare', label: '4:3', name: 'Önce/Sonra', aspect: 4 / 3 },
+  og: { id: 'og', label: '1.91:1', name: 'Paylaşım', aspect: 1200 / 630 },
+  video: { id: 'video', label: '16:9', name: 'Video', aspect: 16 / 9 },
 };
 
 type Size = { width: number; height: number };
