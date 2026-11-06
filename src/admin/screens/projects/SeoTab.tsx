@@ -2,7 +2,7 @@
 
 import { seoForProject } from '@/content/select';
 import { rangeWarning } from '../site/rules';
-import { Warning } from '../site/Frame';
+import Notice from '../../ui/Notice';
 import { LongField, TextField } from '../pages/common';
 import { toProject } from './model';
 import type { TabProps } from './tab-props';
@@ -17,7 +17,7 @@ export default function SeoTab({ w, set, draft }: TabProps) {
   const descWarning = rangeWarning(resolved.description, DESC.min, DESC.max);
 
   return (
-    <div className="pg-section-body">
+    <div className="pj-body">
       <p className="caption">
         Boş bırakılan alanlar için başlıktan ve özetten türetilen metin kullanılır. Uzunluk uyarıları öneridir.
       </p>
@@ -28,7 +28,7 @@ export default function SeoTab({ w, set, draft }: TabProps) {
         helper={`Boşsa: ${resolved.title}`}
         onChange={(seoTitle) => set({ seoTitle })}
       />
-      {titleWarning && <Warning>{titleWarning}</Warning>}
+      {titleWarning && <Notice variant="warning">{titleWarning}</Notice>}
       <LongField
         label="SEO açıklaması"
         value={w.seoDescription}
@@ -36,7 +36,7 @@ export default function SeoTab({ w, set, draft }: TabProps) {
         max={DESC.max}
         onChange={(seoDescription) => set({ seoDescription })}
       />
-      {descWarning && <Warning>{descWarning}</Warning>}
+      {descWarning && <Notice variant="warning">{descWarning}</Notice>}
       <div className="pj-preview" aria-label="Arama sonucu önizlemesi">
         <p className="label">Arama sonucu önizlemesi</p>
         <p>

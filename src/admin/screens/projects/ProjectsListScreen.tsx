@@ -4,37 +4,57 @@ import Link from 'next/link';
 import { useState } from 'react';
 import type { Project } from '@/content/types';
 import { useAdminStore } from '../../store/AdminStoreProvider';
+import EmptyState from '../../ui/EmptyState';
+import Notice from '../../ui/Notice';
 import SortableList from '../../ui/SortableList';
-import { Screen, SelectField, TextField } from '../pages/common';
-import { mergeOrder } from './model';
+import SelectField from '../../ui/SelectField';
+import { Screen, TextField } from '../pages/common';
+import { fromProject, mergeOrder, publishGaps } from './model';
 import './projects.css';
 
 export default function ProjectsListScreen() {
   const { draft, updateDraft } = useAdminStore();
   const [query, setQuery] = useState('');
   const [category, setCategory] = useState('');
+  const [refused, setRefused] = useState<{ project: Project; gaps: string[] } | null>(null);
 
   const needle = query.trim().toLocaleLowerCase('tr');
   const shown = draft.projects.filter(
     (p) => (!category || p.categoryId === category) && (!needle || p.title.toLocaleLowerCase('tr').includes(needle)),
   );
+  const setPublished = (p: Project, published: boolean) => {
+    if (published) {
+      const gaps = publishGaps(draft, fromProject(p));
+      if (gaps.length) {
+        setRefused({ project: p, gaps });
+        return;
+      }
+    }
+    setRefused(null);
+    updateDraft((c) => ({ ...c, projects: c.projects.map((x) => (x.id === p.id ? { ...x, published } : x)) }));
+  };
   const position = (p: Project) => draft.projects.findIndex((x) => x.id === p.id) + 1;
 
   return (
     <Screen title="Projeler">
-      <p>
-        <Link href="/yonetim/projeler/yeni" className="btn">
-          Yeni proje
-        </Link>
-      </p>
-      <p className="caption">
+      {draft.projects.length > 0 && (
+        <p className="pj-new">
+          <Link href="/yonetim/projeler/yeni" className="adm-btn">
+            Yeni proje
+          </Link>
+        </p>
+      )}
+      <p className="caption pj-order-note">
         Sıra, projelerin listedeki ve &ldquo;Sonraki proje&rdquo; bağlantısındaki sırasını belirler.
       </p>
 
       {draft.projects.length === 0 ? (
-        <div className="adm-empty">
-          <p>Henüz proje yok.</p>
-        </div>
+        <EmptyState
+          message="Henüz proje yok."
+          description="İlk projenizi ekleyince burada listelenir."
+          actionLabel="Yeni proje"
+          href="/yonetim/projeler/yeni"
+        />
       ) : (
         <>
           <div className="pj-filters">
@@ -49,8 +69,18 @@ export default function ProjectsListScreen() {
               onChange={setCategory}
             />
           </div>
+          {refused && (
+            <Notice variant="error">
+              <p>
+                {refused.project.title || refused.project.slug} yayınlanamadı. Eksik: {refused.gaps.join(', ')}.
+              </p>
+              <Link href={`/yonetim/projeler/${refused.project.slug}`} className="tlink">
+                Projeyi düzenle
+              </Link>
+            </Notice>
+          )}
           {shown.length === 0 ? (
-            <p>Aramaya uyan proje yok.</p>
+            <EmptyState message="Aramaya uyan proje yok." description="Aramayı ya da kategori seçimini değiştirin." />
           ) : (
             <SortableList
               items={shown}
@@ -64,7 +94,7 @@ export default function ProjectsListScreen() {
                     <span className="pj-thumb">
                       {cover && (
                         // eslint-disable-next-line @next/next/no-img-element -- local object URLs cannot go through the image optimizer
-                        <img src={cover.file} alt="" />
+                        <img src={cover.file} alt="" loading="lazy" decoding="async" />
                       )}
                     </span>
                     <span className="pj-row-main">
@@ -77,8 +107,25 @@ export default function ProjectsListScreen() {
                       </span>
                     </span>
                     <span className="pj-badges">
-                      <span className="badge">{p.published ? 'Yayında' : 'Taslak'}</span>
-                      {p.concept && <span className="badge">Konsept</span>}
+                      <span className={p.published ? 'badge pj-badge-on' : 'badge'}>
+                        {p.published ? 'Yayında' : 'Taslak'}
+                      </span>
+                      {p.concept && <span className="pj-tag">Konsept</span>}
+                    </span>
+                    <span className="adm-toggle-row">
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={p.published}
+                        aria-label={`Yayında: ${p.title || p.slug}`}
+                        className="adm-toggle"
+                        onClick={() => setPublished(p, !p.published)}
+                      >
+                        <span className="adm-toggle-knob" aria-hidden="true" />
+                      </button>
+                      <span className="caption" aria-hidden="true">
+                        Yayında
+                      </span>
                     </span>
                   </span>
                 );

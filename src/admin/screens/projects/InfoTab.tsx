@@ -1,44 +1,48 @@
 'use client';
 
 import Button from '../../ui/Button';
-import Toggle from '../../ui/Toggle';
-import { LongField, SelectField, TextField } from '../pages/common';
+import SelectField from '../../ui/SelectField';
+import { LongField, TextField } from '../pages/common';
 import KeyedList from './KeyedList';
 import type { TabProps } from './tab-props';
 import { slugify } from './slug';
 
-export default function InfoTab({ w, set, draft, errors, gaps, blockedPublish }: TabProps) {
+export default function InfoTab({ w, set, draft, errors }: TabProps) {
   return (
-    <div className="pg-section-body">
-      <TextField label="Başlık" value={w.title} error={errors.title} max={80} onChange={(title) => set({ title })} />
+    <div className="pj-body">
+      <div data-pj-field="title">
+        <TextField label="Başlık" value={w.title} error={errors.title} max={80} onChange={(title) => set({ title })} />
+      </div>
+      <div data-pj-field="slug">
+        <TextField
+          label="Sayfa adresi (URL)"
+          value={w.slug}
+          error={errors.slug}
+          helper={`Sitede görünen adres: /projeler/${w.slug || '…'}. Yayındaki bir projede değiştirmek eski adrese yönlendirme ekler.`}
+          onChange={(slug) => set({ slug })}
+        />
+        <Button onClick={() => set({ slug: slugify(w.title) })} disabled={!w.title.trim()}>
+          Başlıktan üret
+        </Button>
+      </div>
+      <div data-pj-field="category">
+        <SelectField
+          label="Kategori"
+          value={w.categoryId}
+          placeholder="Kategori seçin"
+          options={[...draft.projectCategories.map((c) => ({ value: c.id, label: c.name }))]}
+          onChange={(categoryId) => set({ categoryId })}
+        />
+      </div>
       <TextField
-        label="Adres (slug)"
-        value={w.slug}
-        error={errors.slug}
-        helper={`Sayfa adresi: /projeler/${w.slug || '…'}`}
-        onChange={(slug) => set({ slug })}
-      />
-      <Button onClick={() => set({ slug: slugify(w.title) })} disabled={!w.title.trim()}>
-        Başlıktan üret
-      </Button>
-      <SelectField
-        label="Kategori"
-        value={w.categoryId}
-        options={[
-          { value: '', label: 'Seçin', disabled: true },
-          ...draft.projectCategories.map((c) => ({ value: c.id, label: c.name })),
-        ]}
-        onChange={(categoryId) => set({ categoryId })}
-      />
-      <TextField
-        label="Tür"
+        label="Proje türü (örn. Konut)"
         value={w.kind}
-        helper="Örneğin Konut. Sayfada kategorinin yanında görünür."
+        helper="Sayfada kategorinin yanında görünür."
         onChange={(kind) => set({ kind })}
       />
 
       <fieldset className="pj-scope">
-        <legend className="label">Kapsam (hizmetler)</legend>
+        <legend className="label">Yapılan hizmetler</legend>
         {draft.serviceCategories.map((cat) => (
           <div key={cat.id} className="pj-scope-group">
             <p className="caption">{cat.name}</p>
@@ -63,6 +67,7 @@ export default function InfoTab({ w, set, draft, errors, gaps, blockedPublish }:
       <KeyedList
         title="Anlatım"
         noun="Paragraf"
+        accusative="paragrafı"
         items={w.narrative}
         onChange={(narrative) => set({ narrative })}
         make={() => ''}
@@ -73,6 +78,7 @@ export default function InfoTab({ w, set, draft, errors, gaps, blockedPublish }:
       <KeyedList
         title="Malzemeler"
         noun="Malzeme"
+        accusative="malzemeyi"
         items={w.materials}
         onChange={(materials) => set({ materials })}
         make={() => ''}
@@ -81,6 +87,7 @@ export default function InfoTab({ w, set, draft, errors, gaps, blockedPublish }:
       <KeyedList
         title="Notlar"
         noun="Not"
+        accusative="notu"
         items={w.notes}
         onChange={(notes) => set({ notes })}
         make={() => ({ title: '', text: '' })}
@@ -101,22 +108,20 @@ export default function InfoTab({ w, set, draft, errors, gaps, blockedPublish }:
         )}
       />
 
-      {!w.concept && (
+      {w.concept ? (
+        <p className="caption">
+          Konsept çalışmada konum ve yıl gösterilmez. Gerçek proje için Konsept sekmesinden kapatın.
+        </p>
+      ) : (
         <>
-          <TextField label="Konum" value={w.location} onChange={(location) => set({ location })} />
-          <TextField label="Yıl" value={w.year} error={errors.year} onChange={(year) => set({ year })} />
+          <div data-pj-field="location">
+            <TextField label="Konum" value={w.location} onChange={(location) => set({ location })} />
+          </div>
+          <div data-pj-field="year">
+            <TextField label="Yıl" value={w.year} error={errors.year} onChange={(year) => set({ year })} />
+          </div>
         </>
       )}
-
-      <div className="pj-publish">
-        <Toggle checked={w.published} label="Yayında" onChange={(published) => set({ published })} />
-        {gaps.length > 0 && (
-          <p className="pg-warning" role={blockedPublish ? 'alert' : 'status'}>
-            <strong>{blockedPublish ? 'Hata: ' : 'Uyarı: '}</strong>
-            Yayınlamak için eksik: {gaps.join(', ')}.
-          </p>
-        )}
-      </div>
     </div>
   );
 }

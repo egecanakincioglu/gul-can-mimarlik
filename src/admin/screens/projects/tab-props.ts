@@ -6,8 +6,4 @@ export type TabProps = {
   set: (patch: Partial<Working>) => void;
   draft: SiteContent;
   errors: FieldErrors;
-  /** What is still missing before publishing. */
-  gaps: string[];
-  /** A publish attempt was refused because of `gaps`. */
-  blockedPublish: boolean;
 };

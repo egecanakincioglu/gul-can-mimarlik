@@ -5,7 +5,8 @@ import { useAdminStore } from '../../store/AdminStoreProvider';
 import Button from '../../ui/Button';
 import Dialog from '../../ui/Dialog';
 import SortableList from '../../ui/SortableList';
-import { Screen, Section, TextField } from '../pages/common';
+import Section from '../../ui/Section';
+import { Screen, TextField } from '../pages/common';
 import { categoryUsage, filterUsage, newCategoryId, ruleText } from './categories';
 import { SLUG_PATTERN } from './slug';
 import './projects.css';
@@ -49,17 +50,17 @@ export default function CategoriesScreen() {
 
   return (
     <Screen title="Kategoriler">
-      <Section title="Proje kategorileri">
+      <Section title="Proje kategorileri" defaultOpen>
         {draft.projectCategories.length === 0 && <p className="caption">Henüz kategori yok.</p>}
         <SortableList
           items={draft.projectCategories}
           getId={(x) => x.id}
           getLabel={(x) => x.name || x.id}
           onChange={(projectCategories) => updateDraft((c) => ({ ...c, projectCategories }))}
-          renderItem={(x) => (
+          renderItem={(x, i) => (
             <span className="pg-stack">
               <TextField
-                label={`Kategori adı: ${x.id}`}
+                label={`${i + 1}. kategori adı`}
                 value={x.name}
                 error={x.name.trim() ? undefined : 'Ad boş bırakılamaz.'}
                 onChange={(name) =>
@@ -91,7 +92,7 @@ export default function CategoriesScreen() {
         </Button>
       </Section>
 
-      <Section title="Arşiv filtreleri">
+      <Section title="Arşiv filtreleri" defaultOpen>
         <p className="caption">
           Projeler sayfasındaki filtre düğmeleri. Kural, hangi projelerin gösterileceğini belirler.
         </p>
@@ -100,10 +101,10 @@ export default function CategoriesScreen() {
           getId={(f) => f.id}
           getLabel={(f) => f.label || f.id}
           onChange={(projectFilters) => updateDraft((c) => ({ ...c, projectFilters }))}
-          renderItem={(f) => (
+          renderItem={(f, i) => (
             <span className="pg-stack">
               <TextField
-                label={`Filtre adı: ${f.id}`}
+                label={`${i + 1}. filtre adı`}
                 value={f.label}
                 error={f.label.trim() ? undefined : 'Ad boş bırakılamaz.'}
                 onChange={(label) =>
@@ -114,7 +115,7 @@ export default function CategoriesScreen() {
                 }
               />
               <TextField
-                label={`Filtre adresi: ${f.id}`}
+                label={`${i + 1}. filtre sayfa adresi (URL)`}
                 value={f.slug}
                 error={slugError(f.id, f.slug)}
                 onChange={(slug) =>
