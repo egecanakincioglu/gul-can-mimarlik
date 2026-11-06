@@ -174,7 +174,7 @@ export default async function ProjectPage({ params }: Params) {
               </p>
             </div>
             <div className="zoom relative col-span-4 aspect-[3/2] overflow-hidden bg-beton md:col-span-3 md:col-start-6 xl:col-span-5 xl:col-start-8">
-              <Photo img={next.cover} sizes="(min-width:1280px) 40vw, 50vw" />
+              <Photo img={next.cover} sizes="(min-width:1280px) 40vw, (min-width:768px) 50vw, 100vw" />
             </div>
           </div>
         </Link>
