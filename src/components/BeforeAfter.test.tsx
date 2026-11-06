@@ -85,4 +85,9 @@ describe('BeforeAfter toggle mode', () => {
     expect(screen.queryByRole('slider')).toBeNull();
     expect(container.querySelector('.ba-stage')?.getAttribute('style')).toContain('--pos: 100%');
   });
+
+  it('shows the illustrative caption', () => {
+    render(<BeforeAfter before={img('a')} after={img('b')} />);
+    expect(screen.getByText('İllüstratif karşılaştırma.').textContent).toBe('İllüstratif karşılaştırma.');
+  });
 });

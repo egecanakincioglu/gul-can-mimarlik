@@ -148,7 +148,7 @@ export default function BeforeAfter({
             Sonra
           </button>
         </div>
-        <p className="caption">İllüstratif karşılaştırma — üretilmiş görseller.</p>
+        <p className="caption">İllüstratif karşılaştırma.</p>
       </div>
     </div>
   );
