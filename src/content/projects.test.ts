@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { filters, getProject, matchesFilter, nextProject, projects } from './projects';
+import { serviceCategories } from './site';
 
 describe('project lookup', () => {
   it('has unique slugs', () => {
@@ -54,5 +55,29 @@ describe('before/after note', () => {
     for (const p of withComparison) {
       expect(p.narrative.join(' ').toLowerCase()).toContain('illüstratif');
     }
+  });
+});
+
+describe('scope labels', () => {
+  const categoriesFor = (scope: string) => serviceCategories.filter((c) => c.services.some((s) => s.name === scope));
+
+  it('maps every scope label to exactly one services category anchor', () => {
+    for (const p of projects) {
+      for (const s of p.scope) {
+        const matches = categoriesFor(s);
+        expect(matches, `${p.slug}: "${s}"`).toHaveLength(1);
+        expect(matches[0].slug).not.toBe('');
+      }
+    }
+  });
+});
+
+describe('filter data', () => {
+  it('uses a filter label as every project category', () => {
+    for (const p of projects) expect(filters).toContain(p.category);
+  });
+
+  it('"Uygulama" selects at least one project', () => {
+    expect(projects.some((p) => matchesFilter(p, 'Uygulama'))).toBe(true);
   });
 });
