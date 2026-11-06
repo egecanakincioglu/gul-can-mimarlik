@@ -7,7 +7,9 @@ This document describes how the application is built. Items marked "planned" do 
 The project is one Next.js 16 application (App Router) with React 19 and TypeScript in strict mode. It serves the public website of Gül CAN in Turkish. All source code is under `src/`.
 
 ```text
-src/app/          routes and the global stylesheet
+src/app/          routes, the root layout and the global stylesheet
+src/app/(site)/   public routes, with the header, skip link and main element
+src/app/(yonetim)/yonetim/   admin panel routes
 src/components/   presentational components (header, footer, gallery, contact form)
 src/content/      typed content: office details, services and projects
 public/           static files, including the images in public/images/
@@ -16,7 +18,7 @@ tooling/          repository tools, site audit and Semgrep rules
 
 ## Routing
 
-The site is Turkish only, so it has no language routing ([ADR 0001](adr/0001-architecture-and-routing.md)). Routes follow the folders under `src/app`.
+The site is Turkish only, so it has no language routing ([ADR 0001](adr/0001-architecture-and-routing.md)). Routes follow the folders under `src/app`. Public routes live in the route group `src/app/(site)`. The admin panel lives in `src/app/(yonetim)/yonetim`. Group names do not appear in URLs. The root layout holds only the document, the fonts, the stylesheet and the boot script. `src/app/not-found.tsx` renders the 404 page with the site header.
 
 | Route | Page |
 |---|---|
