@@ -29,7 +29,7 @@ The site is Turkish only, so it has no language routing ([ADR 0001](adr/0001-arc
 | `/studyo` | Studio |
 | `/iletisim` | Contact |
 
-- The project detail route is generated from the project list in `src/content/projects.ts`. An unknown slug answers 404.
+- The project detail route is generated from the project list in the content model. An unknown slug answers 404.
 - Unknown paths answer 404.
 - The page list used by the site audit is in `tooling/site-audit/pages.ts`. A new page is added there in the same pull request.
 
@@ -39,9 +39,15 @@ Tailwind CSS 4 with design tokens defined in `src/app/globals.css` ([ADR 0002](a
 
 ## Content layer
 
-Components receive content as typed props. The data lives in `src/content` ([ADR 0003](adr/0003-content-layer.md)): office details and navigation in `site.ts`, services in `site.ts`, and projects in `projects.ts`.
+Components receive content as typed props. The data lives in `src/content` ([ADR 0003](adr/0003-content-layer.md)): the types in `types.ts`, the seed files, the selectors in `select.ts` and the validation.
 
-All editable content is becoming one typed object in `src/content`: types, seed files, selectors and validation ([ADR 0009](adr/0009-admin-panel-and-content-model.md)). Pages read it through `getContent()`. The migration happens page by page. The old `site.ts` and `projects.ts` modules stay until the migration ends.
+All editable content is one typed object in `src/content`: types, seed files, selectors and validation ([ADR 0009](adr/0009-admin-panel-and-content-model.md)). Every public page reads it through `getContent()` and the selectors in `src/content/select.ts`. The image type `Img` is in `src/content/types.ts`.
+
+Each public page exports a synchronous render function: `renderHome`, `renderServices`, `renderProjects`, `renderProject(content, slug)`, `renderStudio` and `renderContact`. `renderProject` returns nothing for an unknown slug. The site layout exports `renderShell(content, children)`. The footer and the service bands have synchronous views, `FooterView` and `ServicesBandsView`. The default page exports call these functions with `await getContent()`. The admin preview calls the same functions with draft content.
+
+A before/after pair has an optional display mode: slider (default) or toggle. The toggle suits pairs whose images are not exactly aligned.
+
+The title and description of every page, including the contact page, come from the content model.
 
 The project pages show concept work with illustrative images. The site labels this on the page. The images are in `public/images/`.
 
