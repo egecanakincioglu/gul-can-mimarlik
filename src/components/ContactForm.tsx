@@ -3,10 +3,21 @@
 import { useState } from 'react';
 import type { FormEvent } from 'react';
 
-const types = ['Mimari Proje', 'İç Mimarlık', '3D & Animasyon', 'Uygulama & Anahtar Teslim', 'Diğer'];
 type Errors = Partial<Record<'name' | 'phone' | 'email' | 'message' | 'type', string>>;
 
-export default function ContactForm() {
+export type ContactFormTexts = {
+  ariaLabel: string;
+  /** Demo badge; null hides it. */
+  badge: string | null;
+  fields: Record<'name' | 'phone' | 'email' | 'type' | 'location' | 'message', string>;
+  locationEnabled: boolean;
+  projectTypes: { id: string; label: string }[];
+  errors: Record<'name' | 'phone' | 'email' | 'type' | 'message', string>;
+  submit: string;
+  success: string;
+};
+
+export default function ContactForm({ texts }: { texts: ContactFormTexts }) {
   const [type, setType] = useState('');
   const [errors, setErrors] = useState<Errors>({});
   const [done, setDone] = useState(false);
@@ -16,11 +27,11 @@ export default function ContactForm() {
     const d = new FormData(e.currentTarget);
     const v = (k: string) => String(d.get(k) ?? '').trim();
     const err: Errors = {};
-    if (v('name').length < 3) err.name = 'Lütfen adınızı ve soyadınızı yazın.';
-    if (!/^[+\d][\d\s()-]{9,}$/.test(v('phone'))) err.phone = 'Geçerli bir telefon numarası yazın.';
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) err.email = 'Geçerli bir e-posta adresi yazın.';
-    if (!type) err.type = 'Bir proje türü seçin.';
-    if (v('message').length < 10) err.message = 'Mesajınız en az 10 karakter olmalı.';
+    if (v('name').length < 3) err.name = texts.errors.name;
+    if (!/^[+\d][\d\s()-]{9,}$/.test(v('phone'))) err.phone = texts.errors.phone;
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) err.email = texts.errors.email;
+    if (!type) err.type = texts.errors.type;
+    if (v('message').length < 10) err.message = texts.errors.message;
     setErrors(err);
     setDone(Object.keys(err).length === 0);
     const first = (['name', 'phone', 'email', 'type', 'message'] as const).find((k) => err[k]);
@@ -47,26 +58,26 @@ export default function ContactForm() {
   );
 
   return (
-    <form onSubmit={submit} noValidate className="grid gap-9" aria-label="Demo iletişim formu">
-      <p className="badge self-start">Demo form — mesaj gönderilmez.</p>
-      {field('name', 'Ad Soyad', { autoComplete: 'name' })}
+    <form onSubmit={submit} noValidate className="grid gap-9" aria-label={texts.ariaLabel}>
+      {texts.badge && <p className="badge self-start">{texts.badge}</p>}
+      {field('name', texts.fields.name, { autoComplete: 'name' })}
       <div className="grid gap-9 md:grid-cols-2">
-        {field('phone', 'Telefon', { type: 'tel', autoComplete: 'tel' })}
-        {field('email', 'E-posta', { type: 'email', autoComplete: 'email' })}
+        {field('phone', texts.fields.phone, { type: 'tel', autoComplete: 'tel' })}
+        {field('email', texts.fields.email, { type: 'email', autoComplete: 'email' })}
       </div>
 
       <fieldset>
-        <legend className="label muted">Proje türü</legend>
+        <legend className="label muted">{texts.fields.type}</legend>
         <div className="mt-3 flex flex-wrap gap-2" role="group">
-          {types.map((t) => (
+          {texts.projectTypes.map((t) => (
             <button
-              key={t}
+              key={t.id}
               type="button"
-              aria-pressed={type === t}
-              onClick={() => setType(t)}
+              aria-pressed={type === t.label}
+              onClick={() => setType(t.label)}
               className="min-h-[44px] border border-pose px-4 text-[15px] font-medium aria-pressed:bg-pose aria-pressed:text-kirec"
             >
-              {t}
+              {t.label}
             </button>
           ))}
         </div>
@@ -77,13 +88,15 @@ export default function ContactForm() {
         )}
       </fieldset>
 
-      <label className="field" htmlFor="location">
-        <span className="label muted">Konum (isteğe bağlı)</span>
-        <input id="location" name="location" />
-      </label>
+      {texts.locationEnabled && (
+        <label className="field" htmlFor="location">
+          <span className="label muted">{texts.fields.location}</span>
+          <input id="location" name="location" />
+        </label>
+      )}
 
       <label className="field" htmlFor="message">
-        <span className="label muted">Mesaj</span>
+        <span className="label muted">{texts.fields.message}</span>
         <textarea
           id="message"
           name="message"
@@ -100,14 +113,14 @@ export default function ContactForm() {
 
       <div className="flex flex-col gap-4 md:flex-row md:items-center">
         <button type="submit" className="btn w-full md:w-auto">
-          <span>Formu doğrula</span>
+          <span>{texts.submit}</span>
           <span className="arr" aria-hidden>
             →
           </span>
         </button>
         {done && (
           <p className="font-medium" role="status">
-            Demo: Form doğrulandı, gerçek gönderim yapılmadı.
+            {texts.success}
           </p>
         )}
       </div>
