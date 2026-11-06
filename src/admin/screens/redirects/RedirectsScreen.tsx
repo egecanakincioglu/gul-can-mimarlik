@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
 import { PUBLIC_PATHS } from '@/content/select';
 import type { Redirect } from '@/content/types';
@@ -21,13 +21,25 @@ function RedirectForm({ entry, onDone }: { entry?: Redirect; onDone: () => void 
   const [from, setFrom] = useState(entry?.from ?? '');
   const [to, setTo] = useState(entry?.to ?? '');
   const [errors, setErrors] = useState<RedirectErrors>({});
+  const [attempt, setAttempt] = useState(0);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  const focusField = (name: 'from' | 'to') =>
+    formRef.current?.querySelector<HTMLElement>(`[data-field="${name}"] input`)?.focus();
+
+  useEffect(() => {
+    if (attempt > 0) formRef.current?.querySelector<HTMLElement>('[aria-invalid="true"]')?.focus();
+  }, [attempt]);
 
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const next: Redirect = { id: entry?.id ?? `manual-${Date.now().toString(36)}`, from: from.trim(), to: to.trim() };
     const found = checkRedirect(draft, next, entry?.id);
     setErrors(found);
-    if (found.from || found.to) return;
+    if (found.from || found.to) {
+      setAttempt((n) => n + 1);
+      return;
+    }
     updateDraft((c) => ({
       ...c,
       redirects: entry ? c.redirects.map((r) => (r.id === entry.id ? next : r)) : [...c.redirects, next],
@@ -36,28 +48,48 @@ function RedirectForm({ entry, onDone }: { entry?: Redirect; onDone: () => void 
   };
 
   return (
-    <form onSubmit={submit} noValidate>
+    <form ref={formRef} onSubmit={submit} noValidate>
       {(errors.from || errors.to) && (
-        <p role="alert" className="err">
-          Düzeltilmesi gereken alanlar var.
-        </p>
+        <div role="alert" className="err">
+          <p>Düzeltilmesi gereken alanlar var:</p>
+          <ul className="adm-redirects-errors">
+            {errors.from && (
+              <li>
+                <button type="button" className="tlink" onClick={() => focusField('from')}>
+                  Eski adres: {errors.from}
+                </button>
+              </li>
+            )}
+            {errors.to && (
+              <li>
+                <button type="button" className="tlink" onClick={() => focusField('to')}>
+                  Yeni adres: {errors.to}
+                </button>
+              </li>
+            )}
+          </ul>
+        </div>
       )}
-      <Field
-        label="Eski adres"
-        value={from}
-        onChange={setFrom}
-        boxed
-        error={errors.from}
-        helper="Örnek: /projeler/eski-ad"
-      />
-      <Field
-        label="Yeni adres"
-        value={to}
-        onChange={setTo}
-        boxed
-        error={errors.to}
-        helper="Herhangi bir herkese açık sayfa veya yayındaki proje adresi olabilir."
-      />
+      <div data-field="from">
+        <Field
+          label="Eski adres"
+          value={from}
+          onChange={setFrom}
+          boxed
+          error={errors.from}
+          helper="Örnek: /projeler/eski-ad"
+        />
+      </div>
+      <div data-field="to">
+        <Field
+          label="Yeni adres"
+          value={to}
+          onChange={setTo}
+          boxed
+          error={errors.to}
+          helper="Örnek: /projeler/yeni-ad. Herhangi bir herkese açık sayfa veya yayındaki proje adresi olabilir."
+        />
+      </div>
       <div className="adm-redirects-actions" role="group" aria-label="Önerilen adresler">
         {PUBLIC_PATHS.map((p) => (
           <Button key={p} onClick={() => setTo(p)}>
@@ -82,21 +114,26 @@ export default function RedirectsScreen() {
   const rows = draft.redirects;
 
   return (
-    <div>
-      <h1 className="adm-title">Yönlendirmeler</h1>
+    <div className="adm-redirects">
+      <h1 className="adm-title">Eski adresler (yönlendirme)</h1>
       {rows.length === 0 ? (
-        <EmptyState
-          message="Yönlendirme yok"
-          actionLabel="Yönlendirme ekle"
-          onAction={() => setMode({ kind: 'add' })}
-        />
+        <>
+          <EmptyState
+            message="Henüz eski adres yok."
+            actionLabel="Yönlendirme ekle"
+            onAction={() => setMode({ kind: 'add' })}
+          />
+          <p className="caption adm-redirects-hint">
+            Bir projenin adresini değiştirdiğinizde eski adres buraya otomatik eklenir; elle de ekleyebilirsiniz.
+          </p>
+        </>
       ) : (
         <>
           <div className="adm-redirects-bar">
             <Button onClick={() => setMode({ kind: 'add' })}>Yönlendirme ekle</Button>
           </div>
           <Table
-            caption="Yönlendirmeler"
+            caption="Eski adresler"
             rows={rows}
             getKey={(r) => r.id}
             columns={[

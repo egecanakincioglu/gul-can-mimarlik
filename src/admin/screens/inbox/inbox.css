@@ -13,7 +13,7 @@
 }
 .adm-inbox-row {
   display: grid;
-  grid-template-columns: 8px minmax(0, 2fr) minmax(0, 1.5fr) auto;
+  grid-template-columns: 8px minmax(0, 2fr) minmax(0, 1.5fr) auto auto;
   align-items: center;
   gap: 16px;
   min-height: 56px;
@@ -33,6 +33,16 @@
 }
 .adm-inbox-row[data-unread='true'] .adm-inbox-sender {
   font-weight: 600;
+}
+.adm-inbox-sender,
+.adm-inbox-type {
+  overflow-wrap: anywhere;
+}
+.adm-inbox-hint {
+  margin-top: 8px;
+}
+.adm-inbox-row .badge {
+  justify-self: start;
 }
 .adm-inbox-date {
   white-space: nowrap;
@@ -83,4 +93,14 @@
 .adm-message-back {
   display: inline-block;
   margin-bottom: 16px;
+}
+.adm-message-moved {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin: 0 0 16px;
+}
+.adm-message .adm-title {
+  overflow-wrap: anywhere;
 }

@@ -34,7 +34,12 @@ const memory = () => {
     setItem: (k, v) => void data.set(k, v),
     removeItem: (k) => void data.delete(k),
   };
-  const draft = () => (JSON.parse(data.get(STORAGE_NAME) ?? '{}') as { draft: SiteContent }).draft;
+  const draft = () => {
+    act(() => {
+      window.dispatchEvent(new Event('pagehide'));
+    });
+    return (JSON.parse(data.get(STORAGE_NAME) ?? '{}') as { draft: SiteContent }).draft;
+  };
   return { storage, draft };
 };
 
@@ -104,12 +109,12 @@ describe('SiteSettingsScreen', () => {
     const m = await show(<SiteSettingsScreen />);
     const fit = seed.media.find((x) => fitsRatio(x, RATIOS.og));
     if (!fit) throw new Error('seed has no image for the share ratio');
-    fireEvent.click(screen.getByRole('button', { name: 'Varsayılan paylaşım görseli' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Varsayılan paylaşım görseli/ }));
     fireEvent.click(screen.getByRole('button', { name: fileName(fit.file) }));
     fireEvent.click(screen.getByRole('button', { name: 'Seç' }));
     await act(async () => {});
     expect(m.draft().seo.ogImage).toEqual({ media: fit.id });
-    fireEvent.click(screen.getByRole('button', { name: 'Varsayılan paylaşım görseli' }));
+    fireEvent.click(screen.getByRole('button', { name: /^Varsayılan paylaşım görseli/ }));
     fireEvent.click(screen.getByRole('button', { name: 'Görseli kaldır' }));
     await act(async () => {});
     expect(m.draft().seo.ogImage).toBeUndefined();

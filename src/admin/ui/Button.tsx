@@ -4,7 +4,7 @@ type Variant = 'primary' | 'secondary' | 'destructive';
 
 const CLASS: Record<Variant, string> = {
   primary: 'btn',
-  secondary: 'adm-btn adm-btn-secondary',
+  secondary: 'adm-btn',
   destructive: 'adm-btn adm-btn-destructive',
 };
 

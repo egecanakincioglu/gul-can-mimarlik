@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { getContent } from '@/content';
 import type { SiteContent } from '@/content/types';
 import { STORAGE_NAME, createAdminStore } from './admin-store';
@@ -54,6 +54,7 @@ describe('admin store', () => {
     const store = createAdminStore(seed, memoryStorage());
     const before = store.getState().draft;
     store.updateDraft((d) => withProjectName(d, 'Deneme'));
+    store.flush();
     const s = store.getState();
     expect(s.draft.site.name).toBe('Deneme');
     expect(before.site.name).toBe(seed.site.name);
@@ -64,7 +65,9 @@ describe('admin store', () => {
 
   it('persists to storage under a versioned key and restores it', () => {
     const storage = memoryStorage();
-    createAdminStore(seed, storage).updateDraft((d) => withProjectName(d, 'Kalıcı'));
+    const first = createAdminStore(seed, storage);
+    first.updateDraft((d) => withProjectName(d, 'Kalıcı'));
+    first.flush();
     expect(storage.data.has(STORAGE_NAME)).toBe(true);
     expect(createAdminStore(seed, storage).getState().draft.site.name).toBe('Kalıcı');
   });
@@ -81,6 +84,7 @@ describe('admin store', () => {
     const store = createAdminStore(seed, throwingStorage);
     expect(store.getState().draft).toEqual(seed);
     store.updateDraft((d) => withProjectName(d, 'Yazılamaz'));
+    store.flush();
     expect(store.getState().draft.site.name).toBe('Yazılamaz');
     expect(store.getState().saveState.kind).toBe('error');
   });
@@ -144,5 +148,145 @@ describe('admin store', () => {
       expect(m.message).toMatch(/^Örnek mesaj/);
       expect(m.email).toMatch(/@example\.com$/);
     }
+  });
+});
+
+describe('admin store persistence and derived state', () => {
+  const counting = () => {
+    const storage = memoryStorage();
+    let writes = 0;
+    const setItem = storage.setItem;
+    storage.setItem = (k, v) => {
+      writes += 1;
+      setItem(k, v);
+    };
+    return { storage, writes: () => writes };
+  };
+
+  it('debounces storage writes to one per burst', () => {
+    vi.useFakeTimers();
+    try {
+      const { storage, writes } = counting();
+      const store = createAdminStore(seed, storage);
+      for (let i = 0; i < 10; i += 1) store.updateDraft((d) => withProjectName(d, 'Ad ' + i));
+      expect(writes()).toBe(0);
+      expect(store.getState().saveState.kind).toBe('saving');
+      vi.advanceTimersByTime(300);
+      expect(writes()).toBe(1);
+      expect(store.getState().saveState.kind).toBe('saved');
+      expect(createAdminStore(seed, storage).getState().draft.site.name).toBe('Ad 9');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('flushes on pagehide and when the page is hidden', () => {
+    vi.useFakeTimers();
+    try {
+      const { storage, writes } = counting();
+      const store = createAdminStore(seed, storage);
+      store.updateDraft((d) => withProjectName(d, 'A'));
+      window.dispatchEvent(new Event('pagehide'));
+      expect(writes()).toBe(1);
+      store.updateDraft((d) => withProjectName(d, 'B'));
+      Object.defineProperty(document, 'visibilityState', { value: 'hidden', configurable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+      Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+      expect(writes()).toBe(2);
+      store.dispose();
+      store.updateDraft((d) => withProjectName(d, 'C'));
+      window.dispatchEvent(new Event('pagehide'));
+      expect(writes()).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('writes at once when publishing, discarding and resetting', async () => {
+    vi.useFakeTimers();
+    try {
+      const { storage, writes } = counting();
+      const store = createAdminStore(seed, storage);
+      store.updateDraft((d) => withProjectName(d, 'Yayın'));
+      await store.publish();
+      expect(writes()).toBe(1);
+      store.updateDraft((d) => withProjectName(d, 'Geçici'));
+      store.discardDraft();
+      expect(writes()).toBe(2);
+      store.reset();
+      expect(writes()).toBe(3);
+      vi.advanceTimersByTime(1000);
+      expect(writes()).toBe(3);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('reports a failing storage once, not per keystroke', () => {
+    vi.useFakeTimers();
+    try {
+      const store = createAdminStore(seed, throwingStorage);
+      store.updateDraft((d) => withProjectName(d, 'A'));
+      vi.advanceTimersByTime(300);
+      const failed = store.getState().saveState;
+      expect(failed.kind).toBe('error');
+      let calls = 0;
+      store.subscribe(() => (calls += 1));
+      store.updateDraft((d) => withProjectName(d, 'B'));
+      expect(store.getState().saveState).toBe(failed);
+      vi.advanceTimersByTime(300);
+      expect(store.getState().saveState).toBe(failed);
+      expect(calls).toBe(1);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('does not emit for a no-op update', () => {
+    const store = createAdminStore(seed, memoryStorage());
+    let calls = 0;
+    store.subscribe(() => (calls += 1));
+    const before = store.getState();
+    store.updateDraft(store.getState().draft);
+    store.updateDraft((d) => d);
+    store.setMessageStatus('sample-1', 'new');
+    expect(calls).toBe(0);
+    expect(store.getState()).toBe(before);
+  });
+
+  it('keeps dirty exact after publish, discard and editing back', async () => {
+    const store = createAdminStore(seed, memoryStorage());
+    expect(store.getState().dirty).toBe(false);
+    store.updateDraft((d) => withProjectName(d, 'X'));
+    expect(store.getState().dirty).toBe(true);
+    store.updateDraft((d) => withProjectName(d, seed.site.name));
+    expect(store.getState().dirty).toBe(false);
+    store.updateDraft((d) => withProjectName(d, 'Y'));
+    await store.publish();
+    expect(store.getState().dirty).toBe(false);
+    store.updateDraft((d) => withProjectName(d, 'Z'));
+    expect(store.getState().dirty).toBe(true);
+    store.discardDraft();
+    expect(store.getState().dirty).toBe(false);
+  });
+
+  it('flags media whose blob file was lost on reload, until it is replaced', async () => {
+    const storage = memoryStorage();
+    const first = createAdminStore(seed, storage);
+    first.updateDraft((d) => ({
+      ...d,
+      media: d.media.map((m, i) => (i === 0 ? { ...m, file: 'blob:http://localhost/abc' } : m)),
+    }));
+    first.flush();
+    expect(first.getState().issues.some((i) => i.code === 'file-lost')).toBe(false);
+
+    const reloaded = createAdminStore(seed, storage);
+    expect(reloaded.getState().issues).toContainEqual({ path: 'media[0].file', code: 'file-lost' });
+    expect(await reloaded.publish()).toMatchObject({ ok: false });
+    reloaded.updateDraft((d) => ({
+      ...d,
+      media: d.media.map((m, i) => (i === 0 ? { ...m, file: seed.media[0]!.file } : m)),
+    }));
+    expect(reloaded.getState().issues.some((i) => i.code === 'file-lost')).toBe(false);
   });
 });

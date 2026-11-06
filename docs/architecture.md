@@ -56,25 +56,31 @@ The project pages show concept work with illustrative images. The site labels th
 The admin panel is built on mock data ([ADR 0009](adr/0009-admin-panel-and-content-model.md)). Its code is in `src/admin`: `store` (editing state), `ui` (shared components) and `shell` (layout and navigation).
 
 - `/yonetim` and its sub-routes render inside a shell. The shell has a sidebar with grouped links, and a top bar with a breadcrumb, the save status, and the publish and discard buttons.
+- The save status reads `Yayınlanmamış değişiklikler var` or `Yayında, değişiklik yok`. The discard action is called `Değişiklikleri geri al`.
+- The top bar stays fixed only on windows at least 768 px wide and 501 px tall. Each screen sets the tab title `<screen> | Yönetim`. Client navigation moves focus to the screen heading.
+- Shared UI pieces `Notice`, `Section` and `SelectField` are in `src/admin/ui`.
 - `/yonetim/giris` is the login screen. It has no shell. It is a demo until authentication exists.
 - Screens that are not built yet show a placeholder page.
 - The mock store keeps a draft and a published copy of the content in the browser's local storage under a versioned name (`gcm-admin:v1`). When storage is unavailable, it falls back to the seed content and shows a save error.
 - Publishing runs the content validation. It is blocked while issues exist.
 - In the mock phase, edits stay in the browser and do not reach the public site.
-- Below 1024 pixels, the sidebar opens from a `Menü` button. Screens that need width show a notice below 768 pixels.
+- The store writes to local storage 300 ms after the last change, and at once on page hide, publish, discard and reset.
+- Below 1024 pixels, the sidebar opens from a `Menü` button as a modal menu. The sidebar footer (view site, log out) stays visible. Screens that need width show a notice below 768 pixels.
 
 The screens live in `src/admin/screens` and each has its own route. The groups are:
 
 - Site settings, with the demo mode switch, contact details, navigation, SEO, texts and footer.
-- The media library, with the image picker and the focal point picker.
-- The inbox and the redirects.
+- The media library, with the image picker and the focal point picker. Images load lazily. The focal point is set by tapping the image or dragging a 44 px handle. Uploads ask for the image description next. Items without a description get a badge and a filter. The image picker can upload.
+- The inbox and the redirects. Opening a message marks it read. `Yanıtlandı, arşive taşı` archives it with an undo. The redirects screen is titled `Eski adresler (yönlendirme)`.
 - Page editors for the home page (with four fixed project slots), services, process steps, studio, the contact page and the projects page.
 
 Projects are managed at `/yonetim/projeler` (list), `/yonetim/projeler/yeni` (new project) and `/yonetim/projeler/<slug>` (editor with details, concept, gallery, before/after and SEO tabs); categories and archive filters at `/yonetim/kategoriler`. Changing the address of a published project adds a redirect.
 
 The live preview is at `/yonetim/onizleme/...`. It renders the public page from the draft that the panel posts to it (same origin only). It has no admin chrome and also shows unpublished projects. The editor and the preview sit side by side from 1280 pixels wide, and a toggle switches between them below that width.
 
-The publish dialog lists the validation issues with links to the fields and asks for confirmation before it publishes.
+The preview loads only when it is visible. It starts at 360 px on windows under 768 px and at 1024 px (scaled to fit) otherwise. The chosen width is kept for the session. The preview shows the home hero at its final state, without the entry animation.
+
+The publish dialog lists the changed areas and the readable validation issues with links to the fields, and asks for confirmation before it publishes. `Yayınla` is disabled when nothing changed.
 
 The before/after field `Biçim` selects a slider or a toggle.
 

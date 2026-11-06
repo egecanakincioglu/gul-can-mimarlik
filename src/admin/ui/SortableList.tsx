@@ -53,7 +53,7 @@ export default function SortableList<T>({ items, getId, getLabel, onChange, rend
               <button
                 type="button"
                 data-move="up"
-                className="adm-btn adm-btn-secondary"
+                className="adm-btn"
                 aria-label={`Yukarı taşı: ${label}`}
                 disabled={i === 0}
                 onClick={() => move(i, 'up')}
@@ -63,7 +63,7 @@ export default function SortableList<T>({ items, getId, getLabel, onChange, rend
               <button
                 type="button"
                 data-move="down"
-                className="adm-btn adm-btn-secondary"
+                className="adm-btn"
                 aria-label={`Aşağı taşı: ${label}`}
                 disabled={i === items.length - 1}
                 onClick={() => move(i, 'down')}

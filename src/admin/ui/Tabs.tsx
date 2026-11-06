@@ -3,7 +3,7 @@
 import { useId, useRef, useState } from 'react';
 import type { KeyboardEvent, ReactNode } from 'react';
 
-export type TabItem = { id: string; label: string; panel: ReactNode };
+export type TabItem = { id: string; label: string; panel: ReactNode; errorCount?: number };
 
 export default function Tabs({ tabs, label }: { tabs: TabItem[]; label: string }) {
   const base = useId();
@@ -55,6 +55,12 @@ export default function Tabs({ tabs, label }: { tabs: TabItem[]; label: string }
             onKeyDown={(e) => onKeyDown(e, i)}
           >
             {t.label}
+            {t.errorCount ? (
+              <>
+                {' '}
+                <span className="adm-tab-err">({t.errorCount} hata)</span>
+              </>
+            ) : null}
           </button>
         ))}
       </div>

@@ -5,7 +5,10 @@ import Dialog from './Dialog';
 import EmptyState from './EmptyState';
 import ErrorBlock from './ErrorBlock';
 import Field from './Field';
+import Notice from './Notice';
 import SaveStatus from './SaveStatus';
+import Section from './Section';
+import SelectField from './SelectField';
 import SortableList from './SortableList';
 import Skeleton from './Skeleton';
 import Table from './Table';
@@ -176,16 +179,22 @@ describe('SaveStatus', () => {
     expect(region.getAttribute('aria-live')).toBe('polite');
   });
 
-  it('shows the saved time, unsaved changes, saving and errors', () => {
+  it('shows publish state, the saved time, saving and errors in one persistent element', () => {
     const at = new Date(2026, 10, 6, 14, 32).toISOString();
-    const { rerender } = render(<SaveStatus state={{ kind: 'saved', at }} dirty={false} />);
-    expect(screen.getByRole('status').textContent).toBe('Kaydedildi 14:32');
+    const { rerender } = render(<SaveStatus state={{ kind: 'idle' }} dirty={false} />);
+    const region = screen.getByRole('status');
+    expect(region.textContent).toBe('Yayında, değişiklik yok');
+    rerender(<SaveStatus state={{ kind: 'saved', at }} dirty={false} />);
+    expect(region.textContent).toBe('Yayında, değişiklik yok · Kaydedildi 14:32');
     rerender(<SaveStatus state={{ kind: 'saved', at }} dirty />);
-    expect(screen.getByRole('status').textContent).toBe('Kaydedilmemiş değişiklikler');
+    expect(region.textContent).toBe('Yayınlanmamış değişiklikler var · Kaydedildi 14:32');
+    rerender(<SaveStatus state={{ kind: 'idle' }} dirty />);
+    expect(region.textContent).toBe('Yayınlanmamış değişiklikler var');
     rerender(<SaveStatus state={{ kind: 'saving' }} dirty />);
-    expect(screen.getByRole('status').textContent).toBe('Kaydediliyor');
+    expect(region.textContent).toBe('Kaydediliyor');
     rerender(<SaveStatus state={{ kind: 'error', message: 'Hata oluştu' }} dirty={false} />);
-    expect(screen.getByRole('status').textContent).toBe('Hata oluştu');
+    expect(region.textContent).toBe('Hata oluştu');
+    expect(screen.getByRole('status')).toBe(region);
   });
 });
 
@@ -222,5 +231,113 @@ describe('Table, EmptyState, ErrorBlock, Skeleton', () => {
   it('hides skeleton rectangles from assistive technology', () => {
     const { container } = render(<Skeleton height={24} />);
     expect(container.querySelector('[aria-hidden="true"]')).not.toBeNull();
+  });
+});
+
+describe('Field required and live error', () => {
+  it('marks required fields in the label text', () => {
+    render(<Field label="Başlık" value="" onChange={() => {}} required />);
+    expect(screen.getByLabelText('Başlık (zorunlu)')).toBeTruthy();
+  });
+
+  it('keeps a polite empty error element that fills when an error appears', () => {
+    const { container, rerender } = render(<Field label="Ad" value="" onChange={() => {}} />);
+    const err = container.querySelector('.err') as HTMLElement;
+    expect(err.getAttribute('aria-live')).toBe('polite');
+    expect(err.textContent).toBe('');
+    rerender(<Field label="Ad" value="" onChange={() => {}} error="Zorunlu" />);
+    expect(container.querySelector('.err')).toBe(err);
+    expect(err.textContent).toBe('Zorunlu');
+  });
+});
+
+describe('Tabs error count', () => {
+  it('adds the error count to the label text and keeps roving tabindex', () => {
+    render(
+      <Tabs
+        label="Proje"
+        tabs={[
+          { id: 'a', label: 'Bilgiler', errorCount: 2, panel: <p>A</p> },
+          { id: 'b', label: 'Galeri', errorCount: 0, panel: <p>B</p> },
+        ]}
+      />,
+    );
+    const [a, b] = screen.getAllByRole('tab');
+    expect(a.textContent).toBe('Bilgiler (2 hata)');
+    expect(b.textContent).toBe('Galeri');
+    expect(a.getAttribute('tabindex')).toBe('0');
+    expect(b.getAttribute('tabindex')).toBe('-1');
+  });
+});
+
+describe('Notice', () => {
+  it('prefixes the variant in text and alerts only for errors', () => {
+    const { rerender } = render(<Notice variant="error">Kaydedilemedi</Notice>);
+    expect(screen.getByRole('alert').textContent).toBe('Hata: Kaydedilemedi');
+    rerender(<Notice variant="warning">Dikkat</Notice>);
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.getByText('Uyarı:')).toBeTruthy();
+    rerender(<Notice variant="info">Bilgi</Notice>);
+    expect(document.body.textContent).toBe('Bilgi');
+  });
+});
+
+describe('Section', () => {
+  it('is a details element with an h2 in its summary', () => {
+    const { container, rerender } = render(
+      <Section title="Kapak" description="Ana görsel">
+        <p>İçerik</p>
+      </Section>,
+    );
+    const details = container.querySelector('details') as HTMLDetailsElement;
+    expect(details.open).toBe(false);
+    expect(screen.getByRole('heading', { level: 2, name: 'Kapak' }).closest('summary')).not.toBeNull();
+    expect(screen.getByText('Ana görsel')).toBeTruthy();
+    rerender(
+      <Section title="Kapak" defaultOpen>
+        <p>İçerik</p>
+      </Section>,
+    );
+    expect((container.querySelector('details') as HTMLDetailsElement).open).toBe(true);
+  });
+});
+
+describe('SelectField', () => {
+  const options = [
+    { value: 'a', label: 'Birinci' },
+    { value: 'b', label: 'İkinci' },
+  ];
+
+  it('reports changes and wires helper and error', () => {
+    const onChange = vi.fn();
+    render(<SelectField label="Tür" value="a" options={options} onChange={onChange} helper="Seçin" error="Gerekli" />);
+    const select = screen.getByLabelText('Tür') as HTMLSelectElement;
+    fireEvent.change(select, { target: { value: 'b' } });
+    expect(onChange).toHaveBeenCalledWith('b');
+    expect(select.getAttribute('aria-invalid')).toBe('true');
+    const ids = (select.getAttribute('aria-describedby') ?? '').split(' ');
+    expect(ids.map((id) => document.getElementById(id)?.textContent)).toEqual(['Seçin', 'Gerekli']);
+  });
+
+  it('shows a warning notice', () => {
+    render(<SelectField label="Tür" value="a" options={options} onChange={() => {}} warning="Yayında" />);
+    expect(screen.getByText('Uyarı:')).toBeTruthy();
+    expect(screen.getByText('Yayında')).toBeTruthy();
+  });
+});
+
+describe('EmptyState extras', () => {
+  it('shows a description and a link action', () => {
+    render(
+      <EmptyState
+        message="Proje yok."
+        description="İlk projeyi ekleyin."
+        actionLabel="Yeni proje"
+        href="/yonetim/projeler/yeni"
+      />,
+    );
+    expect(screen.getByText('İlk projeyi ekleyin.')).toBeTruthy();
+    expect(screen.getByRole('link', { name: 'Yeni proje' }).getAttribute('href')).toBe('/yonetim/projeler/yeni');
+    expect(screen.queryByRole('button')).toBeNull();
   });
 });

@@ -48,7 +48,7 @@ const ROUTES: [string, () => ReactElement, string][] = [
   ['alt-bilgi', AltBilgi, 'Alt bilgi'],
   ['medya', Medya, 'Medya kütüphanesi'],
   ['gelen-kutusu', GelenKutusu, 'Gelen kutusu'],
-  ['yonlendirmeler', Yonlendirmeler, 'Yönlendirmeler'],
+  ['yonlendirmeler', Yonlendirmeler, 'Eski adresler (yönlendirme)'],
   ['ana-sayfa', AnaSayfa, 'Ana sayfa'],
   ['hizmetler', Hizmetler, 'Hizmetler'],
   ['surec-adimlari', SurecAdimlari, 'Süreç adımları'],

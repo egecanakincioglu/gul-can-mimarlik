@@ -13,7 +13,7 @@
   width: 100%;
   min-width: 0;
   height: 70dvh;
-  min-height: 360px;
+  min-height: 70dvh;
   overflow: hidden;
   border: 1px solid var(--color-golge);
   background: var(--color-kagit);
@@ -26,6 +26,14 @@
   border: 0;
   background: var(--color-kirec);
   transform-origin: top left;
+}
+.adm-preview-loading {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  padding: 24px;
+  background: var(--color-kagit);
+  pointer-events: none;
 }
 .adm-preview-note {
   padding: 24px;
@@ -62,7 +70,7 @@
   }
   .adm-split-preview {
     position: sticky;
-    top: 96px;
+    top: var(--adm-top, 96px);
   }
 }
 .adm-publish-issues ul {

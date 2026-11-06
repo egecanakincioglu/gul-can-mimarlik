@@ -31,7 +31,9 @@ const storageWith = (content: SiteContent): StorageLike => {
     setItem: (k, v) => void data.set(k, v),
     removeItem: (k) => void data.delete(k),
   };
-  createAdminStore(seed, io).updateDraft(content);
+  const store = createAdminStore(seed, io);
+  store.updateDraft(content);
+  store.flush();
   return io;
 };
 
@@ -61,7 +63,10 @@ const fill = (from: string, to: string) => {
 describe('RedirectsScreen', () => {
   it('shows the empty state', async () => {
     await open({ ...seed, redirects: [] });
-    expect(screen.getByText('Yönlendirme yok')).toBeTruthy();
+    expect(screen.getByText('Henüz eski adres yok.')).toBeTruthy();
+    expect(screen.getByText(/otomatik eklenir; elle de ekleyebilirsiniz/)).toBeTruthy();
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('Eski adresler (yönlendirme)');
+    expect(screen.getByRole('button', { name: 'Yönlendirme ekle' })).toBeTruthy();
   });
 
   it('marks rename redirects as Otomatik and gives them no edit action', async () => {
@@ -86,7 +91,7 @@ describe('RedirectsScreen', () => {
     expect(screen.getByText('Otomatik')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /yönlendirmesini sil/ }));
     fireEvent.click(within(openDialog()).getByRole('button', { name: 'Sil' }));
-    expect(screen.getByText('Yönlendirme yok')).toBeTruthy();
+    expect(screen.getByText('Henüz eski adres yok.')).toBeTruthy();
   });
 
   it('fills the target from a public path suggestion', async () => {
@@ -113,15 +118,40 @@ describe('RedirectsScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Yönlendirme ekle' }));
 
     const dialog = fill('eski', live);
-    expect(within(dialog).getAllByText(/ile başlamalı/)).toHaveLength(1);
+    expect(within(dialog).getAllByText(/ile başlamalı/)).toHaveLength(2);
     expect(within(dialog).getByLabelText('Eski adres').getAttribute('aria-invalid')).toBe('true');
 
     fill('/eski', live);
-    expect(within(dialog).getByText(/zaten bir yönlendirme var/)).toBeTruthy();
+    expect(within(dialog).getAllByText(/zaten bir yönlendirme var/)).toHaveLength(2);
 
     fill(live, live);
-    expect(within(dialog).getByText(/döngü/)).toBeTruthy();
+    expect(within(dialog).getAllByText(/döngü/)).toHaveLength(2);
     expect(screen.getAllByRole('row')).toHaveLength(2);
+  });
+
+  it('focuses the first invalid field and lists errors by label as buttons', async () => {
+    await open({ ...seed, redirects: [] });
+    fireEvent.click(screen.getByRole('button', { name: 'Yönlendirme ekle' }));
+    const dialog = fill('eski', 'yeni');
+    const from = within(dialog).getByLabelText('Eski adres');
+    expect(document.activeElement).toBe(from);
+    const alert = within(dialog).getByRole('alert');
+    const items = within(alert).getAllByRole('button');
+    expect(items).toHaveLength(2);
+    expect(items[0].textContent).toMatch(/^Eski adres: .*ile başlamalı/);
+    expect(items[1].textContent).toMatch(/^Yeni adres: /);
+    fireEvent.click(items[1]);
+    expect(document.activeElement).toBe(within(dialog).getByLabelText('Yeni adres'));
+  });
+
+  it('puts Vazgeç before the destructive action in the delete dialog', async () => {
+    await open({ ...seed, redirects: [{ id: 'manual-1', from: '/eski', to: live }] });
+    fireEvent.click(screen.getByRole('button', { name: '/eski yönlendirmesini sil' }));
+    const names = within(openDialog())
+      .getAllByRole('button')
+      .map((b) => b.textContent);
+    expect(names.indexOf('Vazgeç')).toBeGreaterThanOrEqual(0);
+    expect(names.indexOf('Vazgeç')).toBeLessThan(names.indexOf('Sil'));
   });
 
   it('edits and removes a manual redirect after confirming', async () => {
@@ -133,7 +163,7 @@ describe('RedirectsScreen', () => {
     fireEvent.click(screen.getByRole('button', { name: '/baska yönlendirmesini sil' }));
     const dialog = openDialog();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Sil' }));
-    expect(screen.getByText('Yönlendirme yok')).toBeTruthy();
+    expect(screen.getByText('Henüz eski adres yok.')).toBeTruthy();
   });
 });
 

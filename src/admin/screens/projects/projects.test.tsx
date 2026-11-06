@@ -152,12 +152,12 @@ describe('existing project', () => {
   it('requires both pair images or none', async () => {
     await mount(<ProjectEditScreen slug="daire-yenileme" />);
     await tab('Önce/Sonra');
-    await click(screen.getByRole('button', { name: 'Önce görseli' }));
+    await click(screen.getByRole('button', { name: /^Önce görseli/ }));
     await click(screen.getByRole('button', { name: 'Görseli kaldır' }));
     expect(screen.getByRole('alert').textContent).toContain('birlikte');
     expect((screen.getByRole('button', { name: 'Kaydet' }) as HTMLButtonElement).disabled).toBe(true);
 
-    await click(screen.getByRole('button', { name: 'Sonra görseli' }));
+    await click(screen.getByRole('button', { name: /^Sonra görseli/ }));
     await click(screen.getByRole('button', { name: 'Görseli kaldır' }));
     expect(screen.queryByRole('alert')).toBeNull();
     await click(screen.getByRole('button', { name: 'Kaydet' }));

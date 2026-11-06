@@ -55,6 +55,7 @@ export default function Field({
     <div className={boxed ? 'field adm-field adm-boxed' : 'field adm-field'}>
       <label htmlFor={id} className="label adm-field-label">
         {label}
+        {required ? ' (zorunlu)' : null}
       </label>
       {multiline ? (
         <textarea {...shared} rows={rows} onChange={(e) => onChange(e.target.value)} />
@@ -71,11 +72,9 @@ export default function Field({
           {value.length}/{max}
         </p>
       )}
-      {error && (
-        <p id={errorId} className="err">
-          {error}
-        </p>
-      )}
+      <p id={errorId} className="err" aria-live="polite">
+        {error}
+      </p>
     </div>
   );
 }

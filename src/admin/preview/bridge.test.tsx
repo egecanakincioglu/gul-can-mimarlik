@@ -20,8 +20,14 @@ const named = (name: string): SiteContent => ({ ...seed, site: { ...seed.site, n
 
 function Sender({ draft }: { draft: SiteContent }) {
   const ref = useRef<HTMLIFrameElement>(null);
-  usePreviewBridge(ref, draft);
-  return <iframe ref={ref} title="frame" />;
+  const { ready, reset } = usePreviewBridge(ref, draft);
+  return (
+    <>
+      <iframe ref={ref} title="frame" />
+      <p>{ready ? 'ready' : 'waiting'}</p>
+      <button onClick={reset}>reset</button>
+    </>
+  );
 }
 
 function Receiver() {
@@ -106,6 +112,16 @@ describe('sender', () => {
     const { win, post } = spyFrame();
     deliver({ type: READY_MESSAGE }, { source: win });
     expect(post).toHaveBeenCalledTimes(1);
+  });
+
+  it('reports readiness once the frame announces itself, until reset', () => {
+    render(<Sender draft={seed} />);
+    const { win } = spyFrame();
+    expect(screen.getByText('waiting')).toBeTruthy();
+    deliver({ type: READY_MESSAGE }, { source: win });
+    expect(screen.getByText('ready')).toBeTruthy();
+    act(() => screen.getByText('reset').click());
+    expect(screen.getByText('waiting')).toBeTruthy();
   });
 
   it('ignores ready messages from a foreign origin or another window', () => {

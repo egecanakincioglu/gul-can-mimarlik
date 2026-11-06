@@ -1,7 +1,7 @@
 'use client';
 
-import { useId, useRef } from 'react';
-import type { KeyboardEvent, PointerEvent } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
+import type { KeyboardEvent } from 'react';
 import type { MediaItem } from '@/content/types';
 import type { RatioSpec } from './ratios.ts';
 import './media.css';
@@ -29,12 +29,16 @@ export default function FocalPicker({
   media,
   value,
   onChange,
+  onCommit,
   ratios = [],
   alt,
 }: {
   media: MediaItem;
   value: Focal;
+  /** Called with every new point, including while the handle is dragged. */
   onChange: (focal: Focal) => void;
+  /** Called once per gesture: after a drag ends, and for every non-drag change (tap, keys, numbers). */
+  onCommit?: (focal: Focal) => void;
   /** Ratios the image is used in; the first one draws the crop box, all get a strip preview. */
   ratios?: RatioSpec[];
   alt: string;
@@ -42,12 +46,33 @@ export default function FocalPicker({
   const id = useId();
   const stage = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+  const last = useRef(value);
+  const [typed, setTyped] = useState<{ x?: string; y?: string }>({});
   const box = ratios[0] ? cropBox(media, ratios[0].aspect, value) : null;
+  useEffect(() => {
+    last.current = value;
+  }, [value]);
 
-  const fromPointer = (e: PointerEvent) => {
+  const emit = (next: Focal, commit: boolean) => {
+    if (next.x === last.current.x && next.y === last.current.y) return;
+    last.current = next;
+    onChange(next);
+    if (commit) onCommit?.(next);
+  };
+
+  const fromPointer = (e: { clientX: number; clientY: number }, commit: boolean) => {
     const r = stage.current?.getBoundingClientRect();
     if (!r || !r.width || !r.height) return;
-    onChange({ x: clamp(((e.clientX - r.left) / r.width) * 100), y: clamp(((e.clientY - r.top) / r.height) * 100) });
+    emit(
+      { x: clamp(((e.clientX - r.left) / r.width) * 100), y: clamp(((e.clientY - r.top) / r.height) * 100) },
+      commit,
+    );
+  };
+
+  const endDrag = () => {
+    if (!dragging.current) return;
+    dragging.current = false;
+    onCommit?.(last.current);
   };
 
   const onKey = (e: KeyboardEvent) => {
@@ -55,37 +80,39 @@ export default function FocalPicker({
     if (!arrow) return;
     e.preventDefault();
     const step = e.shiftKey ? 10 : 1;
-    onChange({ x: clamp(value.x + arrow[0] * step), y: clamp(value.y + arrow[1] * step) });
+    setTyped({});
+    emit({ x: clamp(value.x + arrow[0] * step), y: clamp(value.y + arrow[1] * step) }, true);
   };
 
   const setAxis = (axis: 'x' | 'y', raw: string) => {
-    if (raw.trim() === '' || Number.isNaN(Number(raw))) return;
-    onChange({ ...value, [axis]: clamp(Number(raw)) });
+    const n = Number(raw);
+    if (raw.trim() === '' || Number.isNaN(n)) {
+      setTyped((t) => ({ ...t, [axis]: raw }));
+      return;
+    }
+    const next = clamp(n);
+    // Keep what the person typed while it is still a valid value; show the clamped number otherwise.
+    setTyped((t) => ({ ...t, [axis]: String(next) === raw ? raw : undefined }));
+    emit({ ...value, [axis]: next }, true);
   };
+
+  const shown = (axis: 'x' | 'y') => typed[axis] ?? String(value[axis]);
+  const forget = (axis: 'x' | 'y') => setTyped((t) => ({ ...t, [axis]: undefined }));
 
   return (
     <div className="mf">
+      <p className="caption">Görsel kırpıldığında kalması gereken yeri seçin.</p>
       <div
         ref={stage}
         className="mf-stage"
         style={{ aspectRatio: `${media.width} / ${media.height}` }}
-        onPointerDown={(e) => {
-          dragging.current = true;
-          e.currentTarget.setPointerCapture?.(e.pointerId);
-          fromPointer(e);
-        }}
-        onPointerMove={(e) => {
-          if (dragging.current) fromPointer(e);
-        }}
-        onPointerUp={() => {
-          dragging.current = false;
-        }}
-        onPointerCancel={() => {
-          dragging.current = false;
+        onClick={(e) => {
+          if ((e.target as Element).closest('.mf-marker')) return;
+          fromPointer(e, true);
         }}
       >
         {/* eslint-disable-next-line @next/next/no-img-element -- local object URLs cannot go through the image optimizer */}
-        <img src={media.file} alt={alt} draggable={false} />
+        <img src={media.file} alt={alt} draggable={false} decoding="async" />
         {box && (
           <>
             <span className="mf-veil" style={{ left: 0, top: 0, right: 0, height: `${box.top}%` }} />
@@ -120,21 +147,46 @@ export default function FocalPicker({
           aria-describedby={`${id}-hint`}
           style={{ left: `${value.x}%`, top: `${value.y}%` }}
           onKeyDown={onKey}
+          onPointerDown={(e) => {
+            if (!e.isPrimary || e.button !== 0) return;
+            dragging.current = true;
+            e.currentTarget.setPointerCapture?.(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            if (dragging.current && e.isPrimary) fromPointer(e, false);
+          }}
+          onPointerUp={endDrag}
+          onPointerCancel={endDrag}
+          onLostPointerCapture={endDrag}
         >
           <span aria-hidden="true" />
         </button>
       </div>
       <p id={`${id}-hint`} className="caption">
-        Sürükleyin veya ok tuşlarını kullanın: 1%, Shift ile 10%.
+        Tutamağı sürükleyin, görsele dokunun veya ok tuşlarını kullanın: 1%, Shift ile 10%.
       </p>
       <div className="mf-nums">
         <label className="field adm-field adm-boxed">
           <span className="label adm-field-label">X (%)</span>
-          <input type="number" min={0} max={100} value={value.x} onChange={(e) => setAxis('x', e.target.value)} />
+          <input
+            type="number"
+            min={0}
+            max={100}
+            value={shown('x')}
+            onChange={(e) => setAxis('x', e.target.value)}
+            onBlur={() => forget('x')}
+          />
         </label>
         <label className="field adm-field adm-boxed">
           <span className="label adm-field-label">Y (%)</span>
-          <input type="number" min={0} max={100} value={value.y} onChange={(e) => setAxis('y', e.target.value)} />
+          <input
+            type="number"
+            min={0}
+            max={100}
+            value={shown('y')}
+            onChange={(e) => setAxis('y', e.target.value)}
+            onBlur={() => forget('y')}
+          />
         </label>
       </div>
       {ratios.length > 0 && (
