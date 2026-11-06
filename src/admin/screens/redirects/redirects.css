@@ -1,0 +1,8 @@
+.adm-redirects-bar {
+  margin-bottom: 24px;
+}
+.adm-redirects-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
