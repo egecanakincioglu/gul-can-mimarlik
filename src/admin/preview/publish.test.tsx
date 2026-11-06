@@ -77,8 +77,10 @@ describe('PublishPanel', () => {
     const open = await screen.findByRole('button', { name: /^Yayınla \(\d+ sorun\)$/ });
     fireEvent.click(open);
     const dialog = openDialog();
-    const link = within(dialog).getByRole('link', { name: 'Görsel açıklaması boş', hidden: true });
+    const link = within(dialog).getByRole('link', { name: /: Görsel açıklaması boş$/, hidden: true });
     expect(link.getAttribute('href')).toBe('/yonetim/medya');
+    expect(dialog.querySelector('code')).toBeNull();
+    expect(dialog.textContent).not.toContain('media[');
     expect(within(dialog).queryByRole('button', { name: 'Yayınla', hidden: true })).toBeNull();
   });
 
@@ -86,7 +88,10 @@ describe('PublishPanel', () => {
     await setup();
     fireEvent.click(screen.getByText('break project'));
     fireEvent.click(await screen.findByRole('button', { name: /sorun\)$/ }));
-    const link = within(openDialog()).getByRole('link', { name: 'Konsept projede konum ve yıl olmaz', hidden: true });
+    const link = within(openDialog()).getByRole('link', {
+      name: `${seed.projects[0].title} projesi: Konsept projede konum ve yıl olmaz`,
+      hidden: true,
+    });
     expect(link.getAttribute('href')).toBe(`/yonetim/projeler/${seed.projects[0].slug}`);
   });
 
@@ -98,7 +103,32 @@ describe('PublishPanel', () => {
     const dialog = openDialog();
     expect(within(dialog).getByText('Değişiklikler yayınlansın mı?')).toBeTruthy();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Yayınla', hidden: true }));
-    await waitFor(() => expect(screen.getByRole('status').textContent).toMatch(/^Yayınlandı \d{2}:\d{2}$/));
+    await waitFor(() =>
+      expect(screen.getByRole('status').textContent).toMatch(/^Yayınlandı \d{2}:\d{2}\. Değişiklikler sitede\./),
+    );
+    const link = within(screen.getByRole('status')).getByRole('link', { name: /Siteyi görüntüle/ });
+    expect(link.getAttribute('target')).toBe('_blank');
+    expect(link.textContent).toContain('(yeni sekme)');
+    expect(screen.queryByRole('alert')).toBeNull();
+  });
+
+  it('lists what changed in the confirm dialog', async () => {
+    await setup();
+    fireEvent.click(screen.getByText('rename'));
+    await waitFor(() => expect(screen.getByTestId('name').textContent).toBe('Yeni ad'));
+    fireEvent.click(publishButton());
+    expect(within(openDialog()).getByText('Site ayarları')).toBeTruthy();
+  });
+
+  it('disables publishing with a screen-reader-only reason while nothing changed, but not for validation errors', async () => {
+    await setup();
+    expect(publishButton().disabled).toBe(true);
+    expect(screen.getByRole('status').textContent).toBe('Yayınlanacak değişiklik yok.');
+    expect(screen.getByRole('status').className).toBe('sr-only');
+    expect(publishButton().getAttribute('aria-describedby')).toBe(screen.getByRole('status').id);
+    fireEvent.click(screen.getByText('break'));
+    const open = await screen.findByRole('button', { name: /^Yayınla \(\d+ sorun\)$/ });
+    expect((open as HTMLButtonElement).disabled).toBe(false);
   });
 
   it('cancelling the confirm dialog publishes nothing', async () => {
@@ -107,18 +137,36 @@ describe('PublishPanel', () => {
     await waitFor(() => expect(screen.getByTestId('name').textContent).toBe('Yeni ad'));
     fireEvent.click(publishButton());
     fireEvent.click(within(openDialog()).getByRole('button', { name: 'Vazgeç', hidden: true }));
-    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.getByRole('status').textContent).toBe('');
   });
 
-  it('discards the draft only after confirmation', async () => {
+  it('discards the draft only after confirmation, with Vazgeç first', async () => {
     await setup();
     fireEvent.click(screen.getByText('rename'));
     await waitFor(() => expect(screen.getByTestId('name').textContent).toBe('Yeni ad'));
-    fireEvent.click(screen.getByRole('button', { name: 'Taslağı at' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Değişiklikleri geri al' }));
     const dialog = openDialog();
+    expect(
+      within(dialog).getByText('Yayınlanmamış bütün değişiklikler silinir, site son yayınlanan hâline döner.'),
+    ).toBeTruthy();
+    const names = within(dialog)
+      .getAllByRole('button', { hidden: true })
+      .map((b) => b.textContent);
+    expect(names).toEqual(['Vazgeç', 'Değişiklikleri geri al']);
     expect(screen.getByTestId('name').textContent).toBe('Yeni ad');
-    fireEvent.click(within(dialog).getByRole('button', { name: 'Taslağı at', hidden: true }));
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Değişiklikleri geri al', hidden: true }));
     await waitFor(() => expect(screen.getByTestId('name').textContent).toBe(seed.site.name));
+  });
+
+  it('puts Vazgeç before Yayınla in the confirm dialog', async () => {
+    await setup();
+    fireEvent.click(screen.getByText('rename'));
+    await waitFor(() => expect(screen.getByTestId('name').textContent).toBe('Yeni ad'));
+    fireEvent.click(publishButton());
+    const names = within(openDialog())
+      .getAllByRole('button', { hidden: true })
+      .map((b) => b.textContent);
+    expect(names).toEqual(['Vazgeç', 'Yayınla']);
   });
 });
 

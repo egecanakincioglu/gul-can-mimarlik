@@ -8,10 +8,14 @@ import { usePreviewReceiver } from './usePreviewBridge';
 /** Renders the public page for the path segments with the given content, or null for an unknown path. */
 export type RenderPreviewPage = (segments: string[], content: SiteContent) => ReactNode | null;
 
-class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
+class Boundary extends Component<{ children: ReactNode; resetKey: unknown }, { failed: boolean }> {
   state = { failed: false };
   static getDerivedStateFromError() {
     return { failed: true };
+  }
+  componentDidUpdate(prev: { resetKey: unknown }) {
+    // A new draft may fix the failure; retry without remounting the healthy tree.
+    if (this.state.failed && prev.resetKey !== this.props.resetKey) this.setState({ failed: false });
   }
   render() {
     return this.state.failed ? (
@@ -23,6 +27,14 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
     );
   }
 }
+
+/*
+ * Entrance animations of the public hero start from a hidden state (clipped photo, lines below
+ * their mask, faded text) and only finish after 1 to 3 seconds. In the preview the page is
+ * re-rendered per edit and screenshots are taken right after load, so the hero looked black.
+ * Showing the end state at once keeps the preview readable.
+ */
+const PREVIEW_STATIC_CSS = `.hero-aperture,.hero-aperture img,.hl-line>span,.hero-fade{animation:none!important}`;
 
 const segmentsOf = (href: string): string[] | null => {
   if (!href.startsWith('/') || href.startsWith('//')) return null;
@@ -54,7 +66,8 @@ export default function PreviewFrame({ segments, render }: { segments: string[];
   const page = render(path, content);
   return (
     <div onClickCapture={onClick}>
-      <Boundary key={JSON.stringify(content)}>
+      <style>{PREVIEW_STATIC_CSS}</style>
+      <Boundary resetKey={content}>
         {page ?? (
           <p role="alert" className="adm-preview-note">
             Bu adres için önizleme yok.

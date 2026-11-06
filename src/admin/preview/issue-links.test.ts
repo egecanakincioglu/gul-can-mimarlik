@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { getContent } from '@/content';
 import type { SiteContent } from '@/content/types';
-import { issueLink } from './issue-links';
+import { issueLabel, issueLink } from './issue-links';
 
 let seed: SiteContent;
 beforeAll(async () => {
@@ -60,5 +60,31 @@ describe('issueLink', () => {
       href: '/yonetim/medya',
     });
     expect(issueLink(seed, { path: 'home.featured[0]', code: 'featured-unpublished' }).href).toBe('/yonetim/ana-sayfa');
+  });
+});
+
+describe('issueLabel', () => {
+  it('names the project and the problem, never the path', () => {
+    const label = issueLabel({ path: 'projects[1].cover.alt', code: 'empty-alt' }, seed);
+    expect(label).toBe(`${seed.projects[1].title} projesi: Görsel açıklaması boş`);
+    expect(label).not.toContain('projects');
+  });
+
+  it('names a media item by its file', () => {
+    const file = seed.media[0].file.split('/').pop();
+    expect(issueLabel({ path: 'media[0].alt', code: 'empty-alt' }, seed)).toBe(`Görsel ${file}: Görsel açıklaması boş`);
+  });
+
+  it('names the area for page content and falls back for unknown paths', () => {
+    expect(issueLabel({ path: 'home.featured', code: 'featured-count' }, seed)).toBe(
+      'Ana sayfa: Seçili çalışmalarda 4 alan dolu olmalı',
+    );
+    expect(issueLabel({ path: 'navigation[0].href', code: 'x' }, seed)).toBe(
+      'Gezinme: Düzeltilmesi gereken bir alan var',
+    );
+    expect(issueLabel({ path: 'projects[999].cover', code: 'x' }, seed)).toBe(
+      'Projeler: Düzeltilmesi gereken bir alan var',
+    );
+    expect(issueLabel({ path: 'mystery', code: 'x' }, seed)).toBe('Site: Düzeltilmesi gereken bir alan var');
   });
 });
