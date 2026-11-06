@@ -23,6 +23,9 @@ export default function ContactForm() {
     if (v('message').length < 10) err.message = 'Mesajınız en az 10 karakter olmalı.';
     setErrors(err);
     setDone(Object.keys(err).length === 0);
+    const first = (['name', 'phone', 'email', 'type', 'message'] as const).find((k) => err[k]);
+    if (first === 'type') e.currentTarget.querySelector<HTMLElement>('fieldset button')?.focus();
+    else if (first) e.currentTarget.querySelector<HTMLElement>(`#${first}`)?.focus();
   };
 
   const field = (id: keyof Errors, label: string, props: React.InputHTMLAttributes<HTMLInputElement> = {}) => (

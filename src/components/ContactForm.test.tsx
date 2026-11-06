@@ -26,6 +26,22 @@ describe('ContactForm', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
+  it('moves focus to the first invalid field after a failed submit', () => {
+    render(<ContactForm />);
+    submit();
+    expect(document.activeElement).toBe(field('Ad Soyad'));
+    fill('Ad Soyad', 'Ayşe Yılmaz');
+    submit();
+    expect(document.activeElement).toBe(field('Telefon'));
+    fill('Telefon', '+90 212 000 00 00');
+    fill('E-posta', 'ayse@example.com');
+    submit();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: 'Mimari Proje' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Mimari Proje' }));
+    submit();
+    expect(document.activeElement).toBe(field('Mesaj'));
+  });
+
   it('rejects a malformed e-mail address and a short phone number', () => {
     render(<ContactForm />);
     fillValid();
