@@ -6,6 +6,8 @@ import InView from '@/components/InView';
 import BeforeAfter from '@/components/BeforeAfter';
 import ProjectGallery from '@/components/ProjectGallery';
 import Footer from '@/components/Footer';
+import { beforeAfterTexts } from '@/components/shell-texts';
+import { getContent } from '@/content';
 import { getProject, nextProject, projects } from '@/content/projects';
 import { serviceCategories } from '@/content/site';
 
@@ -143,7 +145,11 @@ export default async function ProjectPage({ params }: Params) {
               <p className="lead mt-6 max-w-[26ch]">Pencere, kiriş ve kolon aynı kalıyor; yüzeyler değişiyor.</p>
             </div>
             <div className="col-span-4 md:col-span-8 xl:col-span-8">
-              <BeforeAfter before={p.beforeAfter.before} after={p.beforeAfter.after} />
+              <BeforeAfter
+                texts={beforeAfterTexts(await getContent())}
+                before={p.beforeAfter.before}
+                after={p.beforeAfter.after}
+              />
             </div>
           </div>
         </section>
