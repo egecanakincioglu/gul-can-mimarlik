@@ -89,6 +89,27 @@ describe('BeforeAfter slider', () => {
   });
 });
 
+describe('BeforeAfter timers', () => {
+  it('leaves no timer running after unmount', () => {
+    vi.useFakeTimers();
+    const { unmount } = render(<BeforeAfter texts={texts} before={img('a')} after={img('b')} />);
+    fireEvent.keyDown(slider(), { key: 'ArrowRight' });
+    fireEvent.click(screen.getByRole('button', { name: 'Sonra' }));
+    expect(vi.getTimerCount()).toBe(1);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+    expect(() => vi.advanceTimersByTime(1000)).not.toThrow();
+  });
+
+  it('restarts the smooth timer instead of stacking timers', () => {
+    vi.useFakeTimers();
+    render(<BeforeAfter texts={texts} before={img('a')} after={img('b')} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sonra' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Önce' }));
+    expect(vi.getTimerCount()).toBe(1);
+  });
+});
+
 describe('BeforeAfter toggle mode', () => {
   it('has no slider handle and shows the before image', () => {
     const { container } = render(<BeforeAfter texts={texts} before={img('a')} after={img('b')} mode="toggle" />);

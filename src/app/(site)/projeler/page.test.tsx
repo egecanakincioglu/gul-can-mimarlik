@@ -9,7 +9,7 @@ vi.mock('next/image', () => ({
 }));
 
 // Footer has its own markup test; a stub keeps this snapshot about the page.
-vi.mock('@/components/Footer', () => ({ default: () => <footer data-stub /> }));
+vi.mock('@/components/Footer', () => ({ default: () => <footer data-stub />, FooterView: () => <footer data-stub /> }));
 
 describe('Projeler page', () => {
   it('renders the same markup as before the content model', async () => {

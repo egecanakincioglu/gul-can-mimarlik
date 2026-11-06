@@ -37,11 +37,15 @@ export default function BeforeAfter({
   const touched = useRef(false);
   const [pos, setPos] = useState(mode === 'toggle' ? 100 : 50);
   const [smooth, setSmooth] = useState(false);
+  const smoothTimer = useRef<number | undefined>(undefined);
+
+  useEffect(() => () => window.clearTimeout(smoothTimer.current), []);
 
   const set = (v: number, animate = false) => {
     setSmooth(animate);
     setPos(Math.max(0, Math.min(100, v)));
-    if (animate) window.setTimeout(() => setSmooth(false), 280);
+    window.clearTimeout(smoothTimer.current);
+    if (animate) smoothTimer.current = window.setTimeout(() => setSmooth(false), 280);
   };
   const pct = (e: PointerEvent) => {
     const r = stage.current!.getBoundingClientRect();

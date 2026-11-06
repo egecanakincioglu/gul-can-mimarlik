@@ -2,7 +2,7 @@ import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
-const ROOTS = ['src/app', 'src/components'];
+const ROOTS = ['src/app', 'src/components', 'src/site'];
 
 // ServicesBands renders small thumbnails (18vw on every width), so a narrow fallback is correct.
 const NARROW_ON_PURPOSE = new Set(['src/components/ServicesBands.tsx']);

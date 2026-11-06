@@ -5,8 +5,8 @@ import type { SiteContent } from '@/content/types';
 import Home from './page';
 
 // Server components that read the content themselves cannot render in the client test renderer.
-vi.mock('@/components/Footer', () => ({ default: () => null }));
-vi.mock('@/components/ServicesBands', () => ({ default: () => null }));
+vi.mock('@/components/Footer', () => ({ default: () => null, FooterView: () => null }));
+vi.mock('@/components/ServicesBands', () => ({ default: () => null, ServicesBandsView: () => null }));
 vi.mock('@/content', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@/content')>();
   return { ...actual, getContent: vi.fn(actual.getContent) };

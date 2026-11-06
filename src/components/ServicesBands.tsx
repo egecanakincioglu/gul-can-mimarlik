@@ -1,11 +1,15 @@
 import Link from 'next/link';
 import Photo from './Photo';
 import { getContent } from '@/content';
+import type { SiteContent } from '@/content/types';
 import { captionOf, resolveImage } from '@/content/select';
 
 /* "Kat kesiti": four stacked floors. Desktop (hover devices) expands one band at a time; elsewhere everything stays open. */
 export default async function ServicesBands() {
-  const content = await getContent();
+  return <ServicesBandsView c={await getContent()} />;
+}
+
+export function ServicesBandsView({ c: content }: { c: SiteContent }) {
   return (
     <ul className="list-none">
       {content.serviceCategories.map((c, i) => (
