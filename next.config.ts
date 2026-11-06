@@ -9,6 +9,10 @@ export function adminRewrites(enabled: boolean) {
   ];
 }
 
+function header(key: string, value: string) {
+  return { key, value };
+}
+
 const nextConfig: NextConfig = {
   images: {
     formats: ['image/avif', 'image/webp'],
@@ -18,7 +22,7 @@ const nextConfig: NextConfig = {
     return [
       {
         source: '/yonetim/:path*',
-        headers: [{ key: 'X-Robots-Tag', value: 'noindex, nofollow' }],
+        headers: [header('X-Robots-Tag', 'noindex, nofollow')],
       },
     ];
   },
