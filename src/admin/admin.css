@@ -174,6 +174,12 @@
   padding: 32px 24px 64px;
   max-width: 1200px;
 }
+/* Screens with a live preview use the full width so the preview track grows. */
+@media (min-width: 1280px) {
+  .adm-content:has(.pg-with-preview) {
+    max-width: none;
+  }
+}
 .adm-content:focus {
   outline: 0;
 }
@@ -414,6 +420,15 @@
 .adm-sortable-main {
   flex: 1;
   min-width: 0;
+}
+/* Narrow rows: the item takes its own line, the move buttons wrap below it. */
+@media (max-width: 520px) {
+  .adm-sortable-row {
+    flex-wrap: wrap;
+  }
+  .adm-sortable-main {
+    flex: 1 1 100%;
+  }
 }
 
 /* ---------- Table ---------- */
