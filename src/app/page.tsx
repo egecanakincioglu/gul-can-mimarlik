@@ -252,7 +252,7 @@ export default function Home() {
               <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
                 <h3 className="d-m">{p3.title}</h3>
                 <span className="badge">Konsept Çalışma</span>
-                <span className="badge">Video</span>
+                {p3.video && <span className="badge">Video</span>}
               </div>
               <span className="flex items-center gap-3 font-medium">
                 Projeyi incele{' '}
