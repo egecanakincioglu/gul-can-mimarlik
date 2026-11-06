@@ -13,6 +13,7 @@ export default function SelectField({
   helper,
   warning,
   error,
+  placeholder,
 }: {
   label: string;
   value: string;
@@ -21,6 +22,8 @@ export default function SelectField({
   helper?: string;
   warning?: string;
   error?: string;
+  /** A disabled first option shown while nothing is chosen; it cannot be picked. */
+  placeholder?: string;
 }) {
   const id = useId();
   const helperId = `${id}-helper`;
@@ -39,6 +42,11 @@ export default function SelectField({
         aria-invalid={error ? true : undefined}
         onChange={(e) => onChange(e.target.value)}
       >
+        {placeholder !== undefined && (
+          <option value="" disabled>
+            {placeholder}
+          </option>
+        )}
         {options.map((o) => (
           <option key={o.value} value={o.value}>
             {o.label}

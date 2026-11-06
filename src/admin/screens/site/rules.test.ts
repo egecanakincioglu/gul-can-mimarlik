@@ -1,7 +1,7 @@
 import { beforeAll, describe, expect, it } from 'vitest';
 import { getContent } from '@/content';
 import type { SiteContent } from '@/content/types';
-import { emailError, hrefError, phoneError, rangeWarning, requiredText, tokenError } from './rules';
+import { emailError, hrefError, phoneError, rangeWarning, requiredText } from './rules';
 import { GROUPS, textRows } from './texts';
 
 let seed: SiteContent;
@@ -41,11 +41,6 @@ describe('field rules', () => {
     expect(rangeWarning('a'.repeat(70), 10, 60)).toContain('kesilebilir');
     expect(rangeWarning('a'.repeat(30), 10, 60)).toBeUndefined();
   });
-
-  it('rejects unknown placeholders and allows the known ones', () => {
-    expect(tokenError(seed, '{n} proje, {year}')).toBeUndefined();
-    expect(tokenError(seed, '{nope}')).toBe('Bilinmeyen yer tutucu: {nope}');
-  });
 });
 
 describe('text rows', () => {
@@ -54,6 +49,13 @@ describe('text rows', () => {
     expect(new Set(rows.map((r) => r.id)).size).toBe(rows.length);
     expect(rows.every((r) => GROUPS.includes(r.group))).toBe(true);
     expect(Object.keys(seed.ui).every((k) => rows.some((r) => r.id === `ui.${k}`))).toBe(true);
+  });
+
+  it('lists the tokens of the default text per string', () => {
+    const rows = textRows(seed);
+    expect(rows.find((r) => r.id === 'ui.projectsShown')?.tokens).toEqual(['n']);
+    expect(rows.find((r) => r.id === 'ui.copyright')?.tokens).toEqual(['year', 'name']);
+    expect(rows.find((r) => r.id === 'ui.menu')?.tokens).toEqual([]);
   });
 
   it('writes a value without touching the input', () => {

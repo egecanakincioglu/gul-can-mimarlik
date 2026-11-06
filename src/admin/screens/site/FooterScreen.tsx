@@ -39,8 +39,9 @@ export default function FooterScreen() {
         />
         <Field
           boxed
-          label="Düğme adresi"
+          label="Düğme bağlantısı"
           value={footer.cta.href}
+          helper="Örnek: /projeler veya https://…"
           error={hrefError(footer.cta.href)}
           onChange={(href) => setCta({ href })}
         />

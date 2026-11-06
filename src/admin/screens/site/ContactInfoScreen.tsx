@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { phoneHref } from '@/content/select';
 import type { Contact } from '@/content/types';
 import { useAdminStore } from '../../store/AdminStoreProvider';
@@ -19,7 +20,19 @@ export default function ContactInfoScreen() {
   const { contact } = draft;
 
   const set = (patch: Partial<Contact>) => updateDraft((c) => ({ ...c, contact: { ...c.contact, ...patch } }));
+  const [removed, setRemoved] = useState<{ index: number; line: string } | null>(null);
   const setLine = (i: number, value: string) => set({ address: contact.address.map((l, k) => (k === i ? value : l)) });
+
+  const removeLine = (index: number) => {
+    setRemoved({ index, line: contact.address[index] });
+    set({ address: contact.address.filter((_, k) => k !== index) });
+  };
+  const undoRemove = () => {
+    if (!removed) return;
+    const at = Math.min(removed.index, contact.address.length);
+    set({ address: [...contact.address.slice(0, at), removed.line, ...contact.address.slice(at)] });
+    setRemoved(null);
+  };
 
   return (
     <ScreenFrame title="İletişim bilgileri" intro="Sitenin her yerinde aynı bilgiler kullanılır.">
@@ -60,13 +73,21 @@ export default function ContactInfoScreen() {
                 variant="destructive"
                 disabled={contact.address.length === 1}
                 aria-label={`Sil: Adres satırı ${i + 1}`}
-                onClick={() => set({ address: contact.address.filter((_, k) => k !== i) })}
+                onClick={() => removeLine(i)}
               >
                 Sil
               </Button>
             </li>
           ))}
         </ul>
+        {contact.address.length === 1 && <p className="caption adm-site-note">En az bir adres satırı gerekir.</p>}
+        <p role="status" className="adm-site-note">
+          {removed && (
+            <>
+              Satır kaldırıldı. <Button onClick={undoRemove}>Geri al</Button>
+            </>
+          )}
+        </p>
         <div className="adm-site-actions">
           <Button onClick={() => set({ address: [...contact.address, ''] })}>Satır ekle</Button>
         </div>

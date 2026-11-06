@@ -5,8 +5,9 @@ import { useAdminStore } from '../../store/AdminStoreProvider';
 import Field from '../../ui/Field';
 import SortableList from '../../ui/SortableList';
 import Toggle from '../../ui/Toggle';
-import WideOnly from '../../ui/WideOnly';
-import { ScreenFrame, Section, Warning } from './Frame';
+import EmptyState from '../../ui/EmptyState';
+import Notice from '../../ui/Notice';
+import { ScreenFrame, Section } from './Frame';
 import { hrefError, requiredText } from './rules';
 
 const LABEL_MAX = 16;
@@ -23,53 +24,60 @@ export default function NavigationScreen() {
       title="Gezinme"
       intro="Üst menüde ve alt bilgide görünen bağlantılar. Sıra, sayfadaki sırayı belirler."
     >
-      <WideOnly backHref="/yonetim" backLabel="Genel bakışa dön">
-        <Section title="Bağlantılar">
-          <SortableList
-            items={items}
-            getId={(n) => n.id}
-            getLabel={(n) => n.label || n.href}
-            onChange={(navigation) => updateDraft((c) => ({ ...c, navigation }))}
-            renderItem={(n, i) => (
-              <div className="adm-site-row">
-                <Field
-                  boxed
-                  label={`Etiket (${i + 1}. bağlantı)`}
-                  value={n.label}
-                  max={LABEL_MAX}
-                  error={requiredText(n.label, LABEL_MAX)}
-                  onChange={(label) => patch(n.id, { label })}
-                />
-                <Field
-                  boxed
-                  label={`Adres (${i + 1}. bağlantı)`}
-                  value={n.href}
-                  error={hrefError(n.href)}
-                  onChange={(href) => patch(n.id, { href })}
-                />
-                <Toggle
-                  checked={n.visible}
-                  label={`Görünür: ${n.label || n.href}`}
-                  onChange={(visible) => patch(n.id, { visible })}
-                />
-              </div>
-            )}
+      <Section title="Bağlantılar">
+        <SortableList
+          items={items}
+          getId={(n) => n.id}
+          getLabel={(n) => n.label || n.href}
+          onChange={(navigation) => updateDraft((c) => ({ ...c, navigation }))}
+          renderItem={(n, i) => (
+            <div className="adm-site-row">
+              <Field
+                boxed
+                label={`Etiket (${i + 1}. öğe)`}
+                value={n.label}
+                max={LABEL_MAX}
+                error={requiredText(n.label, LABEL_MAX)}
+                onChange={(label) => patch(n.id, { label })}
+              />
+              <Field
+                boxed
+                label={`Bağlantı (${i + 1}. öğe)`}
+                value={n.href}
+                helper="Örnek: /projeler veya https://…"
+                error={hrefError(n.href)}
+                onChange={(href) => patch(n.id, { href })}
+              />
+              <Toggle
+                checked={n.visible}
+                label={`Görünür: ${n.label || n.href}`}
+                onChange={(visible) => patch(n.id, { visible })}
+              />
+            </div>
+          )}
+        />
+        {items.length === 0 && (
+          <EmptyState
+            message="Henüz bağlantı yok."
+            description="Menüde gösterilecek bir bağlantı olmadığı için menü boş kalır."
           />
-          {items.every((n) => !n.visible) && <Warning>Hiçbir bağlantı görünür değil; menü boş kalır.</Warning>}
-        </Section>
+        )}
+        {items.length > 0 && items.every((n) => !n.visible) && (
+          <Notice variant="warning">Hiçbir bağlantı görünür değil; menü boş kalır.</Notice>
+        )}
+      </Section>
 
-        <Section title="Mobil menü">
-          <Field
-            boxed
-            label="Ana sayfa bağlantısı"
-            value={draft.ui.menuHome}
-            max={LABEL_MAX}
-            error={requiredText(draft.ui.menuHome, LABEL_MAX)}
-            helper="Mobil menünün ilk satırı; listedeki bağlantılardan ayrıdır."
-            onChange={(menuHome) => updateDraft((c) => ({ ...c, ui: { ...c.ui, menuHome } }))}
-          />
-        </Section>
-      </WideOnly>
+      <Section title="Mobil menü">
+        <Field
+          boxed
+          label="Ana sayfa bağlantısı"
+          value={draft.ui.menuHome}
+          max={LABEL_MAX}
+          error={requiredText(draft.ui.menuHome, LABEL_MAX)}
+          helper="Mobil menünün ilk satırı; listedeki bağlantılardan ayrıdır."
+          onChange={(menuHome) => updateDraft((c) => ({ ...c, ui: { ...c.ui, menuHome } }))}
+        />
+      </Section>
     </ScreenFrame>
   );
 }

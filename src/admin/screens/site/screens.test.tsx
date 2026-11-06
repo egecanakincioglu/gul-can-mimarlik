@@ -141,6 +141,21 @@ describe('ContactInfoScreen', () => {
     expect(screen.getByText('Geçerli bir e-posta adresi yazın.')).toBeTruthy();
   });
 
+  it('removes a line at once, offers undo at the same position and explains the last line', async () => {
+    const m = await show(<ContactInfoScreen />);
+    fireEvent.click(screen.getByRole('button', { name: 'Sil: Adres satırı 2' }));
+    expect(m.draft().contact.address).toEqual(seed.contact.address.filter((_, k) => k !== 1));
+    expect(screen.getByRole('status').textContent).toContain('Satır kaldırıldı.');
+    fireEvent.click(screen.getByRole('button', { name: 'Geri al' }));
+    expect(m.draft().contact.address).toEqual(seed.contact.address);
+    expect(screen.getByRole('status').textContent).toBe('');
+    expect(screen.queryByText('En az bir adres satırı gerekir.')).toBeNull();
+    for (let i = seed.contact.address.length; i > 1; i--)
+      fireEvent.click(screen.getByRole('button', { name: `Sil: Adres satırı ${i}` }));
+    expect(screen.getByText('En az bir adres satırı gerekir.')).toBeTruthy();
+    expect((screen.getByRole('button', { name: 'Sil: Adres satırı 1' }) as HTMLButtonElement).disabled).toBe(true);
+  });
+
   it('adds and removes address lines but keeps one', async () => {
     const m = await show(<ContactInfoScreen />);
     const lines = seed.contact.address.length;
@@ -160,9 +175,23 @@ describe('NavigationScreen', () => {
   it('lists the seed links', async () => {
     await show(<NavigationScreen />);
     seed.navigation.forEach((n, i) => {
-      expect(input(`Etiket (${i + 1}. bağlantı)`).value).toBe(n.label);
-      expect(input(`Adres (${i + 1}. bağlantı)`).value).toBe(n.href);
+      expect(input(`Etiket (${i + 1}. öğe)`).value).toBe(n.label);
+      expect(input(`Bağlantı (${i + 1}. öğe)`).value).toBe(n.href);
     });
+  });
+
+  it('is usable at any width: no wide-screen notice, labelled link fields', async () => {
+    await show(<NavigationScreen />);
+    expect(screen.queryByText(/geniş ekran/i)).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Genel bakışa dön' })).toBeNull();
+    expect(screen.getAllByText('Örnek: /projeler veya https://…')).toHaveLength(seed.navigation.length);
+    expect(screen.queryByLabelText(/^Adres/)).toBeNull();
+  });
+
+  it('uses the shared warning', async () => {
+    await show(<NavigationScreen />);
+    for (const n of seed.navigation) fireEvent.click(screen.getByRole('switch', { name: `Görünür: ${n.label}` }));
+    expect(document.querySelector('.adm-notice-warning')).not.toBeNull();
   });
 
   it('reorders with the keyboard and the buttons', async () => {
@@ -184,12 +213,12 @@ describe('NavigationScreen', () => {
 
   it('limits the label and checks the address', async () => {
     const m = await show(<NavigationScreen />);
-    change('Etiket (1. bağlantı)', 'x'.repeat(17));
+    change('Etiket (1. öğe)', 'x'.repeat(17));
     expect(screen.getByText('17/16')).toBeTruthy();
     expect(screen.getByText('En çok 16 karakter olabilir.')).toBeTruthy();
-    change('Adres (1. bağlantı)', 'projeler');
+    change('Bağlantı (1. öğe)', 'projeler');
     expect(screen.getByText(/ile başlamalıdır/)).toBeTruthy();
-    change('Etiket (1. bağlantı)', 'Çalışmalar');
+    change('Etiket (1. öğe)', 'Çalışmalar');
     expect(m.draft().navigation[0].label).toBe('Çalışmalar');
   });
 
@@ -206,7 +235,14 @@ describe('SeoScreen', () => {
     const table = screen.getByRole('table', { name: 'Sayfa başlıkları ve açıklamaları' });
     expect(within(table).getAllByRole('row')).toHaveLength(6);
     expect(within(table).getByText('Gül CAN Mimarlık')).toBeTruthy();
-    expect(input('Başlık şablonu').value).toBe(seed.seo.titleTemplate);
+    expect(input('Başlık şablonu (arama sonuçlarında)').value).toBe(seed.seo.titleTemplate);
+  });
+
+  it('is titled like the menu item and is usable at any width', async () => {
+    await show(<SeoScreen />);
+    expect(screen.getByRole('heading', { level: 1, name: 'Arama sonuçları (SEO)' })).toBeTruthy();
+    expect(screen.queryByText(/geniş ekran/i)).toBeNull();
+    expect(screen.queryByRole('link', { name: 'Genel bakışa dön' })).toBeNull();
   });
 
   it('opens the row editor with a search result preview', async () => {
@@ -221,28 +257,28 @@ describe('SeoScreen', () => {
   it('writes the page title and removes an emptied description', async () => {
     const m = await show(<SeoScreen />);
     fireEvent.click(screen.getByRole('button', { name: 'Düzenle: Stüdyo' }));
-    change('Sayfa başlığı', 'Stüdyomuz hakkında');
+    change('Sayfa başlığı (arama sonuçlarında)', 'Stüdyomuz hakkında');
     expect(m.draft().seo.pages.studio.title).toBe('Stüdyomuz hakkında');
-    change('Sayfa açıklaması', 'x'.repeat(100));
+    change('Kısa açıklama (arama sonuçlarında)', 'x'.repeat(100));
     expect(m.draft().seo.pages.studio.description).toHaveLength(100);
-    change('Sayfa açıklaması', '');
+    change('Kısa açıklama (arama sonuçlarında)', '');
     expect('description' in m.draft().seo.pages.studio).toBe(false);
   });
 
   it('warns about length without blocking the edit', async () => {
     const m = await show(<SeoScreen />);
     fireEvent.click(screen.getByRole('button', { name: 'Düzenle: İletişim' }));
-    change('Sayfa başlığı', 'x'.repeat(70));
-    expect(screen.getAllByText('Uyarı').length).toBeGreaterThan(0);
+    change('Sayfa başlığı (arama sonuçlarında)', 'x'.repeat(70));
+    expect(document.querySelector('.adm-notice-warning')).not.toBeNull();
     expect(m.draft().seo.pages.contact.title).toHaveLength(70);
-    change('Varsayılan açıklama', 'kısa');
+    change('Varsayılan kısa açıklama (arama sonuçlarında)', 'kısa');
     expect(screen.getByText('4/160')).toBeTruthy();
     expect(m.draft().seo.description).toBe('kısa');
   });
 
   it('requires the title placeholder', async () => {
     const m = await show(<SeoScreen />);
-    change('Başlık şablonu', 'Başlık');
+    change('Başlık şablonu (arama sonuçlarında)', 'Başlık');
     expect(screen.getByText(/%s içermelidir/)).toBeTruthy();
     expect(m.draft().seo.titleTemplate).toBe('Başlık');
   });
@@ -281,8 +317,18 @@ describe('TextsScreen', () => {
     change('Menü düğmesi', '');
     expect(screen.getByText('Bu alan boş bırakılamaz.')).toBeTruthy();
     change('Menü düğmesi', '{yok}');
-    expect(screen.getByText('Bilinmeyen yer tutucu: {yok}')).toBeTruthy();
+    expect(screen.getByText(/^Bilinmeyen ifade: \{yok\}\. Kullanılabilenler: /)).toBeTruthy();
     expect(input('Menü düğmesi').getAttribute('aria-invalid')).toBe('true');
+  });
+
+  it('lists the tokens a string may use and rejects others', async () => {
+    await show(<TextsScreen />);
+    expect(screen.getAllByText('Bu metinde şu ifadeler otomatik doldurulur: {n}').length).toBeGreaterThan(0);
+    expect(input('Gösterilen proje sayısı').getAttribute('aria-describedby')).toBeTruthy();
+    change('Gösterilen proje sayısı', '{n} / {year}');
+    expect(screen.getByText('Bilinmeyen ifade: {year}. Kullanılabilenler: {n}')).toBeTruthy();
+    change('Gösterilen proje sayısı', '{n} proje');
+    expect(screen.queryByText(/Bilinmeyen ifade/)).toBeNull();
   });
 });
 
@@ -305,7 +351,7 @@ describe('FooterScreen', () => {
     const m = await show(<FooterScreen />);
     change('Düğme metni', 'Yazın');
     expect(m.draft().footer.cta.label).toBe('Yazın');
-    change('Düğme adresi', 'iletisim');
+    change('Düğme bağlantısı', 'iletisim');
     expect(screen.getByText(/ile başlamalıdır/)).toBeTruthy();
   });
 

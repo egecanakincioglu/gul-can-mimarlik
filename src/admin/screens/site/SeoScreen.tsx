@@ -7,8 +7,8 @@ import { useAdminStore } from '../../store/AdminStoreProvider';
 import Button from '../../ui/Button';
 import Field from '../../ui/Field';
 import Table from '../../ui/Table';
-import WideOnly from '../../ui/WideOnly';
-import { ScreenFrame, Section, Warning } from './Frame';
+import Notice from '../../ui/Notice';
+import { ScreenFrame, Section } from './Frame';
 import { PAGE_NAMES, PAGE_PATHS, rangeWarning, requiredText } from './rules';
 
 const TITLE = { min: 10, max: 60 };
@@ -44,105 +44,103 @@ export default function SeoScreen() {
 
   return (
     <ScreenFrame
-      title="SEO"
+      title="Arama sonuçları (SEO)"
       intro="Arama sonuçlarında görünen başlık ve açıklamalar. Uzunluk uyarıları yalnızca öneridir."
     >
-      <WideOnly backHref="/yonetim" backLabel="Genel bakışa dön">
-        <Section title="Genel">
+      <Section title="Genel">
+        <Field
+          boxed
+          label="Başlık şablonu (arama sonuçlarında)"
+          value={seo.titleTemplate}
+          error={
+            seo.titleTemplate.includes('%s')
+              ? requiredText(seo.titleTemplate)
+              : 'Şablon sayfa başlığının yerini gösteren %s içermelidir.'
+          }
+          helper="%s sayfa başlığıyla değiştirilir."
+          onChange={(titleTemplate) => setSeo({ titleTemplate })}
+        />
+        <Field
+          boxed
+          multiline
+          rows={3}
+          label="Varsayılan kısa açıklama (arama sonuçlarında)"
+          value={seo.description}
+          max={DESC.max}
+          error={requiredText(seo.description)}
+          onChange={(description) => setSeo({ description })}
+        />
+        {rangeWarning(seo.description, DESC.min, DESC.max) && (
+          <Notice variant="warning">{rangeWarning(seo.description, DESC.min, DESC.max)}</Notice>
+        )}
+        <Field
+          boxed
+          label="Demo eki"
+          value={seo.demoSuffix}
+          helper="Demo modu açıkken varsayılan açıklamanın sonuna eklenir."
+          onChange={(demoSuffix) => setSeo({ demoSuffix })}
+        />
+      </Section>
+
+      <Section title="Sayfalar">
+        <Table
+          caption="Sayfa başlıkları ve açıklamaları"
+          rows={KEYS}
+          getKey={(k) => k}
+          columns={[
+            { id: 'page', header: 'Sayfa', render: (k) => PAGE_NAMES[k] },
+            { id: 'title', header: 'Başlık', render: (k) => seo.pages[k].title },
+            {
+              id: 'state',
+              header: 'Durum',
+              render: (k) => (warningsFor(k).length ? `Uyarı (${warningsFor(k).length})` : 'Uygun'),
+            },
+            {
+              id: 'edit',
+              header: 'İşlem',
+              render: (k) => (
+                <Button onClick={() => setSelected(k)} aria-label={`Düzenle: ${PAGE_NAMES[k]}`}>
+                  Düzenle
+                </Button>
+              ),
+            },
+          ]}
+        />
+      </Section>
+
+      {selected && page && resolved && (
+        <Section title={`${PAGE_NAMES[selected]} sayfası`}>
           <Field
             boxed
-            label="Başlık şablonu"
-            value={seo.titleTemplate}
-            error={
-              seo.titleTemplate.includes('%s')
-                ? requiredText(seo.titleTemplate)
-                : 'Şablon sayfa başlığının yerini gösteren %s içermelidir.'
-            }
-            helper="%s sayfa başlığıyla değiştirilir."
-            onChange={(titleTemplate) => setSeo({ titleTemplate })}
+            label="Sayfa başlığı (arama sonuçlarında)"
+            value={page.title}
+            max={TITLE.max}
+            error={requiredText(page.title)}
+            onChange={(title) => setPage(selected, { title })}
           />
+          {page.title && rangeWarning(page.title, TITLE.min, TITLE.max) && (
+            <Notice variant="warning">{rangeWarning(page.title, TITLE.min, TITLE.max)}</Notice>
+          )}
           <Field
             boxed
             multiline
             rows={3}
-            label="Varsayılan açıklama"
-            value={seo.description}
+            label="Kısa açıklama (arama sonuçlarında)"
+            value={page.description ?? ''}
             max={DESC.max}
-            error={requiredText(seo.description)}
-            onChange={(description) => setSeo({ description })}
+            helper="Boş bırakılırsa varsayılan açıklama kullanılır."
+            onChange={(description) => setPage(selected, { description })}
           />
-          {rangeWarning(seo.description, DESC.min, DESC.max) && (
-            <Warning>{rangeWarning(seo.description, DESC.min, DESC.max)}</Warning>
+          {rangeWarning(resolved.description, DESC.min, DESC.max) && (
+            <Notice variant="warning">{rangeWarning(resolved.description, DESC.min, DESC.max)}</Notice>
           )}
-          <Field
-            boxed
-            label="Demo eki"
-            value={seo.demoSuffix}
-            helper="Demo modu açıkken varsayılan açıklamanın sonuna eklenir."
-            onChange={(demoSuffix) => setSeo({ demoSuffix })}
-          />
+          <div className="adm-site-preview" role="group" aria-label="Arama sonucu önizlemesi">
+            <p className="adm-site-preview-title">{previewTitle}</p>
+            <p className="caption">{PAGE_PATHS[selected]}</p>
+            <p>{resolved.description}</p>
+          </div>
         </Section>
-
-        <Section title="Sayfalar">
-          <Table
-            caption="Sayfa başlıkları ve açıklamaları"
-            rows={KEYS}
-            getKey={(k) => k}
-            columns={[
-              { id: 'page', header: 'Sayfa', render: (k) => PAGE_NAMES[k] },
-              { id: 'title', header: 'Başlık', render: (k) => seo.pages[k].title },
-              {
-                id: 'state',
-                header: 'Durum',
-                render: (k) => (warningsFor(k).length ? `Uyarı (${warningsFor(k).length})` : 'Uygun'),
-              },
-              {
-                id: 'edit',
-                header: 'İşlem',
-                render: (k) => (
-                  <Button onClick={() => setSelected(k)} aria-label={`Düzenle: ${PAGE_NAMES[k]}`}>
-                    Düzenle
-                  </Button>
-                ),
-              },
-            ]}
-          />
-        </Section>
-
-        {selected && page && resolved && (
-          <Section title={`${PAGE_NAMES[selected]} sayfası`}>
-            <Field
-              boxed
-              label="Sayfa başlığı"
-              value={page.title}
-              max={TITLE.max}
-              error={requiredText(page.title)}
-              onChange={(title) => setPage(selected, { title })}
-            />
-            {page.title && rangeWarning(page.title, TITLE.min, TITLE.max) && (
-              <Warning>{rangeWarning(page.title, TITLE.min, TITLE.max)}</Warning>
-            )}
-            <Field
-              boxed
-              multiline
-              rows={3}
-              label="Sayfa açıklaması"
-              value={page.description ?? ''}
-              max={DESC.max}
-              helper="Boş bırakılırsa varsayılan açıklama kullanılır."
-              onChange={(description) => setPage(selected, { description })}
-            />
-            {rangeWarning(resolved.description, DESC.min, DESC.max) && (
-              <Warning>{rangeWarning(resolved.description, DESC.min, DESC.max)}</Warning>
-            )}
-            <div className="adm-site-preview" role="group" aria-label="Arama sonucu önizlemesi">
-              <p className="adm-site-preview-title">{previewTitle}</p>
-              <p className="caption">{PAGE_PATHS[selected]}</p>
-              <p>{resolved.description}</p>
-            </div>
-          </Section>
-        )}
-      </WideOnly>
+      )}
     </ScreenFrame>
   );
 }
