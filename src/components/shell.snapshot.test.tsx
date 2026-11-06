@@ -1,5 +1,5 @@
 import { renderToStaticMarkup } from 'react-dom/server';
-import { describe, expect, it, vi } from 'vitest';
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest';
 import BeforeAfter from './BeforeAfter';
 import Footer from './Footer';
 import Header from './Header';
@@ -14,6 +14,16 @@ vi.mock('next/font/google', () => ({
 }));
 
 const img = (name: string) => ({ src: `/images/${name}.png`, alt: name, focalX: 50, focalY: 50 });
+
+// The footer prints the current year; freeze it so the snapshot stays valid in later years.
+beforeAll(() => {
+  vi.useFakeTimers({ toFake: ['Date'] });
+  vi.setSystemTime(new Date('2026-11-06T12:00:00Z'));
+});
+
+afterAll(() => {
+  vi.useRealTimers();
+});
 
 describe('shell markup', () => {
   it('Footer with the call to action', async () => {
