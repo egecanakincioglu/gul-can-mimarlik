@@ -17,7 +17,7 @@ The repository is public. Nothing may reach `main` without checks, and the rules
 
 ## Decision
 
-All checks run in GitHub Actions on GitHub-hosted runners. Branch protection on `main` requires a pull request and 12 checks: `policy`, `pr-text`, `tooling (linux)`, `tooling (windows)`, `quality`, `semgrep-registry`, `zizmor`, `test`, `build`, `site-audit (pages)`, `site-audit (mobile)` and `site-audit (desktop)`.
+All checks run in GitHub Actions on GitHub-hosted runners. Branch protection on `main` requires a pull request and 9 checks: `policy`, `pr-text`, `tooling (linux)`, `tooling (windows)`, `quality`, `semgrep-registry`, `zizmor`, `test` and `build`.
 
 Rules:
 
