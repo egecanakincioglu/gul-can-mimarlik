@@ -68,7 +68,7 @@ export default function HomeScreen() {
   const baOptions = [{ value: '', label: 'Gösterme' }, ...projectOptions(baId ?? '', (p) => !!p.beforeAfter)];
 
   return (
-    <Screen title="Ana sayfa">
+    <Screen title="Ana sayfa" preview="/yonetim/onizleme">
       <Section title="1. Karşılama">
         {home.hero.lines.map((line, i) => (
           <EmphasisField

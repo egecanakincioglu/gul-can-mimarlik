@@ -1,6 +1,6 @@
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactElement } from 'react';
-import { afterEach, beforeAll, describe, expect, it } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { AdminStoreProvider } from '@/admin/store/AdminStoreProvider';
 import AltBilgi from './alt-bilgi/page.tsx';
 import AnaSayfa from './ana-sayfa/page.tsx';
@@ -18,6 +18,13 @@ import SiteAyarlari from './site-ayarlari/page.tsx';
 import Studyo from './studyo/page.tsx';
 import SurecAdimlari from './surec-adimlari/page.tsx';
 import Yonlendirmeler from './yonlendirmeler/page.tsx';
+import Kategoriler from './kategoriler/page.tsx';
+import Projeler from './projeler/page.tsx';
+import Proje from './projeler/[slug]/page.tsx';
+import YeniProje from './projeler/yeni/page.tsx';
+
+const push = vi.fn();
+vi.mock('next/navigation', () => ({ useRouter: () => ({ push }) }));
 
 afterEach(cleanup);
 
@@ -48,6 +55,9 @@ const ROUTES: [string, () => ReactElement, string][] = [
   ['studyo', Studyo, 'Stüdyo'],
   ['iletisim-sayfasi', IletisimSayfasi, 'İletişim sayfası'],
   ['projeler-sayfasi', ProjelerSayfasi, 'Projeler sayfası'],
+  ['projeler', Projeler, 'Projeler'],
+  ['kategoriler', Kategoriler, 'Kategoriler'],
+  ['projeler/yeni', YeniProje, 'Yeni proje'],
 ];
 
 describe('admin screen routes', () => {
@@ -74,5 +84,35 @@ describe('admin screen routes', () => {
       </AdminStoreProvider>,
     );
     expect(await screen.findByText('Mesaj bulunamadı')).toBeTruthy();
+  });
+
+  it('opens a project by slug and shows a not-found state with a link back for an unknown slug', async () => {
+    render(
+      <AdminStoreProvider storage={storage}>
+        {await Proje({ params: Promise.resolve({ slug: 'daire-yenileme' }) })}
+      </AdminStoreProvider>,
+    );
+    expect((await screen.findByRole('heading', { level: 1 })).textContent).not.toBe('Proje bulunamadı');
+    cleanup();
+    render(
+      <AdminStoreProvider storage={storage}>
+        {await Proje({ params: Promise.resolve({ slug: 'yok' }) })}
+      </AdminStoreProvider>,
+    );
+    expect((await screen.findByRole('heading', { level: 1 })).textContent).toBe('Proje bulunamadı');
+    expect(screen.getByRole('link', { name: 'Tüm projeler' }).getAttribute('href')).toBe('/yonetim/projeler');
+  });
+
+  it('goes to the edit route of a new project after saving', async () => {
+    render(
+      <AdminStoreProvider storage={storage}>
+        <YeniProje />
+      </AdminStoreProvider>,
+    );
+    await screen.findByRole('heading', { level: 1 });
+    fireEvent.change(screen.getByLabelText('Başlık'), { target: { value: 'Deneme Projesi' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Başlıktan üret' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Projeyi oluştur' }));
+    expect(push).toHaveBeenCalledWith('/yonetim/projeler/deneme-projesi');
   });
 });

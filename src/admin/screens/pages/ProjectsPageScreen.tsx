@@ -8,7 +8,7 @@ export default function ProjectsPageScreen() {
   const set = (p: Partial<typeof page>) => update((d) => ({ ...d, projectsPage: { ...d.projectsPage, ...p } }));
 
   return (
-    <Screen title="Projeler sayfası">
+    <Screen title="Projeler sayfası" preview="/yonetim/onizleme/projeler">
       <TextField label="Başlık" value={page.title} onChange={(title) => set({ title })} />
       <LongField label="Giriş cümlesi" value={page.lead} max={220} rows={3} onChange={(lead) => set({ lead })} />
     </Screen>

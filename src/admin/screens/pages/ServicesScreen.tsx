@@ -62,7 +62,7 @@ export default function ServicesScreen() {
   };
 
   return (
-    <Screen title="Hizmetler">
+    <Screen title="Hizmetler" preview="/yonetim/onizleme/hizmetler">
       <Section title="Sayfa metinleri">
         <EmphasisField
           label="Başlık"

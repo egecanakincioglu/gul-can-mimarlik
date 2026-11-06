@@ -4,8 +4,7 @@ import Link from 'next/link';
 import { useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { useAdminStore } from '../store/AdminStoreProvider';
-import Button from '../ui/Button';
-import Dialog from '../ui/Dialog';
+import PublishPanel from '../preview/PublishPanel';
 import SaveStatus from '../ui/SaveStatus';
 import { INBOX_HREF, crumbsFor, currentState, navGroups } from './nav';
 
@@ -18,10 +17,9 @@ export default function AdminShell({
   onLogout?: () => void;
   children: ReactNode;
 }) {
-  const { messages, issues, dirty, saveState, publish, discardDraft } = useAdminStore();
+  const { messages, dirty, saveState } = useAdminStore();
   // The menu is open for the route it was opened on, so navigating closes it.
   const [openFor, setOpenFor] = useState<string | null>(null);
-  const [confirmDiscard, setConfirmDiscard] = useState(false);
   const menuButton = useRef<HTMLButtonElement>(null);
   const sidebar = useRef<HTMLDivElement>(null);
   const menuOpen = openFor === pathname;
@@ -60,7 +58,6 @@ export default function AdminShell({
 
   const unread = messages.filter((m) => m.status === 'new').length;
   const crumbs = crumbsFor(pathname);
-  const blocked = issues.length > 0;
 
   return (
     <div className="adm">
@@ -148,34 +145,13 @@ export default function AdminShell({
               </ol>
             </nav>
             <SaveStatus state={saveState} dirty={dirty} />
-            <Button variant="secondary" disabled={!dirty} onClick={() => setConfirmDiscard(true)}>
-              Taslağı at
-            </Button>
-            <Button variant="primary" disabled={blocked || saveState.kind === 'saving'} onClick={() => void publish()}>
-              {blocked ? `Yayınla (${issues.length} sorun)` : 'Yayınla'}
-            </Button>
+            <PublishPanel />
           </div>
         </header>
         <main id="icerik" className="adm-content" tabIndex={-1}>
           {children}
         </main>
       </div>
-
-      <Dialog open={confirmDiscard} onClose={() => setConfirmDiscard(false)} title="Taslak atılsın mı?">
-        <p>Yayınlanmamış değişiklikler silinir ve yayındaki sürüme dönülür.</p>
-        <div className="adm-dialog-actions">
-          <Button
-            variant="destructive"
-            onClick={() => {
-              discardDraft();
-              setConfirmDiscard(false);
-            }}
-          >
-            Taslağı at
-          </Button>
-          <Button onClick={() => setConfirmDiscard(false)}>Vazgeç</Button>
-        </div>
-      </Dialog>
     </div>
   );
 }

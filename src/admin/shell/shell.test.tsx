@@ -40,6 +40,8 @@ const storageWith = (content?: SiteContent): StorageLike => {
   };
 };
 
+const openDialog = () => document.querySelector('dialog[open]') as HTMLElement;
+
 const renderShell = async (pathname: string, storage: StorageLike = storageWith()) => {
   render(
     <AdminStoreProvider storage={storage}>
@@ -141,7 +143,11 @@ describe('AdminShell', () => {
     const broken: SiteContent = { ...seed, media: seed.media.map((m, i) => (i === 0 ? { ...m, alt: '' } : m)) };
     await renderShell('/yonetim', storageWith(broken));
     const blocked = screen.getByRole('button', { name: /^Yayınla \(\d+ sorun\)$/ }) as HTMLButtonElement;
-    expect(blocked.disabled).toBe(true);
+    expect(blocked.disabled).toBe(false);
+    fireEvent.click(blocked);
+    const dialog = openDialog();
+    expect(within(dialog).getByRole('link', { name: 'Görsel açıklaması boş', hidden: true })).toBeTruthy();
+    expect(within(dialog).queryByRole('button', { name: 'Yayınla', hidden: true })).toBeNull();
   });
 
   it('confirms before discarding the draft', async () => {
@@ -150,7 +156,7 @@ describe('AdminShell', () => {
     await renderShell('/yonetim', storage);
     expect(screen.getByRole('status').textContent).toBe('Kaydedilmemiş değişiklikler');
     fireEvent.click(screen.getByRole('button', { name: 'Taslağı at' }));
-    const dialog = screen.getByRole('dialog', { hidden: true });
+    const dialog = openDialog();
     fireEvent.click(within(dialog).getByRole('button', { name: 'Taslağı at', hidden: true }));
     expect(JSON.parse(storage.getItem(STORAGE_NAME) as string).draft.site.name).toBe(seed.site.name);
   });
@@ -264,9 +270,7 @@ describe('Overview', () => {
     const noSeo = seed.projects.filter((p) => !p.seo).length;
     if (noSeo > 0) expect(await screen.findByText(`${noSeo} projede SEO başlığı yok`)).toBeTruthy();
     fireEvent.click(await screen.findByRole('button', { name: 'Demo verisini sıfırla' }));
-    fireEvent.click(
-      within(screen.getByRole('dialog', { hidden: true })).getByRole('button', { name: 'Sıfırla', hidden: true }),
-    );
+    fireEvent.click(within(openDialog()).getByRole('button', { name: 'Sıfırla', hidden: true }));
     expect(JSON.parse(storage.getItem(STORAGE_NAME) as string).draft.site.name).toBe(seed.site.name);
   });
 });

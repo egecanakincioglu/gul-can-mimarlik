@@ -1,0 +1,74 @@
+.adm-preview {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+.adm-preview-widths {
+  display: flex;
+  flex-wrap: wrap;
+}
+.adm-preview-stage {
+  position: relative;
+  width: 100%;
+  min-width: 0;
+  height: 70dvh;
+  min-height: 360px;
+  overflow: hidden;
+  border: 1px solid var(--color-golge);
+  background: var(--color-kagit);
+}
+.adm-preview-stage iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  border: 0;
+  background: var(--color-kirec);
+  transform-origin: top left;
+}
+.adm-preview-note {
+  padding: 24px;
+}
+.adm-split {
+  display: grid;
+  gap: 24px;
+  min-width: 0;
+}
+.adm-split-editor,
+.adm-split-preview {
+  min-width: 0;
+}
+.adm-split[data-mode='edit'] .adm-split-preview,
+.adm-split[data-mode='preview'] .adm-split-editor {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .adm-split {
+    grid-template-columns: minmax(0, 760px) minmax(480px, 1fr);
+    gap: 32px;
+    align-items: start;
+  }
+  .adm-split-toggle {
+    display: none;
+  }
+  /* Higher specificity than the data-mode rules above, which only apply to the toggle layout. */
+  .adm-split[data-mode] .adm-split-editor,
+  .adm-split[data-mode] .adm-split-preview {
+    display: block;
+  }
+  .adm-split-editor {
+    width: 100%;
+  }
+  .adm-split-preview {
+    position: sticky;
+    top: 96px;
+  }
+}
+.adm-publish-issues ul {
+  margin: 8px 0 16px;
+  padding-left: 20px;
+}
+.adm-publish-issues code {
+  font-size: 13px;
+}

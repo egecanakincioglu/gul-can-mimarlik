@@ -29,4 +29,15 @@ describe('AdminFrame', () => {
     expect(screen.getByText('login')).toBeTruthy();
     expect(screen.queryByRole('navigation', { name: 'Yönetim' })).toBeNull();
   });
+
+  it.each(['/yonetim/onizleme', '/yonetim/onizleme/projeler/ornek'])('renders %s without the shell', (path) => {
+    pathname = path;
+    render(
+      <AdminFrame>
+        <p>preview</p>
+      </AdminFrame>,
+    );
+    expect(screen.getByText('preview')).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Yönetim' })).toBeNull();
+  });
 });

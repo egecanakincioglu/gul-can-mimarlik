@@ -5,7 +5,7 @@ import { useState } from 'react';
 import { useAdminStore } from '../store/AdminStoreProvider';
 import Button from '../ui/Button';
 import Dialog from '../ui/Dialog';
-import { describeIssue } from './issues';
+import { issueLink } from '../preview/issue-links';
 
 const SHORTCUTS = [
   { href: '/yonetim/projeler/yeni', label: 'Yeni proje' },
@@ -68,7 +68,7 @@ export default function Overview() {
         ) : (
           <ul className="adm-missing">
             {issues.slice(0, MAX_LISTED).map((issue, i) => {
-              const d = describeIssue(issue);
+              const d = issueLink(draft, issue);
               return (
                 <li key={`${issue.path}-${i}`}>
                   <Link href={d.href} className="tlink">
