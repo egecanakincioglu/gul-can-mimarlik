@@ -184,7 +184,8 @@ body {
   line-height: 1.4;
   color: var(--color-golge);
 }
-.on-dark .caption {
+.on-dark .caption,
+.bg-pose .caption {
   color: var(--color-siva);
 }
 .w3 {
@@ -202,8 +203,13 @@ body {
 .muted {
   color: var(--color-golge);
 }
-.on-dark .muted {
+.on-dark .muted,
+.bg-pose .muted {
   color: var(--color-siva);
+}
+.bg-siva .muted,
+.bg-siva .caption {
+  color: var(--color-pose);
 }
 
 .badge {
