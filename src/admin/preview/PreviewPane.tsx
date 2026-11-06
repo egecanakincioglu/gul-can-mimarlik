@@ -10,13 +10,13 @@ export const PREVIEW_WIDTHS = [360, 390, 768, 1024, 1440] as const;
 export const fitScale = (width: number, available: number) =>
   available > 0 && available < width ? available / width : 1;
 
-const WIDTH_KEY = 'gcm-admin:preview-width';
+const WIDTH_STORAGE_NAME = 'gcm-admin:preview-width';
 
 const isPreset = (n: number) => (PREVIEW_WIDTHS as readonly number[]).includes(n);
 
 const storedWidth = (): number | null => {
   try {
-    const n = Number(window.sessionStorage.getItem(WIDTH_KEY));
+    const n = Number(window.sessionStorage.getItem(WIDTH_STORAGE_NAME));
     return isPreset(n) ? n : null;
   } catch {
     return null;
@@ -60,7 +60,7 @@ export default function PreviewPane({
   const choose = (w: number) => {
     setChosen(w);
     try {
-      window.sessionStorage.setItem(WIDTH_KEY, String(w));
+      window.sessionStorage.setItem(WIDTH_STORAGE_NAME, String(w));
     } catch {
       // Remembering the width is a convenience only.
     }
