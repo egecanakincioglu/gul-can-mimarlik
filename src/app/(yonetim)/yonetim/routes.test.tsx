@@ -43,7 +43,7 @@ const ROUTES: [string, () => ReactElement, string][] = [
   ['site-ayarlari', SiteAyarlari, 'Site ayarları'],
   ['iletisim-bilgileri', IletisimBilgileri, 'İletişim bilgileri'],
   ['gezinme', Gezinme, 'Gezinme'],
-  ['seo', Seo, 'SEO'],
+  ['seo', Seo, 'Arama sonuçları (SEO)'],
   ['metinler', Metinler, 'Metinler'],
   ['alt-bilgi', AltBilgi, 'Alt bilgi'],
   ['medya', Medya, 'Medya kütüphanesi'],
